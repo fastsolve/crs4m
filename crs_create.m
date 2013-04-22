@@ -5,12 +5,14 @@ function varargout = crs_create( varargin) %#codegen
 %    A = crs_create( row, col, v [, nrows]);
 % In the second case, A is a struct with fields row_ptr, col_ind, and val.
 %
-%   [row_ptr, col_ind, val] = crs_create( sp [, nrows]);
-%   A = crs_create( sp, [, nrows]);
+%    [row_ptr, col_ind, val] = crs_create( sp [, nrows]);
+%    A = crs_create( sp, [, nrows]);
 % This mode is incompatible with MATLAB Coder. It is provided
 % for convenience of testing.
 %
 % See also crs_2sparse
+%
+% Note: This function does not use multithreading.
 
 if nargin<3
     [row,col,v] = find(varargin{1});

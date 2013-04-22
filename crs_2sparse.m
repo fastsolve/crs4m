@@ -1,12 +1,13 @@
 function sp = crs_2sparse(varargin)
-%crs_2sparse Create a MATLAB sparse object from CRS format.
+%crs_2sparse Create a MATLAB sparse matrix from CRS format.
 %      sp = crs_2sparse(row_ptr, col_ind, val [,m [,n]])
 %      sp = crs_2sparse(A [,m [,n]])
 %
 % See also crs_create
-
+%
 % Note: This function is incompatible with MATLAB Coder.
 % It is provided for convenience of testing.
+% It does not use multithreading.
 
 assert( nargin>=1 && nargin<=5);
 
@@ -22,7 +23,7 @@ else
     s = 4;
 end
 
-row_ind = crs_obtainRowInd(row_ptr, col_ind);
+row_ind = crs_rowind(row_ptr, col_ind);
 
 sp = sparse(double(row_ind), double(col_ind), double(val), varargin{s:end});
 
