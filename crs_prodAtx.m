@@ -66,7 +66,7 @@ if nargin>3 && ~isempty(nthreads)
         MACC_end_master
     end
     
-    if DEBUG; T = MMPI_Wtime; end
+    if DEBUG; T = MACC_get_wtime; end
     i = int32(0); j = int32(0); k = int32(0); n = int32(0);
     
     [b, i, j, k, n, iend] = MACC_begin_parallel( b, i, j, k, n, iend);
@@ -96,11 +96,11 @@ if nargin>3 && ~isempty(nthreads)
     MACC_end_parallel
     
     if DEBUG
-        T = MMPI_Wtime-T;
+        T = MACC_get_wtime-T;
         msg_printf( 'csr_prodAx took %g seconds\n', T);
     end
 else
-    if DEBUG; T = MMPI_Wtime; end
+    if DEBUG; T = MACC_get_wtime; end
     %% Compute b=A'*x
     [jstart, jend] = get_local_chunk(A.ncols);
     for j=jstart:jend
@@ -122,7 +122,7 @@ else
         end
     end
     if DEBUG
-        T = MMPI_Wtime-T;
+        T = MACC_get_wtime-T;
         if nargin>3; MACC_begin_master; end
         msg_printf( 'csr_prodAx took %g seconds\n', T);
         if nargin>3; MACC_end_master; end
@@ -146,17 +146,17 @@ function test %#ok<DEFNU>
 %! A = crs_matrix( sp); x=rand(size(sp,1),2);
 %! b0 = sp'*x;
 %! b1 = crs_prodAtx( A, x);
-%! assert( norm(b0-b1)<=1.e-12);
+%! assert( norm(b0-b1)<=1.e-10);
 %! b2 = zeros(size(sp,2),2);
 %! b2 = crs_prodAtx( A, x, b2, int32(2));
-%! assert( norm(b0-b2)<=1.e-12);
+%! assert( norm(b0-b2)<=1.e-10);
 %
 %! if ~MMPI_Initialized; MMPI_Init; end
 %! nprocs = double(MMPI_Comm_size(MPI_COMM_WORLD));
-%! b2 = crs_prodAtx( A, x, b2, MACC_get_max_threads, MPI_COMM_WORLD);
-%! assert( nprocs>1 || norm(b0-b2)<=1.e-12);
+%! b2 = crs_prodAtx( A, x, b2, int32(1), MPI_COMM_WORLD);
+%! assert( nprocs>1 || norm(b0-b2)<=1.e-10);
 
 %! b3 = zeros(size(sp,2)+1,1);
-%! b3 = crs_prodAtx( A, x(:,1), b3, MACC_get_max_threads, MPI_COMM_WORLD, 1, int32(1));
-%! assert( nprocs>1 || norm(b0(:,1)-b3(1:end-1))<=1.e-12);
+%! b3 = crs_prodAtx( A, x(:,1), b3, int32(1), MPI_COMM_WORLD, 1, int32(1));
+%! assert( nprocs>1 || norm(b0(:,1)-b3(1:end-1))<=1.e-10);
 %! assert( b3(end)==nprocs);

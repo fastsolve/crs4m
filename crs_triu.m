@@ -1,8 +1,8 @@
 function [row_ptr, col_ind, val] = crs_triu(row_ptr, col_ind, val)
 % Obtain upper-triangular part of matrix in compressed-row format.
 
-%#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-%#codegen coder.typeof(0, [inf,1]}
+% %#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
+% %#codegen coder.typeof(0, [inf,1]}
 
 assert(nargin==nargout && nargin>=2);
 

@@ -1,8 +1,8 @@
 function [col_ind, val] = crs_sortColInd(row_ptr, col_ind, val)
 % Sort column indices within each row
 
-%#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-%#codegen coder.typeof(0, [inf,1]}
+% %#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
+% %#codegen coder.typeof(0, [inf,1]}
 
 assert(nargin==nargout+1 && nargin>=2);
 

@@ -4,9 +4,9 @@ function [C_rowptr,C_colind,C_val] = crs_prodMatMat(A_rowptr,A_colind,A_val,...
 % Matrix A is NxM, Matrix B is MxL, and C is NxL.
 % Algorithm is based on SMMP (http://www.netlib.org/aicm/smmp).
 
-%#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-%#codegen coder.typeof(0, [inf,1]), coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-%#codegen coder.typeof(0, [inf,1]),int32(0),int32(0),int32(0)}
+% %#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
+% %#codegen coder.typeof(0, [inf,1]), coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
+% %#codegen coder.typeof(0, [inf,1]),int32(0),int32(0),int32(0)}
 
 
 %The whole process contains three steps

@@ -6,7 +6,7 @@ function b = crs_prodAx(A, x, b, nthreads, varargin)
 % Computes b=A*x in serial.
 %
 %      b = crs_prodAx( A, x, b, nthreads)
-% Computes b=A*x using nthreads OpenMP threads, where nthreads is an int32.
+% Computes b=A*x Testing nthreads OpenMP threads, where nthreads is an int32.
 % In this mode, there are implicit barriers in the function.
 %
 %      b = crs_prodAx( A, x, b, [])
@@ -47,11 +47,10 @@ coder.inline('never');
 
 DEBUG = true;
 
-iend = A.nrows;
 if nargin==2;
-    b = nullcopy(zeros(iend,size(x,2)));
+    b = nullcopy(zeros(A.nrows,size(x,2)));
 else
-    if size(b,1)<iend || size(b,2)<size(x,2)
+    if size(b,1)<A.nrows || size(b,2)<size(x,2)
         msg_error('prodAx:BufferTooSmal', 'Buffer space for output b is too small.');
     end
 end
@@ -65,51 +64,33 @@ if nargin>3 && ~isempty(nthreads)
             'You are trying to use nested parallel regions. Solution may be incorrect.');
         MACC_end_master
     end
-    if DEBUG; T = MMPI_Wtime; end
-    i = int32(0); j = int32(0); k = int32(0); n = int32(0); t = 0;
+    if DEBUG; T = MACC_get_wtime; end
+    istart = int32(0); iend = int32(0);
 
-    [b, i, j, k, t, n, iend] = MACC_begin_parfor( b, i, j, k, n, t, iend);
-    MACC_clause_default('shared'); MACC_clause_private( i, j, k, n, t)
+    [b, istart, iend] = MACC_begin_parallel( b, istart, iend);
+    MACC_clause_default('shared'); MACC_clause_private( istart, iend)
     MACC_clause_num_threads( int32(nthreads));
     
     %% Compute b=A*x
-    for i=1:iend
-        for k=1:int32(size(x,2))
-            t = 0;
-            n = A.row_ptr(i+1) - 1;
-            for j = A.row_ptr(i) : n
-                t = t + A.val(j) * x(A.col_ind(j), k);
-            end
-            
-            b(i,k) = t;
-        end
-    end
+    [istart, iend] = get_local_chunk(A.nrows);
+    b = crs_prodAx_internal( A.row_ptr, A.col_ind, A.val, x, istart, iend, b);
     
     %% End parallel region
-    MACC_end_parfor;
+    MACC_end_parallel;
     if DEBUG
-        T = MMPI_Wtime-T;
+        T = MACC_get_wtime-T;
         msg_printf( 'csr_prodAx took %g seconds\n', T);
     end
 else
-    if DEBUG; T = MMPI_Wtime; end
+    if DEBUG; T = MACC_get_wtime; end
 
     %% Compute b=A*x
     % Decompose the work manually
-    [istart, iend] = get_local_chunk(iend);
-    for i=istart:iend
-        for k=1:int32(size(x,2))
-            t = 0;
-            n = A.row_ptr(i+1) - 1;
-            for j = A.row_ptr(i) : n
-                t = t + A.val(j) * x(A.col_ind(j), k);
-            end
-            b(i,k) = t;
-        end
-    end
+    [istart, iend] = get_local_chunk(A.nrows);
+    b = crs_prodAx_internal( A.row_ptr, A.col_ind, A.val, x, istart, iend, b);
     
     if DEBUG
-        T = MMPI_Wtime-T;
+        T = MACC_get_wtime-T;
         if nargin>3; MACC_begin_master; end
         msg_printf( 'csr_prodAx took %g seconds\n', T);
         if nargin>3; MACC_end_master; end
@@ -127,23 +108,63 @@ if ~isempty(varargin)
     MACC_end_single
 end
 
+function b = crs_prodAx_internal( row_ptr, col_ind, val, x, istart, iend, b)
+
+if isempty( coder.target)
+    for i=istart:iend
+        for k=1:int32(size(x,2))
+            t = 0.0;
+            for j=row_ptr(i):row_ptr(i+1)-1
+                t = t + val(j)*x(col_ind(j),k);
+            end
+            b(i,k) = t;
+        end
+    end
+else
+    coder.inline('never');
+    coder.cinclude('spalab_kernel.h');
+    
+    if isa( val, 'double'); func = 'SPL_ddotprod'; 
+    else func = 'SPL_sdotprod'; end
+
+    for i=istart:iend
+        for k=1:int32(size(x,2))
+            b(i,k) = coder.ceval( func, coder.rref(val( row_ptr(i))), ...
+                coder.rref( col_ind(row_ptr(i))), coder.rref(x(1,k)), ...
+                row_ptr(i+1) - row_ptr(i));
+        end
+    end
+end
+
 function test %#ok<DEFNU>
 %!test
-%! sp = sprand(1000,200,0.5); 
-%! A = crs_matrix(sp); x=rand(size(sp,2),2);
-%! b0 = sp*x;
+%! tic; sp = sprand(10000,2000,0.5); x=rand(size(sp,2),2);
+%! [is,js,vs] = find(sp); 
+%! fprintf(1, 'Generated random matrix in %g seconds\n', toc);
+%! tic; b0 = sp*x;
+%! fprintf(1, 'Computed reference solution in %g seconds\n', toc);
+%! tic; A = crs_matrix(int32(is), int32(js), vs, int32(size(sp,1)), int32(size(sp,2)));
+%! fprintf(1, 'Converted into crs_matrix in %g seconds\n', toc);
+%! fprintf(1, 'Testing serial: ');
 %! b1 = crs_prodAx( A, x);
 %! assert( norm(b0-b1)<=1.e-12);
+
 %! b2 = zeros(size(sp,1),2);
-%! b2 = crs_prodAx( A, x, b2, int32(2));
-%! assert( norm(b0-b2)<=1.e-12);
+%! for nthreads=int32([1 2 4 8])
+%!     if nthreads>MACC_get_max_threads; break; end
+%!     fprintf(1, 'Testing %d threads: ', nthreads);
+%!     b2 = crs_prodAx( A, x, b2, nthreads);
+%!     assert( norm(b0-b2)<=1.e-12);
+%! end
 
 %! if ~MMPI_Initialized; MMPI_Init; end
 %! nprocs = double(MMPI_Comm_size(MPI_COMM_WORLD));
-%! b2 = crs_prodAx( A, x, b2, MACC_get_max_threads, MPI_COMM_WORLD);
+%! fprintf(1, 'Testing 2 threads with MPI call: ');
+%! b2 = crs_prodAx( A, x, b2, int32(2), MPI_COMM_WORLD);
 %! assert( nprocs>1 || norm(b0-b2)<=1.e-12);
 
 %! b3 = zeros(size(sp,1)+1,1);
-%! b3 = crs_prodAx( A, x(:,1), b3, MACC_get_max_threads, MPI_COMM_WORLD, 1, int32(1));
+%! fprintf(1, 'Testing 2 threads with piggy-back: ');
+%! b3 = crs_prodAx( A, x(:,1), b3, int32(2), MPI_COMM_WORLD, 1, int32(1));
 %! assert( nprocs>1 || norm(b0(:,1)-b3(1:end-1))<=1.e-12);
 %! assert( b3(end)==nprocs);

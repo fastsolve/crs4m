@@ -2,8 +2,8 @@ function [x, num_its, nrm_res] = crs_cg( row_ptr, col_ind, val, y, x, maxit, tol
 % Conjugate Gradient Method for symmetric CRS sparse matrices in NumGeom.
 % Algorithm from Trefethen and Bau p. 294.
 
-%#codegen -args {coder.typeof(int32(0), [Inf,1]), coder.typeof(int32(0), [Inf, 1]), coder.typeof(double(0), [Inf, 1]),
-%#codegen coder.typeof(double(0), [Inf, 1]), coder.typeof(double(0), [Inf, 1]), int32(0), double(0)}
+% %#codegen -args {coder.typeof(int32(0), [Inf,1]), coder.typeof(int32(0), [Inf, 1]), coder.typeof(double(0), [Inf, 1]),
+% %#codegen coder.typeof(double(0), [Inf, 1]), coder.typeof(double(0), [Inf, 1]), int32(0), double(0)}
 
 for i=int32(1):length(x)
     x(i) = 0;

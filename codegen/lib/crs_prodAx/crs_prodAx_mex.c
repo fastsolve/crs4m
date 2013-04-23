@@ -106,7 +106,7 @@ void crs_prodAx_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx(&A, &x, &b, nthreads);
+    crs_prodAx(A, &x, &b, nthreads);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -202,7 +202,7 @@ void crs_prodAx_ser_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx_ser(&A, &x, &b);
+    crs_prodAx_ser(A, &x, &b);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -300,7 +300,7 @@ void crs_prodAx_ser1_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx_ser1(&A, &x, &b);
+    crs_prodAx_ser1(A, &x, &b);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -447,7 +447,7 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx_mpi(&A, &x, &b, nthreads, &comm);
+    crs_prodAx_mpi(A, &x, &b, nthreads, comm);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -602,7 +602,7 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx_mpip(&A, &x, &b, nthreads, &comm, &pbmsg);
+    crs_prodAx_mpip(A, &x, &b, nthreads, comm, &pbmsg);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -766,7 +766,7 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx_mpip1(&A, &x, &b, nthreads, &comm, &pbmsg, pbsz);
+    crs_prodAx_mpip1(A, &x, &b, nthreads, comm, &pbmsg, pbsz);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */

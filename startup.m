@@ -48,5 +48,5 @@ addpath(pwd); %#ok<*MCAP>
 addpath([pwd '/util']); %#ok<*MCAP>
 
 if ~exist(['crs_prodAx.' mexext], 'file')
-    build_sl
+    %build_sl
 end

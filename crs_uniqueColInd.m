@@ -2,8 +2,8 @@ function [row_ptr, col_ind, val] = crs_uniqueColInd(row_ptr, col_ind, val)
 % Make column indices unique within each row. Values with duplicae entries
 %  are added together.
 
-%#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-%#codegen coder.typeof(0, [inf,1]}
+% %#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
+% %#codegen coder.typeof(0, [inf,1]}
 
 assert(nargin==nargout && nargin>=2);
 

@@ -5,8 +5,8 @@ function y = crs_prodSymmatVec(row_ptr, col_ind, val, x, y)
 
 % See http://www.netlib.org/linalg/html_templates/node98.html
 
-%#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-%#codegen coder.typeof(0, [inf,1]), coder.typeof(0, [inf,1]), coder.typeof(0, [inf,1])}
+% %#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
+% %#codegen coder.typeof(0, [inf,1]), coder.typeof(0, [inf,1]), coder.typeof(0, [inf,1])}
 
 if nargin<5; y=nullcopy(zeros(size(x))); end
 
