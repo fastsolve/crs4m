@@ -1,4 +1,4 @@
-function [row_ptr, col_ind, val] = crs_uniqueColInd(row_ptr, col_ind, val)
+function [row_ptr, col_ind, val] = crs_unique(row_ptr, col_ind, val)
 % Make column indices unique within each row. Values with duplicae entries
 %  are added together.
 
@@ -8,9 +8,9 @@ function [row_ptr, col_ind, val] = crs_uniqueColInd(row_ptr, col_ind, val)
 assert(nargin==nargout && nargin>=2);
 
 if nargin==2
-    col_ind = crs_sortColInd(row_ptr, col_ind);
+    col_ind = crs_sort(row_ptr, col_ind);
 else
-    [col_ind, val] = crs_sortColInd(row_ptr, col_ind, val);
+    [col_ind, val] = crs_sort(row_ptr, col_ind, val);
 end
 
 offset = int32(0);

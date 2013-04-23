@@ -7,9 +7,9 @@ function [row_ptr, col_ind, val] = crs_triu(row_ptr, col_ind, val)
 assert(nargin==nargout && nargin>=2);
 
 if nargin==2
-    col_ind = crs_sortColInd(row_ptr, col_ind);
+    col_ind = crs_sort(row_ptr, col_ind);
 else
-    [col_ind, val] = crs_sortColInd(row_ptr, col_ind, val);
+    [col_ind, val] = crs_sort(row_ptr, col_ind, val);
 end
 
 offset = int32(0);

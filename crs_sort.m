@@ -1,8 +1,11 @@
-function [col_ind, val] = crs_sortColInd(row_ptr, col_ind, val)
-% Sort column indices within each row
+function [col_ind, val] = crs_sort(row_ptr, col_ind, val)
+%crs_sort  Sort column indices within each row..
+%  [col_ind, val] = crs_sort(row_ptr, col_ind, val)
 
-% %#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-% %#codegen coder.typeof(0, [inf,1]}
+%#codegen -args {coder.typeof(int32(0), [inf,1]),
+%#codegen coder.typeof(int32(0), [inf,1]), coder.typeof(0, [inf,1])}
+%#codegen crs_sort0 -args {coder.typeof(int32(0), [inf,1]),
+%#codegen coder.typeof(int32(0), [inf, 1])}
 
 assert(nargin==nargout+1 && nargin>=2);
 
@@ -14,8 +17,8 @@ for i=1:int32(length(row_ptr))-1
             break;
         end
     end
-
-    if ~ascend 
+    
+    if ~ascend
         if nargin==3
             % copy data into buffer
             buf_indx = nullcopy( zeros(row_ptr(i+1)-row_ptr(i),1,'int32'));
@@ -28,7 +31,7 @@ for i=1:int32(length(row_ptr))-1
             end
             
             % sort in place
-            [buf_indx, buf_val] = tagged_heapsort(buf_indx, buf_val);
+            [buf_indx, buf_val] = heapsort_tag(buf_indx, buf_val);
             
             % copy data bacl fom buffer
             ind = 1;
@@ -42,17 +45,17 @@ for i=1:int32(length(row_ptr))-1
             buf_indx = nullcopy( zeros(row_ptr(i+1)-row_ptr(i),1,'int32'));
             ind = 1;
             for j=row_ptr(i) : row_ptr(i+1)-1
-                buf_indx(ind) = col_ind(j); 
+                buf_indx(ind) = col_ind(j);
                 ind=ind+1;
             end
             
             % sort in place
-            buf_indx = sort(buf_indx);
+            buf_indx = heapsort(buf_indx);
             
             % copy data bacl fom buffer
             ind = 1;
             for j=row_ptr(i) : row_ptr(i+1)-1
-                col_ind(j) = buf_indx(ind); 
+                col_ind(j) = buf_indx(ind);
                 ind=ind+1;
             end
         end
