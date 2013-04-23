@@ -8,7 +8,7 @@ function [row_ptr, col_ind, val] = crs_transpose(row_ptr, col_ind, val)
 %#codegen coder.typeof(0,[inf,1])}
 
 At_rowind = col_ind;
-At_colind = crs_obtainRowInd(row_ptr, col_ind);
+At_colind = crs_rowind(row_ptr, col_ind);
 
 % Exchange row and col_ind.
-[row_ptr, col_ind, val] = crs_createFromAIJ( At_rowind, At_colind, val);
+[row_ptr, col_ind, val] = crs_create( At_rowind, At_colind, val);
