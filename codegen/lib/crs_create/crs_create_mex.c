@@ -18,8 +18,8 @@
 
 void crs_create_api(const mxArray ** prhs, const mxArray **plhs) {
 
-    emxArray_int32_T     is;
-    emxArray_int32_T     js;
+    emxArray_int32_T     rows;
+    emxArray_int32_T     cols;
     emxArray_real_T      vs;
 
     struct_T             A;
@@ -28,12 +28,12 @@ void crs_create_api(const mxArray ** prhs, const mxArray **plhs) {
     /* Marshall in function inputs */
     if ( mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create:WrongInputType",
-            "Input argument is has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&is, "is", 1);
+            "Input argument rows has incorrect data type. int32 is expected.");
+    alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&rows, "rows", 1);
     if ( mxGetClassID(prhs[1]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create:WrongInputType",
-            "Input argument js has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&js, "js", 1);
+            "Input argument cols has incorrect data type. int32 is expected.");
+    alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&cols, "cols", 1);
     if ( mxGetClassID(prhs[2]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_create:WrongInputType",
             "Input argument vs has incorrect data type. double is expected.");
@@ -46,7 +46,7 @@ void crs_create_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Invoke the target function */
     crs_create_initialize();
-    crs_create(&is, &js, &vs, &A);
+    crs_create(&rows, &cols, &vs, &A);
     crs_create_terminate();
 
     /* Marshall out function outputs */
@@ -60,8 +60,8 @@ void crs_create_api(const mxArray ** prhs, const mxArray **plhs) {
     mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 4, copy_scalar_to_mxArray(&A.ncols, mxINT32_CLASS));
 
     /* Free temporary variables */
-    free_emxArray( (emxArray__common*)&is);
-    free_emxArray( (emxArray__common*)&js);
+    free_emxArray( (emxArray__common*)&rows);
+    free_emxArray( (emxArray__common*)&cols);
     free_emxArray( (emxArray__common*)&vs);
     free_emxArray( (emxArray__common*)A.val); mxFree( A.val);
     free_emxArray( (emxArray__common*)A.col_ind); mxFree( A.col_ind);

@@ -1,12 +1,13 @@
 function varargout = crs_matrix( varargin) %#codegen
 %crs_matrix  Create a sparse matrix in CRS-format from a matrix sp
 %
-%    [row_ptr, col_ind, val, nrows, ncols] = crs_matrix( is, js, vs [, nrows , ncols]);
 %    A = crs_matrix( is, js, vs [, nrows, ncols]);
-% In the second case, A is a struct with fields row_ptr, col_ind, val, nrows, and ncols.
+%    [row_ptr, col_ind, val, nrows, ncols] = crs_matrix( ...);
+% In the first case, A is a struct with fields row_ptr, col_ind, 
+% val, nrows, and ncols.
 %
-%    [row_ptr, col_ind, val, nrows, ncols] = crs_matrix( sp [, nrows [, ncols]]);
-%    A = crs_matrix( sp, [, nrows [, ncols]]);
+%    A = crs_matrix( sp, [, nrows, ncols]);
+%    [row_ptr, col_ind, val, nrows, ncols] = crs_matrix( ...);
 % This mode is incompatible with MATLAB Coder. It is provided
 % for convenience within MATALB.
 %
@@ -37,7 +38,7 @@ if nargout<=1
 else
     varargout{1} = A.row_ptr;
     varargout{2} = A.col_ind;
-    varargout{3} = A.val;
-    varargout{4} = A.nrows;
-    varargout{5} = A.ncols;
+    if nargout>3; varargout{3} = A.val; end
+    if nargout>4; varargout{4} = A.nrows; end
+    if nargout>5; varargout{5} = A.ncols; end
 end

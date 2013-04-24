@@ -51,7 +51,7 @@ if nargin==2;
     b = nullcopy(zeros(A.nrows,size(x,2)));
 else
     if size(b,1)<A.nrows || size(b,2)<size(x,2)
-        msg_error('prodAx:BufferTooSmal', 'Buffer space for output b is too small.');
+        msg_error('crs_prodAx:BufferTooSmal', 'Buffer space for output b is too small.');
     end
 end
 ismt = nargin>=4 && MACC_get_num_threads>1;
@@ -60,7 +60,7 @@ if nargin>3 && ~isempty(nthreads)
     %% Declare parallel region
     if ~MACC_get_nested && ismt && nthreads>1
         MACC_begin_master
-        msg_warn('prodAx:NestedParallel', ...
+        msg_warn('crs_prodAx:NestedParallel', ...
             'You are trying to use nested parallel regions. Solution may be incorrect.');
         MACC_end_master
     end
@@ -79,7 +79,7 @@ if nargin>3 && ~isempty(nthreads)
     MACC_end_parallel;
     if DEBUG
         T = MACC_get_wtime-T;
-        msg_printf( 'csr_prodAx took %g seconds\n', T);
+        msg_printf( 'crs_prodAx took %g seconds\n', T);
     end
 else
     if DEBUG; T = MACC_get_wtime; end
@@ -92,7 +92,7 @@ else
     if DEBUG
         T = MACC_get_wtime-T;
         if nargin>3; MACC_begin_master; end
-        msg_printf( 'csr_prodAx took %g seconds\n', T);
+        msg_printf( 'crs_prodAx took %g seconds\n', T);
         if nargin>3; MACC_end_master; end
     end
 
@@ -124,8 +124,8 @@ else
     coder.inline('never');
     coder.cinclude('spalab_kernel.h');
     
-    if isa( val, 'double'); func = 'SPL_ddotprod'; 
-    else func = 'SPL_sdotprod'; end
+    if isa( val, 'double'); func = 'SPL_ddot'; 
+    else func = 'SPL_sdot'; end
 
     for i=istart:iend
         for k=1:int32(size(x,2))
@@ -138,7 +138,12 @@ end
 
 function test %#ok<DEFNU>
 %!test
-%! tic; sp = sprand(10000,2000,0.5); x=rand(size(sp,2),2);
+%! if ~exist( ['crs_prodAx.' mexext], 'file')
+%!    m=100; n = 20;
+%! else
+%!    m=10000; n = 2000;
+%! end
+%! tic; sp = sprand(m,n,0.5); x=rand(size(sp,2),2);
 %! [is,js,vs] = find(sp); 
 %! fprintf(1, 'Generated random matrix in %g seconds\n', toc);
 %! tic; b0 = sp*x;

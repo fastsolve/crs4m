@@ -8,11 +8,14 @@ function b = crs_prodAtx( A, x, b, nthreads, varargin)
 %      b = crs_prodAtx( A, x, b, nthreads)
 % Computes b=A'*x using nthreads OpenMP threads, where nthreads is an int32.
 % In this mode, there are implicit barriers in the function.
+% Note that size(b,1) should be >= A.ncols*nthreads to facilitate 
+% concurrency. Otherwise, nthreads will be reduced to size(b,1)/size(A,2).
 %
 %      b = crs_prodAtx( A, x, b, [])
 % Computes b=A'*x locally within each OpenMP thread, assuming the
 % parallel region has already been initialized. The argument b has
-% been preallocated. In this mode, there is no implicit barrier.
+% been preallocated, and size(b,1) must be >= A.ncols*nthreads.
+% In this mode, there is no implicit barrier.
 %
 %      b = crs_prodAtx( A, x, b, nthreads, comm)
 % also performs communication within the MPI communicator.
@@ -47,7 +50,6 @@ coder.inline('never');
 
 DEBUG = true;
 
-iend = A.nrows;
 if nargin==2;
     b = nullcopy( zeros(A.ncols,size(x,2)));
 else
@@ -61,77 +63,72 @@ if nargin>3 && ~isempty(nthreads)
     %% Declare parallel region
     if ~MACC_get_nested && ismt && nthreads>1
         MACC_begin_master
-        msg_warn('prodAx:NestedParallel', ...
+        msg_warn('crs_prodAtx:NestedParallel', ...
             'You are trying to use nested parallel regions. Solution may be incorrect.');
         MACC_end_master
     end
     
     if DEBUG; T = MACC_get_wtime; end
-    i = int32(0); j = int32(0); k = int32(0); n = int32(0);
     
-    [b, i, j, k, n, iend] = MACC_begin_parallel( b, i, j, k, n, iend);
-    MACC_clause_default('shared'); MACC_clause_private( i, j, k, n)
+    % Restrict threads
+    nthreads = min(nthreads, int32(floor(double(size(b,1))/double(A.ncols))));
+    
+    istart = int32(0); iend=int32(0);
+    [b, istart, iend] = MACC_begin_parallel(b, istart, iend);
+    MACC_clause_default('shared'); MACC_clause_private( istart, iend)
     MACC_clause_num_threads( int32(nthreads));
-
-    MACC_begin_for
-    for j=1:A.ncols
-        for k=1:int32(size(x,2))
-            b(j,k) = 0;
-        end
-    end
-    MACC_end_for
     
-    %% Compute b=A'*x
-    MACC_begin_for
-    for i=1:iend
-        n = A.row_ptr(i+1) - 1;
-        for j = A.row_ptr(i) : n
-            for k=1:int32(size(x,2))
-                MACC_atomic;
-                b(A.col_ind(j), k) = b(A.col_ind(j), k) + A.val(j) * x(i, k);
-            end
-        end
+    %% Compute b=A'*x on each thread
+    [istart, iend] = get_local_chunk(A.nrows);
+    b = crs_prodAtx_internal( A.row_ptr, A.col_ind, A.val, ...
+        x, istart, iend, b, MACC_get_thread_num*A.ncols, A.ncols);
+    
+    %% Perfom summation of partial sums in b
+    if nthreads>1
+        MACC_barrier;
+        [istart, iend] = get_local_chunk(A.ncols, [], nthreads);
+        b = accu_partsum( b, istart, iend, nthreads, A.ncols);
     end
-    MACC_end_for
+    
     MACC_end_parallel
     
     if DEBUG
         T = MACC_get_wtime-T;
-        msg_printf( 'csr_prodAx took %g seconds\n', T);
+        msg_printf( 'crs_prodAtx took %g seconds\n', T);
     end
 else
     if DEBUG; T = MACC_get_wtime; end
     %% Compute b=A'*x
-    [jstart, jend] = get_local_chunk(A.ncols);
-    for j=jstart:jend
-        for k=1:int32(size(x,2))
-            b(j,k) = 0;
-        end
-    end
-    if nargin>3; MACC_barrier; end
-
     % Decompose the work manually
-    [istart, iend] = get_local_chunk(A.nrows);
-    for i=istart:iend
-        n = A.row_ptr(i+1) - 1;
-        for j = A.row_ptr(i) : n
-            for k=1:int32(size(x,2))
-                if nargin>3; MACC_atomic; end
-                b(A.col_ind(j), k) = b(A.col_ind(j), k) + A.val(j) * x(i, k);
-            end
-        end
+    nthreads = MACC_get_num_threads;
+    if nargin>3 
+        nthreads = min(nthreads, ...
+            int32(floor(double(size(b,1))/double(A.ncols))));
     end
+    
+    [istart, iend] = get_local_chunk(A.nrows, [], nthreads);
+    
+    b = crs_prodAtx_internal( A.row_ptr, A.col_ind, A.val, ...
+        x, istart, iend, b, MACC_get_thread_num*A.ncols, A.ncols);
+    
+    if nthreads>1
+        %% Perfom summation of partial sums in b
+        MACC_barrier;
+        [istart, iend] = get_local_chunk(A.ncols, [], nthreads);
+        b = accu_partsum( b, istart, iend, nthreads, A.ncols);
+    end
+
     if DEBUG
         T = MACC_get_wtime-T;
         if nargin>3; MACC_begin_master; end
-        msg_printf( 'csr_prodAx took %g seconds\n', T);
+        msg_printf( 'crs_prodAtx took %g seconds\n', T);
         if nargin>3; MACC_end_master; end
     end
+    
+    if ~isempty(varargin) && ismt; MACC_barrier; end
 end
 
 if ~isempty(varargin)
-    if isempty(nthreads) && ismt; MACC_barrier; end
-    
     % Perform MPI allreduce
     MACC_begin_single
     s = int32(A.ncols*size(x,2));
@@ -139,24 +136,86 @@ if ~isempty(varargin)
     MACC_end_single
 end
 
-function test %#ok<DEFNU>
+function b = crs_prodAtx_internal( row_ptr, col_ind, val, x, ...
+    istart, iend, b, offset, ncols)
 
+if isempty( coder.target)
+    for k=1:int32(size(x,2))
+        for j=offset+1:offset+ncols; b(j,k) = 0; end
+        
+        for i=istart:iend
+            alpha = x(i, k);
+            n = row_ptr(i+1) - 1;
+            for j = row_ptr(i) : n
+                r = offset+col_ind(j);
+                b(r, k) = b(r, k) + alpha * val(j);
+            end
+        end
+    end
+else
+    coder.inline('never');
+    coder.cinclude('spalab_kernel.h');
+    
+    if isa( val, 'double'); func = 'SPL_daxpy';
+    else func = 'SPL_saxpy'; end
+    
+    for k=1:int32(size(x,2))
+        for j=offset+1:offset+ncols; b(j,k) = 0; end
+
+        for i=istart:iend
+            coder.ceval( func, x(i, k), coder.rref(val( row_ptr(i))), ...
+                coder.ref( b(offset+1,k)), coder.rref( col_ind(row_ptr(i))), ...
+                row_ptr(i+1)-row_ptr(i));
+        end
+    end
+end
+
+function b = accu_partsum( b, istart, iend, nthreads, ncols)
+for k=1:size(b,2)
+    offset = ncols;
+    for j=2:nthreads
+        for i=istart:iend
+            b(i,k) = b(i,k) + b(offset+i,k);
+        end
+        offset = offset + ncols;
+    end
+end
+
+function test %#ok<DEFNU>
 %!test
-%! sp = sprand(1000,200,0.5); 
-%! A = crs_matrix( sp); x=rand(size(sp,1),2);
-%! b0 = sp'*x;
+%! if ~exist( ['crs_prodAtx.' mexext], 'file')
+%!    m=100; n = 20;
+%! else
+%!    m=10000; n = 2000;
+%! end
+%! tic; sp = sprand(m,n,0.5); x=rand(size(sp,1),2);
+%! [is,js,vs] = find(sp);
+%! fprintf(1, 'Generated random matrix in %g seconds\n', toc);
+%! tic; b0 = sp'*x;
+%! fprintf(1, 'Computed reference solution in %g seconds\n', toc);
+%! tic; A = crs_matrix(int32(is), int32(js), vs, int32(size(sp,1)), int32(size(sp,2)));
+%! fprintf(1, 'Converted into crs_matrix in %g seconds\n', toc);
+%! fprintf(1, 'Testing serial: ');
 %! b1 = crs_prodAtx( A, x);
-%! assert( norm(b0-b1)<=1.e-10);
-%! b2 = zeros(size(sp,2),2);
-%! b2 = crs_prodAtx( A, x, b2, int32(2));
-%! assert( norm(b0-b2)<=1.e-10);
-%
+%! assert( norm(b0-b1)/norm(b0)<=1.e-10);
+
+%! for nthreads=int32([1 2 4 8])
+%!     if nthreads>MACC_get_max_threads; break; end
+%!     fprintf(1, 'Testing %d threads: ', nthreads);
+%!     b2 = zeros(size(sp,2)*nthreads,2);
+%!     b2 = crs_prodAtx( A, x, b2, nthreads);
+%!     assert( norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
+%! end
+
 %! if ~MMPI_Initialized; MMPI_Init; end
 %! nprocs = double(MMPI_Comm_size(MPI_COMM_WORLD));
-%! b2 = crs_prodAtx( A, x, b2, int32(1), MPI_COMM_WORLD);
-%! assert( nprocs>1 || norm(b0-b2)<=1.e-10);
+%! fprintf(1, 'Testing 2 threads with MPI call: ');
+%! b2 = zeros(size(sp,2)*2,2);
+%! b2 = crs_prodAtx( A, x, b2, int32(2), MPI_COMM_WORLD);
+%! assert( norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
 
-%! b3 = zeros(size(sp,2)+1,1);
-%! b3 = crs_prodAtx( A, x(:,1), b3, int32(1), MPI_COMM_WORLD, 1, int32(1));
-%! assert( nprocs>1 || norm(b0(:,1)-b3(1:end-1))<=1.e-10);
-%! assert( b3(end)==nprocs);
+%! b3 = zeros(2*size(sp,2)+1,1);
+%! fprintf(1, 'Testing 2 threads with piggy-back: ');
+%! b3 = crs_prodAtx( A, x(:,1), b3, int32(2), MPI_COMM_WORLD, 1, int32(1));
+%! assert( nprocs>1 || norm(b0(:,1)-b3(1:size(sp,2)))/norm(b0)<=1.e-10);
+%! assert( b3(size(sp,2)+1)==nprocs);

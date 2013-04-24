@@ -1,6 +1,6 @@
 % Build script for crs_create
 if ~isnewer( ['../../../crs_create.' mexext], 'crs_create_mex.c', 'crs_create.c')
-    if ~exist('dbopts.m', 'file'); dbopts = ''; end
+    if ~exist('dbopts.m', 'file'); dbopts = ' -O'; end
     dir = which('lib2mex'); dir=dir(1:end-10);
 
     [ompcflag, ompldflag] = ompflags;

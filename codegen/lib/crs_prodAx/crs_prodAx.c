@@ -306,7 +306,7 @@ static void crs_prodAx_internal(const emxArray_int32_T *row_ptr, const
   for (i = istart - 1; i + 1 <= iend; i++) {
     i1 = x->size[1];
     for (k = 0; k + 1 <= i1; k++) {
-      b->data[i + b->size[0] * k] = SPL_ddotprod(&val->data[row_ptr->data[i] - 1],
+      b->data[i + b->size[0] * k] = SPL_ddot(&val->data[row_ptr->data[i] - 1],
         &col_ind->data[row_ptr->data[i] - 1], &x->data[x->size[0] * k],
         row_ptr->data[i + 1] - row_ptr->data[i]);
     }
@@ -676,7 +676,7 @@ static void f_crs_prodAx(const emxArray_int32_T *A_row_ptr, const
 static void msg_error(void)
 {
   const char * msgid;
-  msgid = "prodAx:BufferTooSmal";
+  msgid = "crs_prodAx:BufferTooSmal";
   if (emlrtIsMATLABThread(emlrtRootTLSGlobal)) {
     mexErrMsgIdAndTxt(msgid, "Buffer space for output b is too small.");
   } else {
@@ -686,13 +686,13 @@ static void msg_error(void)
 
 static void msg_printf(real_T varargin_2)
 {
-  printf("csr_prodAx took %g seconds\n", varargin_2);
+  printf("crs_prodAx took %g seconds\n", varargin_2);
 }
 
 static void msg_warn(void)
 {
   const char * msgid;
-  msgid = "prodAx:NestedParallel";
+  msgid = "crs_prodAx:NestedParallel";
   if (emlrtIsMATLABThread(emlrtRootTLSGlobal)) {
     mexWarnMsgIdAndTxt(msgid,
                        "You are trying to use nested parallel regions. Solution may be incorrect.");

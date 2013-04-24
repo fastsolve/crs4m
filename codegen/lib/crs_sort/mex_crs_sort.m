@@ -1,6 +1,6 @@
 % Build script for crs_sort
 if ~isnewer( ['../../../crs_sort.' mexext], 'crs_sort_mex.c', 'crs_sort.c')
-    if ~exist('dbopts.m', 'file'); dbopts = ''; end
+    if ~exist('dbopts.m', 'file'); dbopts = ' -O'; end
     dir = which('lib2mex'); dir=dir(1:end-10);
 
     [ompcflag, ompldflag] = ompflags;

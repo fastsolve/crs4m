@@ -6,7 +6,7 @@
 
 #include "rtwtypes.h"
 #include "crs_create_types.h"
-extern void crs_create(const emxArray_int32_T *is, const emxArray_int32_T *js, const emxArray_real_T *vs, struct_T *A);
+extern void crs_create(const emxArray_int32_T *rows, const emxArray_int32_T *cols, const emxArray_real_T *vs, struct_T *A);
 extern void crs_create1(const emxArray_int32_T *is, const emxArray_int32_T *js, const emxArray_real_T *vs, int32_T ni, int32_T nj, struct_T *A);
 extern void crs_create_initialize(void);
 extern void crs_create_terminate(void);
