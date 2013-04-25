@@ -207,8 +207,7 @@ function test %#ok<DEFNU>
 %!     assert( norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
 %! end
 
-%! if ~MMPI_Initialized; MMPI_Init; end
-%! nprocs = double(MMPI_Comm_size(MPI_COMM_WORLD));
+%! nprocs = double(comm_size(MPI_COMM_WORLD));
 %! fprintf(1, 'Testing 2 threads with MPI call: ');
 %! b2 = zeros(size(sp,2)*2,2);
 %! b2 = crs_prodAtx( A, x, b2, int32(2), MPI_COMM_WORLD);
