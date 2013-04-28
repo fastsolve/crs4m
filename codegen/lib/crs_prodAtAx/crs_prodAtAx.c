@@ -2,28 +2,7 @@
 #include "spalab_kernel.h"
 #include "mpi.h"
 #include "omp.h"
-#include "stdio.h"
-#define M2C_OFFSET_PTR(a,b)            ((char *)a)+(b)
-#define MACC_BEGIN_REGION()            {
-#define MACC_END_REGION()              }
-#ifdef BUILD_MEX
-
-#include "mex.h"
-#define malloc                         mxMalloc
-#define calloc                         mxCalloc
-#define realloc                        mxRealloc
-#define free                           mxFree
-#define emlrtIsMATLABThread(s)         1
-#define M2C_CHK_OPAQUE_PTR(ptr,parent,offset) \
- if ((parent) && (ptr) != ((char*)mxGetData(parent))+(offset)) \
- mexErrMsgIdAndTxt("opaque_ptr:ParentObjectChanged", \
- "The parent mxArray has changed. Avoid changing a MATLAB variable when dereferenced by an opaque_ptr.");
-#else
-#define emlrtIsMATLABThread(s)         0
-#define mexErrMsgIdAndTxt(a,b)
-#define M2C_CHK_OPAQUE_PTR(ptr,parent,offset)
-#endif
-
+#include "m2c.h"
 #ifndef struct_emxArray__common
 #define struct_emxArray__common
 
@@ -61,7 +40,7 @@ static void b_crs_prodAtx(const emxArray_int32_T *A_row_ptr, const
 static void b_crs_prodAx(const emxArray_int32_T *A_row_ptr, const
   emxArray_int32_T *A_col_ind, const emxArray_real_T *A_val, int32_T A_nrows,
   const emxArray_real_T *x, emxArray_real_T *b);
-static void b_emxInit_real_T(emxArray_real_T **pEmxArray, int32_T numDimensions);
+static declare_emxInit(b_emxInit, real_T)
 static void b_get_local_chunk(int32_T m, int32_T varargin_2, int32_T *istart,
   int32_T *iend);
 static void b_msg_error(void);
@@ -107,16 +86,16 @@ static void e_crs_prodAtx(const emxArray_int32_T *A_row_ptr, const
   int32_T A_ncols, const emxArray_real_T *x, emxArray_real_T *b, MPI_Comm
   varargin_1, const emxArray_real_T *varargin_2, int32_T varargin_3);
 static void e_msg_error(const emxArray_char_T *varargin_3);
-static void emxEnsureCapacity(emxArray__common *emxArray, int32_T oldNumel,
+extern void emxEnsureCapacity(emxArray__common *emxArray, int32_T oldNumel,
   int32_T elementSize);
-static void emxFree_char_T(emxArray_char_T **pEmxArray);
-static void emxFree_int32_T(emxArray_int32_T **pEmxArray);
-static void emxFree_real_T(emxArray_real_T **pEmxArray);
-static void emxFree_uint8_T(emxArray_uint8_T **pEmxArray);
-static void emxInit_char_T(emxArray_char_T **pEmxArray, int32_T numDimensions);
-static void emxInit_int32_T(emxArray_int32_T **pEmxArray, int32_T numDimensions);
-static void emxInit_real_T(emxArray_real_T **pEmxArray, int32_T numDimensions);
-static void emxInit_uint8_T(emxArray_uint8_T **pEmxArray, int32_T numDimensions);
+extern void emxFree_char_T(emxArray_char_T **pEmxArray);
+extern void emxFree_int32_T(emxArray_int32_T **pEmxArray);
+extern void emxFree_real_T(emxArray_real_T **pEmxArray);
+extern void emxFree_uint8_T(emxArray_uint8_T **pEmxArray);
+extern void emxInit_char_T(emxArray_char_T **pEmxArray, int32_T numDimensions);
+extern void emxInit_int32_T(emxArray_int32_T **pEmxArray, int32_T numDimensions);
+extern void emxInit_real_T(emxArray_real_T **pEmxArray, int32_T numDimensions);
+extern void emxInit_uint8_T(emxArray_uint8_T **pEmxArray, int32_T numDimensions);
 static void f_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
   emxArray_int32_T *A_col_ind, const emxArray_real_T *A_val, int32_T A_nrows,
   int32_T A_ncols, const emxArray_real_T *x, emxArray_real_T *b, emxArray_real_T
@@ -270,21 +249,6 @@ static void b_crs_prodAx(const emxArray_int32_T *A_row_ptr, const
   crs_prodAx_internal(A_nrows, A_row_ptr, A_col_ind, A_val, x, b);
 }
 
-static void b_emxInit_real_T(emxArray_real_T **pEmxArray, int32_T numDimensions)
-{
-  emxArray_real_T *emxArray;
-  int32_T i;
-  *pEmxArray = (emxArray_real_T *)malloc(sizeof(emxArray_real_T));
-  emxArray = *pEmxArray;
-  emxArray->data = (real_T *)NULL;
-  emxArray->numDimensions = numDimensions;
-  emxArray->size = (int32_T *)malloc((uint32_T)(sizeof(int32_T) * numDimensions));
-  emxArray->allocatedSize = 0;
-  emxArray->canFreeData = TRUE;
-  for (i = 0; i < numDimensions; i++) {
-    emxArray->size[i] = 0;
-  }
-}
 
 static void b_get_local_chunk(int32_T m, int32_T varargin_2, int32_T *istart,
   int32_T *iend)
@@ -372,11 +336,11 @@ static void c_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    MACC_BEGIN_REGION(/*omp master*/)
+    M2C_BEGIN_REGION(/*omp master*/)
 
     msg_error();
 
-    MACC_END_REGION(/*omp master*/)
+    M2C_END_REGION(/*omp master*/)
 
   }
 
@@ -429,12 +393,12 @@ static void c_crs_prodAtx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp single
 
-  MACC_BEGIN_REGION(/*omp single*/)
+  M2C_BEGIN_REGION(/*omp single*/)
 
   allreduce(b, (int32_T)rt_roundd((real_T)A_ncols * (real_T)x->size[1]), MPI_SUM,
             varargin_1);
 
-            MACC_END_REGION(/*omp single*/)
+            M2C_END_REGION(/*omp single*/)
 
 }
 
@@ -556,11 +520,11 @@ static void d_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    MACC_BEGIN_REGION(/*omp master*/)
+    M2C_BEGIN_REGION(/*omp master*/)
 
     msg_error();
 
-    MACC_END_REGION(/*omp master*/)
+    M2C_END_REGION(/*omp master*/)
 
   }
 
@@ -568,11 +532,11 @@ static void d_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    MACC_BEGIN_REGION(/*omp master*/)
+    M2C_BEGIN_REGION(/*omp master*/)
 
     b_msg_error();
 
-    MACC_END_REGION(/*omp master*/)
+    M2C_END_REGION(/*omp master*/)
 
   }
 
@@ -584,16 +548,16 @@ static void d_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-      MACC_BEGIN_REGION(/*omp master*/)
+      M2C_BEGIN_REGION(/*omp master*/)
 
       msg_warn();
 
-      MACC_END_REGION(/*omp master*/)
+      M2C_END_REGION(/*omp master*/)
 
     }
 
 #pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    MACC_BEGIN_REGION(/*omp parallel*/)
+    M2C_BEGIN_REGION(/*omp parallel*/)
 
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
 
@@ -602,7 +566,7 @@ static void d_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
     c_crs_prodAtx(A_row_ptr, A_col_ind, A_val, A_nrows, A_ncols, Ax, b,
                   varargin_1);
 
-                  MACC_END_REGION(/*omp parallel*/)
+                  M2C_END_REGION(/*omp parallel*/)
 
   } else if (b2) {
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
@@ -648,12 +612,12 @@ static void d_crs_prodAtx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp single
 
-  MACC_BEGIN_REGION(/*omp single*/)
+  M2C_BEGIN_REGION(/*omp single*/)
 
   b_allreduce(b, (int32_T)rt_roundd((real_T)A_ncols * (real_T)x->size[1]),
               MPI_SUM, varargin_1, varargin_2);
 
-              MACC_END_REGION(/*omp single*/)
+              M2C_END_REGION(/*omp single*/)
 
 }
 
@@ -680,11 +644,11 @@ static void e_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    MACC_BEGIN_REGION(/*omp master*/)
+    M2C_BEGIN_REGION(/*omp master*/)
 
     msg_error();
 
-    MACC_END_REGION(/*omp master*/)
+    M2C_END_REGION(/*omp master*/)
 
   }
 
@@ -692,11 +656,11 @@ static void e_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    MACC_BEGIN_REGION(/*omp master*/)
+    M2C_BEGIN_REGION(/*omp master*/)
 
     b_msg_error();
 
-    MACC_END_REGION(/*omp master*/)
+    M2C_END_REGION(/*omp master*/)
 
   }
 
@@ -708,16 +672,16 @@ static void e_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-      MACC_BEGIN_REGION(/*omp master*/)
+      M2C_BEGIN_REGION(/*omp master*/)
 
       msg_warn();
 
-      MACC_END_REGION(/*omp master*/)
+      M2C_END_REGION(/*omp master*/)
 
     }
 
 #pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    MACC_BEGIN_REGION(/*omp parallel*/)
+    M2C_BEGIN_REGION(/*omp parallel*/)
 
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
 
@@ -726,7 +690,7 @@ static void e_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
     d_crs_prodAtx(A_row_ptr, A_col_ind, A_val, A_nrows, A_ncols, Ax, b,
                   varargin_1, varargin_2);
 
-                  MACC_END_REGION(/*omp parallel*/)
+                  M2C_END_REGION(/*omp parallel*/)
 
   } else if (b4) {
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
@@ -772,12 +736,12 @@ static void e_crs_prodAtx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp single
 
-  MACC_BEGIN_REGION(/*omp single*/)
+  M2C_BEGIN_REGION(/*omp single*/)
 
   c_allreduce(b, (int32_T)rt_roundd((real_T)A_ncols * (real_T)x->size[1]),
               MPI_SUM, varargin_1, varargin_2, varargin_3);
 
-              MACC_END_REGION(/*omp single*/)
+              M2C_END_REGION(/*omp single*/)
 
 }
 
@@ -820,161 +784,14 @@ static void e_msg_error(const emxArray_char_T *varargin_3)
   emxFree_char_T(&b_varargin_3);
 }
 
-static void emxEnsureCapacity(emxArray__common *emxArray, int32_T oldNumel,
-  int32_T elementSize)
-{
-  int32_T newNumel;
-  int32_T i;
-  void *newData;
-  newNumel = 1;
-  for (i = 0; i < emxArray->numDimensions; i++) {
-    newNumel *= emxArray->size[i];
-  }
-
-  if (newNumel > emxArray->allocatedSize) {
-    if (emxArray->allocatedSize==0)
-      i = newNumel;
-    else {
-      i = emxArray->allocatedSize;
-      if (i < 16) {
-        i = 16;
-      }
-
-      while (i < newNumel) {
-        i <<= 1;
-      }
-    }
-
-    newData = calloc((uint32_T)i, (uint32_T)elementSize);
-    if (emxArray->data != NULL) {
-      memcpy(newData, emxArray->data, (uint32_T)(elementSize * oldNumel));
-      if (emxArray->canFreeData) {
-        free(emxArray->data);
-      }
-    }
-
-    emxArray->data = newData;
-    emxArray->allocatedSize = i;
-    emxArray->canFreeData = TRUE;
-  }
-}
 
 
-static void emxFree_char_T(emxArray_char_T **pEmxArray)
-{
-  if (*pEmxArray != (emxArray_char_T *)NULL) {
-    if ((*pEmxArray)->canFreeData) {
-      free((void *)(*pEmxArray)->data);
-    }
 
-    free((void *)(*pEmxArray)->size);
-    free((void *)*pEmxArray);
-    *pEmxArray = (emxArray_char_T *)NULL;
-  }
-}
 
-static void emxFree_int32_T(emxArray_int32_T **pEmxArray)
-{
-  if (*pEmxArray != (emxArray_int32_T *)NULL) {
-    if ((*pEmxArray)->canFreeData) {
-      free((void *)(*pEmxArray)->data);
-    }
 
-    free((void *)(*pEmxArray)->size);
-    free((void *)*pEmxArray);
-    *pEmxArray = (emxArray_int32_T *)NULL;
-  }
-}
 
-static void emxFree_real_T(emxArray_real_T **pEmxArray)
-{
-  if (*pEmxArray != (emxArray_real_T *)NULL) {
-    if ((*pEmxArray)->canFreeData) {
-      free((void *)(*pEmxArray)->data);
-    }
 
-    free((void *)(*pEmxArray)->size);
-    free((void *)*pEmxArray);
-    *pEmxArray = (emxArray_real_T *)NULL;
-  }
-}
 
-static void emxFree_uint8_T(emxArray_uint8_T **pEmxArray)
-{
-  if (*pEmxArray != (emxArray_uint8_T *)NULL) {
-    if ((*pEmxArray)->canFreeData) {
-      free((void *)(*pEmxArray)->data);
-    }
-
-    free((void *)(*pEmxArray)->size);
-    free((void *)*pEmxArray);
-    *pEmxArray = (emxArray_uint8_T *)NULL;
-  }
-}
-
-static void emxInit_char_T(emxArray_char_T **pEmxArray, int32_T numDimensions)
-{
-  emxArray_char_T *emxArray;
-  int32_T i;
-  *pEmxArray = (emxArray_char_T *)malloc(sizeof(emxArray_char_T));
-  emxArray = *pEmxArray;
-  emxArray->data = (char_T *)NULL;
-  emxArray->numDimensions = numDimensions;
-  emxArray->size = (int32_T *)malloc((uint32_T)(sizeof(int32_T) * numDimensions));
-  emxArray->allocatedSize = 0;
-  emxArray->canFreeData = TRUE;
-  for (i = 0; i < numDimensions; i++) {
-    emxArray->size[i] = 0;
-  }
-}
-
-static void emxInit_int32_T(emxArray_int32_T **pEmxArray, int32_T numDimensions)
-{
-  emxArray_int32_T *emxArray;
-  int32_T i;
-  *pEmxArray = (emxArray_int32_T *)malloc(sizeof(emxArray_int32_T));
-  emxArray = *pEmxArray;
-  emxArray->data = (int32_T *)NULL;
-  emxArray->numDimensions = numDimensions;
-  emxArray->size = (int32_T *)malloc((uint32_T)(sizeof(int32_T) * numDimensions));
-  emxArray->allocatedSize = 0;
-  emxArray->canFreeData = TRUE;
-  for (i = 0; i < numDimensions; i++) {
-    emxArray->size[i] = 0;
-  }
-}
-
-static void emxInit_real_T(emxArray_real_T **pEmxArray, int32_T numDimensions)
-{
-  emxArray_real_T *emxArray;
-  int32_T i;
-  *pEmxArray = (emxArray_real_T *)malloc(sizeof(emxArray_real_T));
-  emxArray = *pEmxArray;
-  emxArray->data = (real_T *)NULL;
-  emxArray->numDimensions = numDimensions;
-  emxArray->size = (int32_T *)malloc((uint32_T)(sizeof(int32_T) * numDimensions));
-  emxArray->allocatedSize = 0;
-  emxArray->canFreeData = TRUE;
-  for (i = 0; i < numDimensions; i++) {
-    emxArray->size[i] = 0;
-  }
-}
-
-static void emxInit_uint8_T(emxArray_uint8_T **pEmxArray, int32_T numDimensions)
-{
-  emxArray_uint8_T *emxArray;
-  int32_T i;
-  *pEmxArray = (emxArray_uint8_T *)malloc(sizeof(emxArray_uint8_T));
-  emxArray = *pEmxArray;
-  emxArray->data = (uint8_T *)NULL;
-  emxArray->numDimensions = numDimensions;
-  emxArray->size = (int32_T *)malloc((uint32_T)(sizeof(int32_T) * numDimensions));
-  emxArray->allocatedSize = 0;
-  emxArray->canFreeData = TRUE;
-  for (i = 0; i < numDimensions; i++) {
-    emxArray->size[i] = 0;
-  }
-}
 
 static void f_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
   emxArray_int32_T *A_col_ind, const emxArray_real_T *A_val, int32_T A_nrows,
@@ -988,11 +805,11 @@ static void f_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    MACC_BEGIN_REGION(/*omp master*/)
+    M2C_BEGIN_REGION(/*omp master*/)
 
     msg_error();
 
-    MACC_END_REGION(/*omp master*/)
+    M2C_END_REGION(/*omp master*/)
 
   }
 
@@ -1000,11 +817,11 @@ static void f_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    MACC_BEGIN_REGION(/*omp master*/)
+    M2C_BEGIN_REGION(/*omp master*/)
 
     b_msg_error();
 
-    MACC_END_REGION(/*omp master*/)
+    M2C_END_REGION(/*omp master*/)
 
   }
 
@@ -1016,16 +833,16 @@ static void f_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-      MACC_BEGIN_REGION(/*omp master*/)
+      M2C_BEGIN_REGION(/*omp master*/)
 
       msg_warn();
 
-      MACC_END_REGION(/*omp master*/)
+      M2C_END_REGION(/*omp master*/)
 
     }
 
 #pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    MACC_BEGIN_REGION(/*omp parallel*/)
+    M2C_BEGIN_REGION(/*omp parallel*/)
 
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
 
@@ -1034,7 +851,7 @@ static void f_crs_prodAtAx(const emxArray_int32_T *A_row_ptr, const
     e_crs_prodAtx(A_row_ptr, A_col_ind, A_val, A_nrows, A_ncols, Ax, b,
                   varargin_1, varargin_2, varargin_3);
 
-                  MACC_END_REGION(/*omp parallel*/)
+                  M2C_END_REGION(/*omp parallel*/)
 
   } else if (b6) {
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
@@ -1139,11 +956,11 @@ void crs_prodAtAx(const struct_T *A, const emxArray_real_T *x, emxArray_real_T
 
 #pragma omp master
 
-    MACC_BEGIN_REGION(/*omp master*/)
+    M2C_BEGIN_REGION(/*omp master*/)
 
     msg_error();
 
-    MACC_END_REGION(/*omp master*/)
+    M2C_END_REGION(/*omp master*/)
 
   }
 
@@ -1151,11 +968,11 @@ void crs_prodAtAx(const struct_T *A, const emxArray_real_T *x, emxArray_real_T
 
 #pragma omp master
 
-    MACC_BEGIN_REGION(/*omp master*/)
+    M2C_BEGIN_REGION(/*omp master*/)
 
     b_msg_error();
 
-    MACC_END_REGION(/*omp master*/)
+    M2C_END_REGION(/*omp master*/)
 
   }
 
@@ -1167,16 +984,16 @@ void crs_prodAtAx(const struct_T *A, const emxArray_real_T *x, emxArray_real_T
 
 #pragma omp master
 
-      MACC_BEGIN_REGION(/*omp master*/)
+      M2C_BEGIN_REGION(/*omp master*/)
 
       msg_warn();
 
-      MACC_END_REGION(/*omp master*/)
+      M2C_END_REGION(/*omp master*/)
 
     }
 
 #pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    MACC_BEGIN_REGION(/*omp parallel*/)
+    M2C_BEGIN_REGION(/*omp parallel*/)
 
     crs_prodAx(A->row_ptr, A->col_ind, A->val, A->nrows, x, Ax);
 
@@ -1184,7 +1001,7 @@ void crs_prodAtAx(const struct_T *A, const emxArray_real_T *x, emxArray_real_T
 
     crs_prodAtx(A->row_ptr, A->col_ind, A->val, A->nrows, A->ncols, Ax, b);
 
-    MACC_END_REGION(/*omp parallel*/)
+    M2C_END_REGION(/*omp parallel*/)
 
   } else if (b0) {
     crs_prodAx(A->row_ptr, A->col_ind, A->val, A->nrows, x, Ax);
@@ -1470,157 +1287,13 @@ void crs_prodAtAx_terminate(void)
 {
 }
 
-emxArray_char_T *emxCreateND_char_T(int32_T numDimensions, int32_T *size)
-{
-  emxArray_char_T *emx;
-  int32_T numEl;
-  int32_T i;
-  emxInit_char_T(&emx, numDimensions);
-  numEl = 1;
-  for (i = 0; i < numDimensions; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
 
-  emx->data = (char_T *)calloc((uint32_T)numEl, sizeof(char_T));
-  emx->numDimensions = numDimensions;
-  emx->allocatedSize = numEl;
-  return emx;
-}
 
-emxArray_int32_T *emxCreateND_int32_T(int32_T numDimensions, int32_T *size)
-{
-  emxArray_int32_T *emx;
-  int32_T numEl;
-  int32_T i;
-  emxInit_int32_T(&emx, numDimensions);
-  numEl = 1;
-  for (i = 0; i < numDimensions; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
 
-  emx->data = (int32_T *)calloc((uint32_T)numEl, sizeof(int32_T));
-  emx->numDimensions = numDimensions;
-  emx->allocatedSize = numEl;
-  return emx;
-}
 
-emxArray_real_T *emxCreateND_real_T(int32_T numDimensions, int32_T *size)
-{
-  emxArray_real_T *emx;
-  int32_T numEl;
-  int32_T i;
-  emxInit_real_T(&emx, numDimensions);
-  numEl = 1;
-  for (i = 0; i < numDimensions; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
 
-  emx->data = (real_T *)calloc((uint32_T)numEl, sizeof(real_T));
-  emx->numDimensions = numDimensions;
-  emx->allocatedSize = numEl;
-  return emx;
-}
 
-emxArray_uint8_T *emxCreateND_uint8_T(int32_T numDimensions, int32_T *size)
-{
-  emxArray_uint8_T *emx;
-  int32_T numEl;
-  int32_T i;
-  emxInit_uint8_T(&emx, numDimensions);
-  numEl = 1;
-  for (i = 0; i < numDimensions; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
 
-  emx->data = (uint8_T *)calloc((uint32_T)numEl, sizeof(uint8_T));
-  emx->numDimensions = numDimensions;
-  emx->allocatedSize = numEl;
-  return emx;
-}
-
-emxArray_char_T *emxCreateWrapperND_char_T(char_T *data, int32_T numDimensions,
-  int32_T *size)
-{
-  emxArray_char_T *emx;
-  int32_T numEl;
-  int32_T i;
-  emxInit_char_T(&emx, numDimensions);
-  numEl = 1;
-  for (i = 0; i < numDimensions; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
-
-  emx->data = data;
-  emx->numDimensions = numDimensions;
-  emx->allocatedSize = numEl;
-  emx->canFreeData = FALSE;
-  return emx;
-}
-
-emxArray_int32_T *emxCreateWrapperND_int32_T(int32_T *data, int32_T
-  numDimensions, int32_T *size)
-{
-  emxArray_int32_T *emx;
-  int32_T numEl;
-  int32_T i;
-  emxInit_int32_T(&emx, numDimensions);
-  numEl = 1;
-  for (i = 0; i < numDimensions; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
-
-  emx->data = data;
-  emx->numDimensions = numDimensions;
-  emx->allocatedSize = numEl;
-  emx->canFreeData = FALSE;
-  return emx;
-}
-
-emxArray_real_T *emxCreateWrapperND_real_T(real_T *data, int32_T numDimensions,
-  int32_T *size)
-{
-  emxArray_real_T *emx;
-  int32_T numEl;
-  int32_T i;
-  emxInit_real_T(&emx, numDimensions);
-  numEl = 1;
-  for (i = 0; i < numDimensions; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
-
-  emx->data = data;
-  emx->numDimensions = numDimensions;
-  emx->allocatedSize = numEl;
-  emx->canFreeData = FALSE;
-  return emx;
-}
-
-emxArray_uint8_T *emxCreateWrapperND_uint8_T(uint8_T *data, int32_T
-  numDimensions, int32_T *size)
-{
-  emxArray_uint8_T *emx;
-  int32_T numEl;
-  int32_T i;
-  emxInit_uint8_T(&emx, numDimensions);
-  numEl = 1;
-  for (i = 0; i < numDimensions; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
-
-  emx->data = data;
-  emx->numDimensions = numDimensions;
-  emx->allocatedSize = numEl;
-  emx->canFreeData = FALSE;
-  return emx;
-}
 
 emxArray_char_T *emxCreateWrapper_char_T(char_T *data, int32_T rows, int32_T
   cols)
@@ -1714,106 +1387,10 @@ emxArray_uint8_T *emxCreateWrapper_uint8_T(uint8_T *data, int32_T rows, int32_T
   return emx;
 }
 
-emxArray_char_T *emxCreate_char_T(int32_T rows, int32_T cols)
-{
-  emxArray_char_T *emx;
-  int32_T size[2];
-  int32_T numEl;
-  int32_T i;
-  size[0] = rows;
-  size[1] = cols;
-  emxInit_char_T(&emx, 2);
-  numEl = 1;
-  for (i = 0; i < 2; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
 
-  emx->data = (char_T *)calloc((uint32_T)numEl, sizeof(char_T));
-  emx->numDimensions = 2;
-  emx->allocatedSize = numEl;
-  return emx;
-}
 
-emxArray_int32_T *emxCreate_int32_T(int32_T rows, int32_T cols)
-{
-  emxArray_int32_T *emx;
-  int32_T size[2];
-  int32_T numEl;
-  int32_T i;
-  size[0] = rows;
-  size[1] = cols;
-  emxInit_int32_T(&emx, 2);
-  numEl = 1;
-  for (i = 0; i < 2; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
 
-  emx->data = (int32_T *)calloc((uint32_T)numEl, sizeof(int32_T));
-  emx->numDimensions = 2;
-  emx->allocatedSize = numEl;
-  return emx;
-}
 
-emxArray_real_T *emxCreate_real_T(int32_T rows, int32_T cols)
-{
-  emxArray_real_T *emx;
-  int32_T size[2];
-  int32_T numEl;
-  int32_T i;
-  size[0] = rows;
-  size[1] = cols;
-  emxInit_real_T(&emx, 2);
-  numEl = 1;
-  for (i = 0; i < 2; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
 
-  emx->data = (real_T *)calloc((uint32_T)numEl, sizeof(real_T));
-  emx->numDimensions = 2;
-  emx->allocatedSize = numEl;
-  return emx;
-}
 
-emxArray_uint8_T *emxCreate_uint8_T(int32_T rows, int32_T cols)
-{
-  emxArray_uint8_T *emx;
-  int32_T size[2];
-  int32_T numEl;
-  int32_T i;
-  size[0] = rows;
-  size[1] = cols;
-  emxInit_uint8_T(&emx, 2);
-  numEl = 1;
-  for (i = 0; i < 2; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
 
-  emx->data = (uint8_T *)calloc((uint32_T)numEl, sizeof(uint8_T));
-  emx->numDimensions = 2;
-  emx->allocatedSize = numEl;
-  return emx;
-}
-
-void emxDestroyArray_char_T(emxArray_char_T *emxArray)
-{
-  emxFree_char_T(&emxArray);
-}
-
-void emxDestroyArray_int32_T(emxArray_int32_T *emxArray)
-{
-  emxFree_int32_T(&emxArray);
-}
-
-void emxDestroyArray_real_T(emxArray_real_T *emxArray)
-{
-  emxFree_real_T(&emxArray);
-}
-
-void emxDestroyArray_uint8_T(emxArray_uint8_T *emxArray)
-{
-  emxFree_uint8_T(&emxArray);
-}
