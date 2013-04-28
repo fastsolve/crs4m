@@ -1,7 +1,7 @@
 %Test script for SpaLab
 
 % First, compile test scripts
-if exist( './test_sl.m', 'file')
+if exist( './test_spl.m', 'file')
     lines = grep_pattern( '../*.m', '\n%!test');
 else
     lines = grep_pattern( '*.m', '\n%!test');

@@ -1,7 +1,7 @@
 % Build script for crs_transp
 if ~isnewer( ['../../../crs_transp.' mexext], 'crs_transp_mex.c', 'crs_transp.c')
     if ~exist('dbopts.m', 'file'); dbopts = ' -O'; end
-    dir = which('lib2mex'); dir=dir(1:end-10);
+    dir = which('m2c.m'); dir=dir(1:end-6);
 
     [ompcflag, ompldflag] = ompflags;
     if exist('octave_config_info', 'builtin'); output = '-o'; else output = '-largeArrayDims -output'; end

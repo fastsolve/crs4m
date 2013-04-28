@@ -24,7 +24,7 @@ if nargin==0
 elseif issparse(varargin{1})
     [is,js,vs] = find(varargin{1});
     
-    A = crs_create( is, js, vs, varargin{2:end});
+    A = crs_create( int32(is), int32(js), vs, varargin{2:end});
 else
     is = int32(varargin{1});
     js = int32(varargin{2});
@@ -38,7 +38,7 @@ if nargout<=1
 else
     varargout{1} = A.row_ptr;
     varargout{2} = A.col_ind;
-    if nargout>3; varargout{3} = A.val; end
-    if nargout>4; varargout{4} = A.nrows; end
-    if nargout>5; varargout{5} = A.ncols; end
+    if nargout>2; varargout{3} = A.val; end
+    if nargout>3; varargout{4} = A.nrows; end
+    if nargout>4; varargout{5} = A.ncols; end
 end

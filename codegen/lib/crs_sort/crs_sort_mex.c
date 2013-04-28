@@ -25,17 +25,17 @@ void crs_sort_api(const mxArray ** prhs, const mxArray **plhs) {
 
 
     /* Marshall in function inputs */
-    if ( mxGetClassID(prhs[0]) != mxINT32_CLASS)
+    if ( mxGetData(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_sort:WrongInputType",
             "Input argument row_ptr has incorrect data type. int32 is expected.");
     alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&row_ptr, "row_ptr", 1);
     plhs[0] = mxDuplicateArray( prhs[1]);
-    if ( mxGetClassID(plhs[0]) != mxINT32_CLASS)
+    if ( mxGetData(plhs[0]) && mxGetClassID(plhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_sort:WrongInputType",
             "Input argument col_ind has incorrect data type. int32 is expected.");
     alias_mxArray_to_emxArray(plhs[0], (emxArray__common *)&col_ind, "col_ind", 1);
     plhs[1] = mxDuplicateArray( prhs[2]);
-    if ( mxGetClassID(plhs[1]) != mxDOUBLE_CLASS)
+    if ( mxGetData(plhs[1]) && mxGetClassID(plhs[1]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_sort:WrongInputType",
             "Input argument val has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(plhs[1], (emxArray__common *)&val, "val", 1);
@@ -64,12 +64,12 @@ void crs_sort0_api(const mxArray ** prhs, const mxArray **plhs) {
 
 
     /* Marshall in function inputs */
-    if ( mxGetClassID(prhs[0]) != mxINT32_CLASS)
+    if ( mxGetData(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_sort0:WrongInputType",
             "Input argument row_ptr has incorrect data type. int32 is expected.");
     alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&row_ptr, "row_ptr", 1);
     plhs[0] = mxDuplicateArray( prhs[1]);
-    if ( mxGetClassID(plhs[0]) != mxINT32_CLASS)
+    if ( mxGetData(plhs[0]) && mxGetClassID(plhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_sort0:WrongInputType",
             "Input argument col_ind has incorrect data type. int32 is expected.");
     alias_mxArray_to_emxArray(plhs[0], (emxArray__common *)&col_ind, "col_ind", 1);

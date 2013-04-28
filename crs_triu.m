@@ -1,45 +1,57 @@
-function [row_ptr, col_ind, val] = crs_triu(row_ptr, col_ind, val)
-% Obtain upper-triangular part of matrix in compressed-row format.
+function U = crs_triu( A, varargin)
+% CRS_TRIL   Extract upper triangular part.
+%   crs_triu(A) is the upper triangular part of A.
+%   triu(A,K) is the elements on and above the K-th diagonal
+%   of A.  K = 0 is the main diagonal, K > 0 is above the
+%   main diagonal and K < 0 is below the main diagonal.
+% 
+%   See also crs_tril, crs_diag.
 
-% %#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-% %#codegen coder.typeof(0, [inf,1]}
+%#codegen -args {crs_matrix} crs_triu1 -args {crs_matrix, int32(1)}
 
-assert(nargin==nargout && nargin>=2);
+if isempty(varargin); k = int32(0); 
+else k = int32(varargin{1}); end
 
-if nargin==2
-    col_ind = crs_sort(row_ptr, col_ind);
-else
-    [col_ind, val] = crs_sort(row_ptr, col_ind, val);
-end
+U = A;
+
+[U.col_ind, U.val] = crs_sort(U.row_ptr, U.col_ind, U.val);
 
 offset = int32(0);
 start = int32(1);
 
-for i=1:int32(length(row_ptr))-1
-    for j=start : row_ptr(i+1)-1
-        if col_ind(j)<i
+for i=1:U.nrows
+    for j=start : U.row_ptr(i+1)-1
+        if U.col_ind(j)<i+k
             offset = offset+1;
         elseif offset
-            col_ind( j-offset) = col_ind( j);
-            if nargin>2; val(j-offset) = val(j); end
+            U.col_ind( j-offset) = U.col_ind( j);
+            U.val(j-offset) = U.val(j);
         end
     end
     
-    start = row_ptr(i+1);
-    row_ptr(i+1) = row_ptr(i+1) - offset;
+    start = U.row_ptr(i+1);
+    U.row_ptr(i+1) = U.row_ptr(i+1) - offset;
 end
 
 if offset
-    newlen = int32(length(col_ind))-offset;
-    col_ind = sub_colvec( col_ind, 1, newlen);
-    if nargin>2; val = sub_colvec( val, 1, newlen); end
+    newlen = int32(length(U.col_ind))-offset;
+    U.col_ind = sub_colvec( U.col_ind, 1, newlen);
+    U.val = sub_colvec( U.val, 1, newlen);
 end
 
 function test %#ok<DEFNU>
 %!test
+%!shared A, sp_A
 %! A = sprand(1000,1000,0.05);
-%! B = A'*A;
-%! C=triu(B);
-%! [row_ptr, col_ind, val] = crs_createFromSparse(B);
-%! [row_ptr1,col_ind1,val1]= crs_triu(row_ptr, col_ind, val);
-%! assert(isequal(C, crs_createSparse(row_ptr1,col_ind1,val1)));
+%! sp_A = crs_matrix(A);
+
+%! sp_U= crs_triu( sp_A);
+%! assert(isequal(triu(A), crs_2sparse(sp_U)));
+
+%!test
+%! sp_U= crs_triu( sp_A, int32(1));
+%! assert(isequal(triu(A,1), crs_2sparse(sp_U)));
+
+%!test
+%! sp_U= crs_triu( sp_A, int32(-1));
+%! assert(isequal(triu(A,-1), crs_2sparse(sp_U)));

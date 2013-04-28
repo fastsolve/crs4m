@@ -20,11 +20,11 @@ void crs_prodAx_api(const mxArray ** prhs, const mxArray **plhs) {
 
     emxArray_real_T      x;
     emxArray_real_T      b;
+    emxArray_int32_T     nthreads;
 
     struct_T             A;
     mxArray              *_sub_mx1;
 
-    int32_T              nthreads;
 
     /* Marshall in function inputs */
 
@@ -42,7 +42,7 @@ void crs_prodAx_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputStruct",
             "Input argument A does not have the field row_ptr.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputType",
             "Input argument A.row_ptr has incorrect data type. int32 is expected.");
     *(void**)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));
@@ -51,7 +51,7 @@ void crs_prodAx_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputStruct",
             "Input argument A does not have the field col_ind.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputType",
             "Input argument A.col_ind has incorrect data type. int32 is expected.");
     *(void**)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));
@@ -60,7 +60,7 @@ void crs_prodAx_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputStruct",
             "Input argument A does not have the field val.");
-    if ( mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputType",
             "Input argument A.val has incorrect data type. double is expected.");
     *(void**)&A.val = mxCalloc(1, sizeof(emxArray__common));
@@ -69,7 +69,7 @@ void crs_prodAx_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputStruct",
             "Input argument A does not have the field nrows.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputType",
             "Input argument A.nrows has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
@@ -80,33 +80,30 @@ void crs_prodAx_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputStruct",
             "Input argument A does not have the field ncols.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputType",
             "Input argument A.ncols has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("crs_prodAx:WrongSizeOfInputArg",
             "Argument A.ncols should be a scalar.");
     A.ncols = *(int32_T*)mxGetData(_sub_mx1);
-    if ( mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
+    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputType",
             "Input argument x has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&x, "x", 2);
     plhs[0] = mxDuplicateArray( prhs[2]);
-    if ( mxGetClassID(plhs[0]) != mxDOUBLE_CLASS)
+    if ( mxGetData(plhs[0]) && mxGetClassID(plhs[0]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputType",
             "Input argument b has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(plhs[0], (emxArray__common *)&b, "b", 2);
-    if ( mxGetClassID(prhs[3]) != mxINT32_CLASS)
+    if ( mxGetData(prhs[3]) && mxGetClassID(prhs[3]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx:WrongInputType",
             "Input argument nthreads has incorrect data type. int32 is expected.");
-    if ( mxGetNumberOfElements(prhs[3]) != 1)
-        mexErrMsgIdAndTxt("crs_prodAx:WrongSizeOfInputArg",
-            "Argument nthreads should be a scalar.");
-    nthreads = *(int32_T*)mxGetData(prhs[3]);
+    alias_mxArray_to_emxArray(prhs[3], (emxArray__common *)&nthreads, "nthreads", 1);
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx(A, &x, &b, nthreads);
+    crs_prodAx(&A, &x, &b, &nthreads);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -119,6 +116,7 @@ void crs_prodAx_api(const mxArray ** prhs, const mxArray **plhs) {
 
     free_emxArray( (emxArray__common*)&x);
     free_emxArray( (emxArray__common*)&b);
+    free_emxArray( (emxArray__common*)&nthreads);
 }
 
 
@@ -147,7 +145,7 @@ void crs_prodAx_ser_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputStruct",
             "Input argument A does not have the field row_ptr.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputType",
             "Input argument A.row_ptr has incorrect data type. int32 is expected.");
     *(void**)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));
@@ -156,7 +154,7 @@ void crs_prodAx_ser_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputStruct",
             "Input argument A does not have the field col_ind.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputType",
             "Input argument A.col_ind has incorrect data type. int32 is expected.");
     *(void**)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));
@@ -165,7 +163,7 @@ void crs_prodAx_ser_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputStruct",
             "Input argument A does not have the field val.");
-    if ( mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputType",
             "Input argument A.val has incorrect data type. double is expected.");
     *(void**)&A.val = mxCalloc(1, sizeof(emxArray__common));
@@ -174,7 +172,7 @@ void crs_prodAx_ser_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputStruct",
             "Input argument A does not have the field nrows.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputType",
             "Input argument A.nrows has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
@@ -185,14 +183,14 @@ void crs_prodAx_ser_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputStruct",
             "Input argument A does not have the field ncols.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputType",
             "Input argument A.ncols has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongSizeOfInputArg",
             "Argument A.ncols should be a scalar.");
     A.ncols = *(int32_T*)mxGetData(_sub_mx1);
-    if ( mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
+    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser:WrongInputType",
             "Input argument x has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&x, "x", 2);
@@ -202,7 +200,7 @@ void crs_prodAx_ser_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx_ser(A, &x, &b);
+    crs_prodAx_ser(&A, &x, &b);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -243,7 +241,7 @@ void crs_prodAx_ser1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputStruct",
             "Input argument A does not have the field row_ptr.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputType",
             "Input argument A.row_ptr has incorrect data type. int32 is expected.");
     *(void**)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));
@@ -252,7 +250,7 @@ void crs_prodAx_ser1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputStruct",
             "Input argument A does not have the field col_ind.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputType",
             "Input argument A.col_ind has incorrect data type. int32 is expected.");
     *(void**)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));
@@ -261,7 +259,7 @@ void crs_prodAx_ser1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputStruct",
             "Input argument A does not have the field val.");
-    if ( mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputType",
             "Input argument A.val has incorrect data type. double is expected.");
     *(void**)&A.val = mxCalloc(1, sizeof(emxArray__common));
@@ -270,7 +268,7 @@ void crs_prodAx_ser1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputStruct",
             "Input argument A does not have the field nrows.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputType",
             "Input argument A.nrows has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
@@ -281,26 +279,26 @@ void crs_prodAx_ser1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputStruct",
             "Input argument A does not have the field ncols.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputType",
             "Input argument A.ncols has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongSizeOfInputArg",
             "Argument A.ncols should be a scalar.");
     A.ncols = *(int32_T*)mxGetData(_sub_mx1);
-    if ( mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
+    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputType",
             "Input argument x has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&x, "x", 2);
     plhs[0] = mxDuplicateArray( prhs[2]);
-    if ( mxGetClassID(plhs[0]) != mxDOUBLE_CLASS)
+    if ( mxGetData(plhs[0]) && mxGetClassID(plhs[0]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_ser1:WrongInputType",
             "Input argument b has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(plhs[0], (emxArray__common *)&b, "b", 2);
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx_ser1(A, &x, &b);
+    crs_prodAx_ser1(&A, &x, &b);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -320,12 +318,12 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
 
     emxArray_real_T      x;
     emxArray_real_T      b;
+    emxArray_int32_T     nthreads;
 
     struct_T             A;
     b_struct_T           comm;
     mxArray              *_sub_mx1;
 
-    int32_T              nthreads;
 
     /* Marshall in function inputs */
 
@@ -343,7 +341,7 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputStruct",
             "Input argument A does not have the field row_ptr.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument A.row_ptr has incorrect data type. int32 is expected.");
     *(void**)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));
@@ -352,7 +350,7 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputStruct",
             "Input argument A does not have the field col_ind.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument A.col_ind has incorrect data type. int32 is expected.");
     *(void**)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));
@@ -361,7 +359,7 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputStruct",
             "Input argument A does not have the field val.");
-    if ( mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument A.val has incorrect data type. double is expected.");
     *(void**)&A.val = mxCalloc(1, sizeof(emxArray__common));
@@ -370,7 +368,7 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputStruct",
             "Input argument A does not have the field nrows.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument A.nrows has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
@@ -381,29 +379,26 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputStruct",
             "Input argument A does not have the field ncols.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument A.ncols has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongSizeOfInputArg",
             "Argument A.ncols should be a scalar.");
     A.ncols = *(int32_T*)mxGetData(_sub_mx1);
-    if ( mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
+    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument x has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&x, "x", 2);
     plhs[0] = mxDuplicateArray( prhs[2]);
-    if ( mxGetClassID(plhs[0]) != mxDOUBLE_CLASS)
+    if ( mxGetData(plhs[0]) && mxGetClassID(plhs[0]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument b has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(plhs[0], (emxArray__common *)&b, "b", 2);
-    if ( mxGetClassID(prhs[3]) != mxINT32_CLASS)
+    if ( mxGetData(prhs[3]) && mxGetClassID(prhs[3]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument nthreads has incorrect data type. int32 is expected.");
-    if ( mxGetNumberOfElements(prhs[3]) != 1)
-        mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongSizeOfInputArg",
-            "Argument nthreads should be a scalar.");
-    nthreads = *(int32_T*)mxGetData(prhs[3]);
+    alias_mxArray_to_emxArray(prhs[3], (emxArray__common *)&nthreads, "nthreads", 1);
 
     if ( !mxIsStruct(prhs[4]))
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
@@ -419,7 +414,7 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputStruct",
             "Input argument comm does not have the field data.");
-    if ( mxGetClassID(_sub_mx1) != mxUINT8_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxUINT8_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument comm.data has incorrect data type. uint8 is expected.");
     *(void**)&comm.data = mxCalloc(1, sizeof(emxArray__common));
@@ -428,7 +423,7 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputStruct",
             "Input argument comm does not have the field type.");
-    if ( mxGetClassID(_sub_mx1) != mxCHAR_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxCHAR_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument comm.type has incorrect data type. char is expected.");
     *(void**)&comm.type = mxCalloc(1, sizeof(emxArray__common));
@@ -437,7 +432,7 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputStruct",
             "Input argument comm does not have the field nitems.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpi:WrongInputType",
             "Input argument comm.nitems has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
@@ -447,7 +442,7 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx_mpi(A, &x, &b, nthreads, comm);
+    crs_prodAx_mpi(&A, &x, &b, &nthreads, &comm);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -460,6 +455,7 @@ void crs_prodAx_mpi_api(const mxArray ** prhs, const mxArray **plhs) {
 
     free_emxArray( (emxArray__common*)&x);
     free_emxArray( (emxArray__common*)&b);
+    free_emxArray( (emxArray__common*)&nthreads);
     free_emxArray( (emxArray__common*)comm.type); mxFree( comm.type);
     free_emxArray( (emxArray__common*)comm.data); mxFree( comm.data);
 
@@ -470,13 +466,13 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
 
     emxArray_real_T      x;
     emxArray_real_T      b;
+    emxArray_int32_T     nthreads;
     emxArray_real_T      pbmsg;
 
     struct_T             A;
     b_struct_T           comm;
     mxArray              *_sub_mx1;
 
-    int32_T              nthreads;
 
     /* Marshall in function inputs */
 
@@ -494,7 +490,7 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputStruct",
             "Input argument A does not have the field row_ptr.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument A.row_ptr has incorrect data type. int32 is expected.");
     *(void**)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));
@@ -503,7 +499,7 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputStruct",
             "Input argument A does not have the field col_ind.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument A.col_ind has incorrect data type. int32 is expected.");
     *(void**)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));
@@ -512,7 +508,7 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputStruct",
             "Input argument A does not have the field val.");
-    if ( mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument A.val has incorrect data type. double is expected.");
     *(void**)&A.val = mxCalloc(1, sizeof(emxArray__common));
@@ -521,7 +517,7 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputStruct",
             "Input argument A does not have the field nrows.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument A.nrows has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
@@ -532,29 +528,26 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputStruct",
             "Input argument A does not have the field ncols.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument A.ncols has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongSizeOfInputArg",
             "Argument A.ncols should be a scalar.");
     A.ncols = *(int32_T*)mxGetData(_sub_mx1);
-    if ( mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
+    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument x has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&x, "x", 2);
     plhs[0] = mxDuplicateArray( prhs[2]);
-    if ( mxGetClassID(plhs[0]) != mxDOUBLE_CLASS)
+    if ( mxGetData(plhs[0]) && mxGetClassID(plhs[0]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument b has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(plhs[0], (emxArray__common *)&b, "b", 2);
-    if ( mxGetClassID(prhs[3]) != mxINT32_CLASS)
+    if ( mxGetData(prhs[3]) && mxGetClassID(prhs[3]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument nthreads has incorrect data type. int32 is expected.");
-    if ( mxGetNumberOfElements(prhs[3]) != 1)
-        mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongSizeOfInputArg",
-            "Argument nthreads should be a scalar.");
-    nthreads = *(int32_T*)mxGetData(prhs[3]);
+    alias_mxArray_to_emxArray(prhs[3], (emxArray__common *)&nthreads, "nthreads", 1);
 
     if ( !mxIsStruct(prhs[4]))
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
@@ -570,7 +563,7 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputStruct",
             "Input argument comm does not have the field data.");
-    if ( mxGetClassID(_sub_mx1) != mxUINT8_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxUINT8_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument comm.data has incorrect data type. uint8 is expected.");
     *(void**)&comm.data = mxCalloc(1, sizeof(emxArray__common));
@@ -579,7 +572,7 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputStruct",
             "Input argument comm does not have the field type.");
-    if ( mxGetClassID(_sub_mx1) != mxCHAR_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxCHAR_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument comm.type has incorrect data type. char is expected.");
     *(void**)&comm.type = mxCalloc(1, sizeof(emxArray__common));
@@ -588,21 +581,21 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputStruct",
             "Input argument comm does not have the field nitems.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument comm.nitems has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongSizeOfInputArg",
             "Argument comm.nitems should be a scalar.");
     comm.nitems = *(int32_T*)mxGetData(_sub_mx1);
-    if ( mxGetClassID(prhs[5]) != mxDOUBLE_CLASS)
+    if ( mxGetData(prhs[5]) && mxGetClassID(prhs[5]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip:WrongInputType",
             "Input argument pbmsg has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(prhs[5], (emxArray__common *)&pbmsg, "pbmsg", 1);
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx_mpip(A, &x, &b, nthreads, comm, &pbmsg);
+    crs_prodAx_mpip(&A, &x, &b, &nthreads, &comm, &pbmsg);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -615,6 +608,7 @@ void crs_prodAx_mpip_api(const mxArray ** prhs, const mxArray **plhs) {
 
     free_emxArray( (emxArray__common*)&x);
     free_emxArray( (emxArray__common*)&b);
+    free_emxArray( (emxArray__common*)&nthreads);
     free_emxArray( (emxArray__common*)comm.type); mxFree( comm.type);
     free_emxArray( (emxArray__common*)comm.data); mxFree( comm.data);
 
@@ -626,13 +620,13 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
 
     emxArray_real_T      x;
     emxArray_real_T      b;
+    emxArray_int32_T     nthreads;
     emxArray_real_T      pbmsg;
 
     struct_T             A;
     b_struct_T           comm;
     mxArray              *_sub_mx1;
 
-    int32_T              nthreads;
     int32_T              pbsz;
 
     /* Marshall in function inputs */
@@ -651,7 +645,7 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputStruct",
             "Input argument A does not have the field row_ptr.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument A.row_ptr has incorrect data type. int32 is expected.");
     *(void**)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));
@@ -660,7 +654,7 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputStruct",
             "Input argument A does not have the field col_ind.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument A.col_ind has incorrect data type. int32 is expected.");
     *(void**)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));
@@ -669,7 +663,7 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputStruct",
             "Input argument A does not have the field val.");
-    if ( mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument A.val has incorrect data type. double is expected.");
     *(void**)&A.val = mxCalloc(1, sizeof(emxArray__common));
@@ -678,7 +672,7 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputStruct",
             "Input argument A does not have the field nrows.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument A.nrows has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
@@ -689,29 +683,26 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputStruct",
             "Input argument A does not have the field ncols.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument A.ncols has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongSizeOfInputArg",
             "Argument A.ncols should be a scalar.");
     A.ncols = *(int32_T*)mxGetData(_sub_mx1);
-    if ( mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
+    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument x has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&x, "x", 2);
     plhs[0] = mxDuplicateArray( prhs[2]);
-    if ( mxGetClassID(plhs[0]) != mxDOUBLE_CLASS)
+    if ( mxGetData(plhs[0]) && mxGetClassID(plhs[0]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument b has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(plhs[0], (emxArray__common *)&b, "b", 2);
-    if ( mxGetClassID(prhs[3]) != mxINT32_CLASS)
+    if ( mxGetData(prhs[3]) && mxGetClassID(prhs[3]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument nthreads has incorrect data type. int32 is expected.");
-    if ( mxGetNumberOfElements(prhs[3]) != 1)
-        mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongSizeOfInputArg",
-            "Argument nthreads should be a scalar.");
-    nthreads = *(int32_T*)mxGetData(prhs[3]);
+    alias_mxArray_to_emxArray(prhs[3], (emxArray__common *)&nthreads, "nthreads", 1);
 
     if ( !mxIsStruct(prhs[4]))
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
@@ -727,7 +718,7 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputStruct",
             "Input argument comm does not have the field data.");
-    if ( mxGetClassID(_sub_mx1) != mxUINT8_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxUINT8_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument comm.data has incorrect data type. uint8 is expected.");
     *(void**)&comm.data = mxCalloc(1, sizeof(emxArray__common));
@@ -736,7 +727,7 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputStruct",
             "Input argument comm does not have the field type.");
-    if ( mxGetClassID(_sub_mx1) != mxCHAR_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxCHAR_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument comm.type has incorrect data type. char is expected.");
     *(void**)&comm.type = mxCalloc(1, sizeof(emxArray__common));
@@ -745,18 +736,18 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputStruct",
             "Input argument comm does not have the field nitems.");
-    if ( mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument comm.nitems has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongSizeOfInputArg",
             "Argument comm.nitems should be a scalar.");
     comm.nitems = *(int32_T*)mxGetData(_sub_mx1);
-    if ( mxGetClassID(prhs[5]) != mxDOUBLE_CLASS)
+    if ( mxGetData(prhs[5]) && mxGetClassID(prhs[5]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument pbmsg has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(prhs[5], (emxArray__common *)&pbmsg, "pbmsg", 1);
-    if ( mxGetClassID(prhs[6]) != mxINT32_CLASS)
+    if ( mxGetData(prhs[6]) && mxGetClassID(prhs[6]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAx_mpip1:WrongInputType",
             "Input argument pbsz has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(prhs[6]) != 1)
@@ -766,7 +757,7 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Invoke the target function */
     crs_prodAx_initialize();
-    crs_prodAx_mpip1(A, &x, &b, nthreads, comm, &pbmsg, pbsz);
+    crs_prodAx_mpip1(&A, &x, &b, &nthreads, &comm, &pbmsg, pbsz);
     crs_prodAx_terminate();
 
     /* Marshall out function outputs */
@@ -779,6 +770,7 @@ void crs_prodAx_mpip1_api(const mxArray ** prhs, const mxArray **plhs) {
 
     free_emxArray( (emxArray__common*)&x);
     free_emxArray( (emxArray__common*)&b);
+    free_emxArray( (emxArray__common*)&nthreads);
     free_emxArray( (emxArray__common*)comm.type); mxFree( comm.type);
     free_emxArray( (emxArray__common*)comm.data); mxFree( comm.data);
 

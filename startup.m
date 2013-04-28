@@ -1,6 +1,6 @@
 % Startup script of SpaLab
 
-if ~exist('./util/build_sl.m', 'file')
+if ~exist('./util/build_spl.m', 'file')
     error('You must run the startup script in the SpaLab''s root directory.');
 end
 
@@ -47,6 +47,18 @@ end
 addpath(pwd); %#ok<*MCAP>
 addpath([pwd '/util']); %#ok<*MCAP>
 
-if ~exist(['crs_prodAx.' mexext], 'file')
-    %build_sl
+if isinmpi
+    if ~exist(['./crs_prodAx.', mexext], 'file')
+        if ~ismpiroot
+            error('You must build SpaLab before using mpirun/mpiexec.');
+        else
+            build_spl
+        end
+    end
+else
+    try
+        build_spl
+    catch
+        warning('Could not build LinaLab.');
+    end
 end

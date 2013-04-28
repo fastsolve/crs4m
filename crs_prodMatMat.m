@@ -93,7 +93,7 @@ for i=1:N
 end
 
 function test  %#ok<DEFNU>
-%!test
+%%!test
 %! for k=1:100
 %!     A = sprand(20,10,0.1);
 %!     B = sprand(10,30,0.1);

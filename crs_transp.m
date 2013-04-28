@@ -16,9 +16,9 @@ function test %#ok<DEFNU>
 %!test
 %! tic; sp = sprand(10000,2000,0.1);
 %! [is,js,vs] = find(sp); 
-%! fprintf(1, 'Generated random matrix in %g seconds\n', toc);
+%! fprintf(1, '\n\tGenerated random matrix in %g seconds\n', toc);
 %! tic; A = crs_matrix(int32(is), int32(js), vs, int32(size(sp,1)), int32(size(sp,2)));
-%! fprintf(1, 'Converted into crs_matrix in %g seconds\n', toc);
+%! fprintf(1, '\tConverted into crs_matrix in %g seconds\n', toc);
 %! tic; At = crs_transp(A);
-%! fprintf(1, 'Computed transpose in %g seconds\n', toc);
+%! fprintf(1, '\tComputed transpose in %g seconds\n', toc);
 %! assert( isequal( sp', crs_2sparse( At)));

@@ -33,7 +33,7 @@ for j = 1 : int32(length(x))
 end
 
 function test  %#ok<DEFNU>
-%!test
+%%!test
 %! for k=1:100
 %!     A = sprand(20,20,0.5); A=A+A'; x = rand(20,1);
 %!     [row_ptr, col_ind, val] = crs_createFromSparse(triu(A),20);

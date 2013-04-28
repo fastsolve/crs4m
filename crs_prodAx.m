@@ -33,19 +33,18 @@ function b = crs_prodAx(A, x, b, nthreads, varargin)
 
 % See http://www.netlib.org/linalg/html_templates/node98.html
 
-%#codegen -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]), int32(1)}
+%#codegen -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]),
+%#codegen coder.typeof( int32(1), [1,1], [1,0])}
 %#codegen crs_prodAx_ser -args {crs_matrix, coder.typeof(0, [inf,inf])}
 %#codegen crs_prodAx_ser1 -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf])}
 %#codegen crs_prodAx_mpi -args {crs_matrix, coder.typeof(0, [inf,inf]),
-%#codegen coder.typeof(0, [inf,inf]), int32(1), opaque_obj}
+%#codegen coder.typeof(0, [inf,inf]), coder.typeof( int32(1), [1,1], [1,0]), MPI_Comm}
 %#codegen crs_prodAx_mpip -args {crs_matrix, coder.typeof(0, [inf,inf]),
-%#codegen coder.typeof(0, [inf,inf]), int32(1), opaque_obj, coder.typeof(0, [inf,1])}
+%#codegen coder.typeof(0, [inf,inf]), coder.typeof( int32(1), [1,1], [1,0]), MPI_Comm, coder.typeof(0, [inf,1])}
 %#codegen crs_prodAx_mpip1 -args {crs_matrix, coder.typeof(0, [inf,inf]),
-%#codegen coder.typeof(0, [inf,inf]), int32(1), opaque_obj, coder.typeof(0, [inf,1]), int32(0)}
+%#codegen coder.typeof(0, [inf,inf]), coder.typeof( int32(1), [1,1], [1,0]), MPI_Comm, coder.typeof(0, [inf,1]), int32(0)}
 
 coder.inline('never');
-
-DEBUG = true;
 
 if nargin==2;
     b = nullcopy(zeros(A.nrows,size(x,2)));
@@ -58,44 +57,24 @@ ismt = nargin>=4 && MACC_get_num_threads>1;
 
 if nargin>3 && ~isempty(nthreads)
     %% Declare parallel region
-    if ~MACC_get_nested && ismt && nthreads>1
+    if ~MACC_get_nested && ismt && nthreads(1)>1
         MACC_begin_master
         msg_warn('crs_prodAx:NestedParallel', ...
             'You are trying to use nested parallel regions. Solution may be incorrect.');
         MACC_end_master
     end
-    if DEBUG; T = MACC_get_wtime; end
-    istart = int32(0); iend = int32(0);
-
-    [b, istart, iend] = MACC_begin_parallel( b, istart, iend);
-    MACC_clause_default('shared'); MACC_clause_private( istart, iend)
-    MACC_clause_num_threads( int32(nthreads));
+    
+    MACC_begin_parallel; MACC_clause_default('shared');
+    MACC_clause_num_threads( int32(nthreads(1)));
     
     %% Compute b=A*x
-    [istart, iend] = get_local_chunk(A.nrows);
-    b = crs_prodAx_internal( A.row_ptr, A.col_ind, A.val, x, istart, iend, b);
+    b = crs_prodAx_internal( A.nrows, A.row_ptr, A.col_ind, A.val, x, b);
     
     %% End parallel region
     MACC_end_parallel;
-    if DEBUG
-        T = MACC_get_wtime-T;
-        msg_printf( 'crs_prodAx took %g seconds\n', T);
-    end
 else
-    if DEBUG; T = MACC_get_wtime; end
-
     %% Compute b=A*x
-    % Decompose the work manually
-    [istart, iend] = get_local_chunk(A.nrows);
-    b = crs_prodAx_internal( A.row_ptr, A.col_ind, A.val, x, istart, iend, b);
-    
-    if DEBUG
-        T = MACC_get_wtime-T;
-        if nargin>3; MACC_begin_master; end
-        msg_printf( 'crs_prodAx took %g seconds\n', T);
-        if nargin>3; MACC_end_master; end
-    end
-
+    b = crs_prodAx_internal( A.nrows, A.row_ptr, A.col_ind, A.val, x, b);
 end
 
 if ~isempty(varargin)
@@ -108,10 +87,10 @@ if ~isempty(varargin)
     MACC_end_single
 end
 
-function b = crs_prodAx_internal( row_ptr, col_ind, val, x, istart, iend, b)
+function b = crs_prodAx_internal( nrows, row_ptr, col_ind, val, x, b)
 
 if isempty( coder.target)
-    for i=istart:iend
+    for i=1:nrows
         for k=1:int32(size(x,2))
             t = 0.0;
             for j=row_ptr(i):row_ptr(i+1)-1
@@ -124,9 +103,12 @@ else
     coder.inline('never');
     coder.cinclude('spalab_kernel.h');
     
-    if isa( val, 'double'); func = 'SPL_ddot'; 
+    if isa( val, 'double'); func = 'SPL_ddot';
     else func = 'SPL_sdot'; end
-
+    
+    % Decompose the work manually
+    [istart, iend] = get_local_chunk(nrows);
+    
     for i=istart:iend
         for k=1:int32(size(x,2))
             b(i,k) = coder.ceval( func, coder.rref(val( row_ptr(i))), ...
@@ -144,31 +126,35 @@ function test %#ok<DEFNU>
 %!    m=10000; n = 2000;
 %! end
 %! tic; sp = sprand(m,n,0.5); x=rand(size(sp,2),2);
-%! [is,js,vs] = find(sp); 
-%! fprintf(1, 'Generated random matrix in %g seconds\n', toc);
+%! [is,js,vs] = find(sp);
+%! fprintf(1, '\n\tGenerated random matrix in %g seconds\n', toc);
 %! tic; b0 = sp*x;
-%! fprintf(1, 'Computed reference solution in %g seconds\n', toc);
+%! fprintf(1, '\tComputed reference solution in %g seconds\n', toc);
 %! tic; A = crs_matrix(int32(is), int32(js), vs, int32(size(sp,1)), int32(size(sp,2)));
-%! fprintf(1, 'Converted into crs_matrix in %g seconds\n', toc);
-%! fprintf(1, 'Testing serial: ');
-%! b1 = crs_prodAx( A, x);
+%! fprintf(1, '\tConverted into crs_matrix in %g seconds\n', toc);
+%! fprintf(1, '\tTesting serial: ');
+%! tic; b1 = crs_prodAx( A, x);
+%! fprintf(1, 'Done in %g seconds\n ', toc);
 %! assert( norm(b0-b1)<=1.e-12);
 
 %! b2 = zeros(size(sp,1),2);
 %! for nthreads=int32([1 2 4 8])
 %!     if nthreads>MACC_get_max_threads; break; end
-%!     fprintf(1, 'Testing %d threads: ', nthreads);
-%!     b2 = crs_prodAx( A, x, b2, nthreads);
+%!     fprintf(1, '\tTesting %d threads: ', nthreads);
+%!     tic; b2 = crs_prodAx( A, x, b2, nthreads);
+%!     fprintf(1, 'Done in %g seconds\n ', toc);
 %!     assert( norm(b0-b2)<=1.e-12);
 %! end
 
 %! nprocs = double(comm_size(MPI_COMM_WORLD));
-%! fprintf(1, 'Testing 2 threads with MPI call: ');
-%! b2 = crs_prodAx( A, x, b2, int32(2), MPI_COMM_WORLD);
+%! fprintf(1, '\tTesting 2 threads with MPI call: ');
+%! tic; b2 = crs_prodAx( A, x, b2, int32(2), MPI_COMM_WORLD);
+%! fprintf(1, 'Done in %g seconds\n ', toc);
 %! assert( nprocs>1 || norm(b0-b2)<=1.e-12);
 
 %! b3 = zeros(size(sp,1)+1,1);
-%! fprintf(1, 'Testing 2 threads with piggy-back: ');
-%! b3 = crs_prodAx( A, x(:,1), b3, int32(2), MPI_COMM_WORLD, 1, int32(1));
+%! fprintf(1, '\tTesting 2 threads with piggy-back: ');
+%! tic; b3 = crs_prodAx( A, x(:,1), b3, int32(2), MPI_COMM_WORLD, 1, int32(1));
+%! fprintf(1, 'Done in %g seconds\n ', toc);
 %! assert( nprocs>1 || norm(b0(:,1)-b3(1:end-1))<=1.e-12);
 %! assert( b3(end)==nprocs);

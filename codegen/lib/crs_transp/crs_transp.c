@@ -418,7 +418,7 @@ static void emxInit_real_T(emxArray_real_T **pEmxArray, int32_T numDimensions)
   }
 }
 
-void crs_transp(const struct_T A, struct_T *At)
+void crs_transp(const struct_T *A, struct_T *At)
 {
   emxArray_int32_T *js;
   uint32_T unnamed_idx_0;
@@ -427,20 +427,20 @@ void crs_transp(const struct_T A, struct_T *At)
   int32_T i;
   int32_T j;
   emxInit_int32_T(&js, 1);
-  unnamed_idx_0 = (uint32_T)A.col_ind->size[0];
+  unnamed_idx_0 = (uint32_T)A->col_ind->size[0];
   i0 = js->size[0];
   js->size[0] = (int32_T)unnamed_idx_0;
   emxEnsureCapacity((emxArray__common *)js, i0, (int32_T)sizeof(int32_T));
-  nrows = A.row_ptr->size[0] - 1;
+  nrows = A->row_ptr->size[0] - 1;
   for (i = 1; i <= nrows; i++) {
-    i0 = A.row_ptr->data[i] - 1;
-    for (j = A.row_ptr->data[i - 1]; j <= i0; j++) {
+    i0 = A->row_ptr->data[i] - 1;
+    for (j = A->row_ptr->data[i - 1]; j <= i0; j++) {
       js->data[j - 1] = i;
     }
   }
 
-  crs_create(A.col_ind, js, A.val, At->row_ptr, At->col_ind, At->val, &At->nrows,
-             &At->ncols);
+  crs_create(A->col_ind, js, A->val, At->row_ptr, At->col_ind, At->val,
+             &At->nrows, &At->ncols);
   emxFree_int32_T(&js);
 }
 

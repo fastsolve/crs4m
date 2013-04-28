@@ -6,7 +6,7 @@
 
 #include "rtwtypes.h"
 #include "crs_transp_types.h"
-extern void crs_transp(const struct_T A, struct_T *At);
+extern void crs_transp(const struct_T *A, struct_T *At);
 extern void crs_transp_initialize(void);
 extern void crs_transp_terminate(void);
 extern emxArray_int32_T *emxCreateND_int32_T(int32_T numDimensions, int32_T *size);

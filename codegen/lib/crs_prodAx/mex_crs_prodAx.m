@@ -1,7 +1,7 @@
 % Build script for crs_prodAx
 if ~isnewer( ['../../../crs_prodAx.' mexext], 'crs_prodAx_mex.c', 'crs_prodAx.c')
     if ~exist('dbopts.m', 'file'); dbopts = ' -O'; end
-    dir = which('lib2mex'); dir=dir(1:end-10);
+    dir = which('m2c.m'); dir=dir(1:end-6);
     [mpicflag, mpildflag] = mpiflags;
     [ompcflag, ompldflag] = ompflags;
     if exist('octave_config_info', 'builtin'); output = '-o'; else output = '-largeArrayDims -output'; end
