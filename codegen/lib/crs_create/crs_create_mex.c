@@ -70,6 +70,48 @@ void crs_create_api(const mxArray ** prhs, const mxArray **plhs) {
 }
 
 
+void crs_create0_api(const mxArray ** prhs, const mxArray **plhs) {
+
+
+
+    int32_T              ni;
+    int32_T              nj;
+    b_struct_T           A;
+
+    /* Marshall in function inputs */
+    if ( mxGetData(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
+        mexErrMsgIdAndTxt("crs_create0:WrongInputType",
+            "Input argument ni has incorrect data type. int32 is expected.");
+    if ( mxGetNumberOfElements(prhs[0]) != 1)
+        mexErrMsgIdAndTxt("crs_create0:WrongSizeOfInputArg",
+            "Argument ni should be a scalar.");
+    ni = *(int32_T*)mxGetData(prhs[0]);
+    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
+        mexErrMsgIdAndTxt("crs_create0:WrongInputType",
+            "Input argument nj has incorrect data type. int32 is expected.");
+    if ( mxGetNumberOfElements(prhs[1]) != 1)
+        mexErrMsgIdAndTxt("crs_create0:WrongSizeOfInputArg",
+            "Argument nj should be a scalar.");
+    nj = *(int32_T*)mxGetData(prhs[1]);
+
+    /* Preallocate output variables */
+
+    /* Invoke the target function */
+    crs_create_initialize();
+    A = crs_create0(ni, nj);
+    crs_create_terminate();
+
+    /* Marshall out function outputs */
+    {const char *_fields[] = { "nrows", "ncols",  ""};
+    int32_T _one=1;
+    plhs[0] = create_struct_mxArray( 1, &_one, 2, _fields);}
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 0, copy_scalar_to_mxArray(&A.nrows, mxINT32_CLASS));
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 1, copy_scalar_to_mxArray(&A.ncols, mxINT32_CLASS));
+
+
+}
+
+
 void crs_create1_api(const mxArray ** prhs, const mxArray **plhs) {
 
     emxArray_int32_T     is;
@@ -148,6 +190,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
         /* Call the API function. */
         crs_create_api(prhs, (const mxArray**)plhs);
+    }
+
+    else if (nrhs == 2) {
+         if (nlhs > 1)
+            mexErrMsgIdAndTxt("crs_create0:TooManyOutputArguments","Too many output arguments for entry-point 'crs_create0'.");
+
+        /* Call the API function. */
+        crs_create0_api(prhs, (const mxArray**)plhs);
     }
 
     else if (nrhs == 5) {

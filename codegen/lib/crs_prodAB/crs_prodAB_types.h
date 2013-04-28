@@ -1,14 +1,6 @@
-#ifndef __CRS_CREATE_TYPES_H__
-#define __CRS_CREATE_TYPES_H__
+#ifndef __CRS_PRODAB_TYPES_H__
+#define __CRS_PRODAB_TYPES_H__
 #include "rtwtypes.h"
-#ifndef typedef_b_struct_T
-#define typedef_b_struct_T
-typedef struct
-{
-    int32_T nrows;
-    int32_T ncols;
-} b_struct_T;
-#endif /*typedef_b_struct_T*/
 #ifndef struct_emxArray_int32_T
 #define struct_emxArray_int32_T
 struct emxArray_int32_T

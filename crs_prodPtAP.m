@@ -1,11 +1,11 @@
-function [B_rowptr, B_colind, B_val] = crs_prodPtAP( A_rowptr, A_colind, A_val, P_rowptr, P_colind, P_val)
-% Compute B=P'*A*P, where A and P are stored in compressed row storage.
+function B = crs_prodPtAP( A, P)
+% crs_prodPtAP Compute B=P'*A*P
+%      B = crs_prodPtAP( A, P)
+% A and P are stored in compressed row storage.
 
-% %#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-% %#codegen coder.typeof(0, [inf,1]), coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-% %#codegen coder.typeof(0, [inf,1])}
+%#codegen -args {crs_matrix, crs_matrix}
 
 % Computes B=P'*A*B;
-[C_rowptr, C_colind, C_val] = crs_prodMatMat( A_rowptr, A_colind, A_val, P_rowptr, P_colind, P_val);
-[Pt_rowptr, Pt_colind, Pt_val] = crs_transpose(P_rowptr, P_colind, P_val);
-[B_rowptr, B_colind, B_val] = crs_prodMatMat( Pt_rowptr, Pt_colind, Pt_val, C_rowptr, C_colind, C_val);
+C = crs_prodAB( A, P);
+Pt = crs_transp(P);
+B = crs_prodAB( Pt, C);

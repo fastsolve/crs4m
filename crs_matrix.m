@@ -6,6 +6,9 @@ function varargout = crs_matrix( varargin) %#codegen
 % In the first case, A is a struct with fields row_ptr, col_ind, 
 % val, nrows, and ncols.
 %
+%    A = crs_matrix( m, n);
+% Create an empty matrix with m rows and n colmns.
+%
 %    A = crs_matrix( sp, [, nrows, ncols]);
 %    [row_ptr, col_ind, val, nrows, ncols] = crs_matrix( ...);
 % This mode is incompatible with MATLAB Coder. It is provided
@@ -24,13 +27,18 @@ if nargin==0
 elseif issparse(varargin{1})
     [is,js,vs] = find(varargin{1});
     
-    A = crs_create( int32(is), int32(js), vs, varargin{2:end});
+    A = crs_create( int32(is), int32(js), vs, ...
+        int32(size(varargin{1},1)), int32(size(varargin{1},2)));
+elseif nargin==2
+    A = crs_create( int32(varargin{1}), int32(varargin{2}));
+    coder.varsize( 'A.row_ptr', 'A.col_ind', 'A.val', [inf,1]);
 else
     is = int32(varargin{1});
     js = int32(varargin{2});
     vs = varargin{3};
     
     A = crs_create( is, js, vs, varargin{4:end});
+    coder.varsize( 'A.row_ptr', 'A.col_ind', 'A.val', [inf,1]);
 end
 
 if nargout<=1

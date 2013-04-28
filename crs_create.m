@@ -6,12 +6,24 @@ function A = crs_create( rows, cols, vs, varargin)
 % In the first case, A is a struct with fields row_ptr, col_ind,
 % val, nrows, and ncols.
 %
+%    A = crs_create( m, n);
+% Create an empty matrix with m rows and n colmns.
+%
 % See also crs_matrix
 
-%#codegen -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-%#codegen coder.typeof(0, [inf,1])}
-%#codegen crs_create1 -args {coder.typeof(int32(0), [inf,1]), coder.typeof(int32(0), [inf,1]),
-%#codegen coder.typeof(0, [inf,1]), int32(0), int32(0)}
+%#codegen -args {coder.typeof(int32(0), [inf,1]), 
+%#codegen coder.typeof(int32(0), [inf,1]), coder.typeof(0, [inf,1])}
+%#codegen crs_create0 -args {int32(0), int32(0)}
+%#codegen crs_create1 -args {coder.typeof(int32(0), [inf,1]), 
+%#codegen coder.typeof(int32(0), [inf,1]), coder.typeof(0, [inf,1]), int32(0), int32(0)}
+
+if nargin<=3 && isscalar(rows) && isscalar(cols)
+    if nargin<3; vs = zeros(0,1); end
+    
+    A = struct( 'row_ptr', zeros(0,1,'int32'), 'col_ind', zeros(0,1,'int32'), ...
+        'val', vs, 'nrows', int32(rows(1)), 'ncols', int32(cols(1)));
+    return;
+end
 
 if nargin<4; nrows = max(rows);
 else nrows = int32(varargin{1}); end
