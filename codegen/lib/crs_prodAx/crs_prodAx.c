@@ -3,26 +3,6 @@
 #include "mpi.h"
 #include "omp.h"
 #include "m2c.h"
-#ifndef struct_emxArray__common
-#define struct_emxArray__common
-
-struct emxArray__common
-{
-  void *data;
-  int32_T *size;
-  int32_T allocatedSize;
-  int32_T numDimensions;
-  boolean_T canFreeData;
-};
-
-#endif
-
-#ifndef typedef_emxArray__common
-#define typedef_emxArray__common
-
-typedef struct emxArray__common emxArray__common;
-
-#endif
 
 static int32_T MMPI_Allreduce(void * sptr, void * rptr, int32_T count,
   MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
@@ -51,16 +31,6 @@ static void e_crs_prodAx(const emxArray_int32_T *A_row_ptr, const
   emxArray_int32_T *A_col_ind, const emxArray_real_T *A_val, int32_T A_nrows,
   const emxArray_real_T *x, emxArray_real_T *b, const emxArray_int32_T *nthreads,
   MPI_Comm varargin_1, const emxArray_real_T *varargin_2);
-extern void emxEnsureCapacity(emxArray__common *emxArray, int32_T oldNumel,
-  int32_T elementSize);
-extern void emxFree_char_T(emxArray_char_T **pEmxArray);
-extern void emxFree_int32_T(emxArray_int32_T **pEmxArray);
-extern void emxFree_real_T(emxArray_real_T **pEmxArray);
-extern void emxFree_uint8_T(emxArray_uint8_T **pEmxArray);
-extern void emxInit_char_T(emxArray_char_T **pEmxArray, int32_T numDimensions);
-extern void emxInit_int32_T(emxArray_int32_T **pEmxArray, int32_T numDimensions);
-extern void emxInit_real_T(emxArray_real_T **pEmxArray, int32_T numDimensions);
-extern void emxInit_uint8_T(emxArray_uint8_T **pEmxArray, int32_T numDimensions);
 static void f_crs_prodAx(const emxArray_int32_T *A_row_ptr, const
   emxArray_int32_T *A_col_ind, const emxArray_real_T *A_val, int32_T A_nrows,
   const emxArray_real_T *x, emxArray_real_T *b, const emxArray_int32_T *nthreads,
@@ -376,15 +346,6 @@ static void e_crs_prodAx(const emxArray_int32_T *A_row_ptr, const
               M2C_END_REGION(/*omp single*/)
 
 }
-
-
-
-
-
-
-
-
-
 
 static void f_crs_prodAx(const emxArray_int32_T *A_row_ptr, const
   emxArray_int32_T *A_col_ind, const emxArray_real_T *A_val, int32_T A_nrows,
@@ -789,111 +750,4 @@ void crs_prodAx_ser1(const struct_T *A, const emxArray_real_T *x,
 void crs_prodAx_terminate(void)
 {
 }
-
-
-
-
-
-
-
-
-
-emxArray_char_T *emxCreateWrapper_char_T(char_T *data, int32_T rows, int32_T
-  cols)
-{
-  emxArray_char_T *emx;
-  int32_T size[2];
-  int32_T numEl;
-  int32_T i;
-  size[0] = rows;
-  size[1] = cols;
-  emxInit_char_T(&emx, 2);
-  numEl = 1;
-  for (i = 0; i < 2; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
-
-  emx->data = data;
-  emx->numDimensions = 2;
-  emx->allocatedSize = numEl;
-  emx->canFreeData = FALSE;
-  return emx;
-}
-
-emxArray_int32_T *emxCreateWrapper_int32_T(int32_T *data, int32_T rows, int32_T
-  cols)
-{
-  emxArray_int32_T *emx;
-  int32_T size[2];
-  int32_T numEl;
-  int32_T i;
-  size[0] = rows;
-  size[1] = cols;
-  emxInit_int32_T(&emx, 2);
-  numEl = 1;
-  for (i = 0; i < 2; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
-
-  emx->data = data;
-  emx->numDimensions = 2;
-  emx->allocatedSize = numEl;
-  emx->canFreeData = FALSE;
-  return emx;
-}
-
-emxArray_real_T *emxCreateWrapper_real_T(real_T *data, int32_T rows, int32_T
-  cols)
-{
-  emxArray_real_T *emx;
-  int32_T size[2];
-  int32_T numEl;
-  int32_T i;
-  size[0] = rows;
-  size[1] = cols;
-  emxInit_real_T(&emx, 2);
-  numEl = 1;
-  for (i = 0; i < 2; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
-
-  emx->data = data;
-  emx->numDimensions = 2;
-  emx->allocatedSize = numEl;
-  emx->canFreeData = FALSE;
-  return emx;
-}
-
-emxArray_uint8_T *emxCreateWrapper_uint8_T(uint8_T *data, int32_T rows, int32_T
-  cols)
-{
-  emxArray_uint8_T *emx;
-  int32_T size[2];
-  int32_T numEl;
-  int32_T i;
-  size[0] = rows;
-  size[1] = cols;
-  emxInit_uint8_T(&emx, 2);
-  numEl = 1;
-  for (i = 0; i < 2; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
-
-  emx->data = data;
-  emx->numDimensions = 2;
-  emx->allocatedSize = numEl;
-  emx->canFreeData = FALSE;
-  return emx;
-}
-
-
-
-
-
-
-
 

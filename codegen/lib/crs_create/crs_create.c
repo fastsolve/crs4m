@@ -1,34 +1,8 @@
 #include "crs_create.h"
 #include "m2c.h"
-#ifndef struct_emxArray__common
-#define struct_emxArray__common
-
-struct emxArray__common
-{
-  void *data;
-  int32_T *size;
-  int32_T allocatedSize;
-  int32_T numDimensions;
-  boolean_T canFreeData;
-};
-
-#endif
-
-#ifndef typedef_emxArray__common
-#define typedef_emxArray__common
-
-typedef struct emxArray__common emxArray__common;
-
-#endif
 
 static void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,
                      emxArray_real_T *val);
-extern void emxEnsureCapacity(emxArray__common *emxArray, int32_T oldNumel,
-  int32_T elementSize);
-extern void emxFree_int32_T(emxArray_int32_T **pEmxArray);
-extern void emxFree_real_T(emxArray_real_T **pEmxArray);
-extern void emxInit_int32_T(emxArray_int32_T **pEmxArray, int32_T numDimensions);
-extern void emxInit_real_T(emxArray_real_T **pEmxArray, int32_T numDimensions);
 static void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,
                      emxArray_real_T *val)
 {
@@ -166,11 +140,6 @@ static void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,
   emxFree_int32_T(&buf_indx);
   emxFree_real_T(&buf_val);
 }
-
-
-
-
-
 
 void crs_create(const emxArray_int32_T *rows, const emxArray_int32_T *cols,
                 const emxArray_real_T *vs, struct_T *A)
@@ -418,57 +387,4 @@ void crs_create_initialize(void)
 void crs_create_terminate(void)
 {
 }
-
-
-
-
-
-emxArray_int32_T *emxCreateWrapper_int32_T(int32_T *data, int32_T rows, int32_T
-  cols)
-{
-  emxArray_int32_T *emx;
-  int32_T size[2];
-  int32_T numEl;
-  int32_T i;
-  size[0] = rows;
-  size[1] = cols;
-  emxInit_int32_T(&emx, 2);
-  numEl = 1;
-  for (i = 0; i < 2; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
-
-  emx->data = data;
-  emx->numDimensions = 2;
-  emx->allocatedSize = numEl;
-  emx->canFreeData = FALSE;
-  return emx;
-}
-
-emxArray_real_T *emxCreateWrapper_real_T(real_T *data, int32_T rows, int32_T
-  cols)
-{
-  emxArray_real_T *emx;
-  int32_T size[2];
-  int32_T numEl;
-  int32_T i;
-  size[0] = rows;
-  size[1] = cols;
-  emxInit_real_T(&emx, 2);
-  numEl = 1;
-  for (i = 0; i < 2; i++) {
-    numEl *= size[i];
-    emx->size[i] = size[i];
-  }
-
-  emx->data = data;
-  emx->numDimensions = 2;
-  emx->allocatedSize = numEl;
-  emx->canFreeData = FALSE;
-  return emx;
-}
-
-
-
 
