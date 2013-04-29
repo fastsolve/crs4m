@@ -20,7 +20,7 @@ static void b_crs_prodAtx(const emxArray_int32_T *A_row_ptr, const
 static void b_crs_prodAx(const emxArray_int32_T *A_row_ptr, const
   emxArray_int32_T *A_col_ind, const emxArray_real_T *A_val, int32_T A_nrows,
   const emxArray_real_T *x, emxArray_real_T *b);
-static define_emxInit(b_emxInit, real_T)
+static define_emxInit(b_emxInit, real_T, real_T)
 static void b_get_local_chunk(int32_T m, int32_T varargin_2, int32_T *istart,
   int32_T *iend);
 static void b_msg_error(void);
