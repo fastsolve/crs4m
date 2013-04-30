@@ -68,13 +68,15 @@ if nargin>3 && ~isempty(nthreads)
     MACC_clause_num_threads( int32(nthreads(1)));
     
     %% Compute b=A*x
-    b = crs_prodAx_internal( A.nrows, A.row_ptr, A.col_ind, A.val, x, b);
+    b = crs_prodAx_kernel( A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
+        b, int32(size(b,1)), A.nrows, int32(size(x, 2)), MACC_get_num_threads>1);
     
     %% End parallel region
     MACC_end_parallel;
 else
     %% Compute b=A*x
-    b = crs_prodAx_internal( A.nrows, A.row_ptr, A.col_ind, A.val, x, b);
+    b = crs_prodAx_kernel( A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
+        b, int32(size(b,1)), A.nrows, int32(size(x, 2)), ismt);
 end
 
 if ~isempty(varargin)
@@ -87,35 +89,28 @@ if ~isempty(varargin)
     MACC_end_single
 end
 
-function b = crs_prodAx_internal( nrows, row_ptr, col_ind, val, x, b)
+function b = crs_prodAx_kernel( row_ptr, col_ind, val, ...
+    x, x_m, b, b_m, nrows, nrhs, ismt)
 
-if isempty( coder.target)
-    for i=1:nrows
-        for k=1:int32(size(x,2))
-            t = 0.0;
-            for j=row_ptr(i):row_ptr(i+1)-1
-                t = t + val(j)*x(col_ind(j),k);
-            end
-            b(i,k) = t;
-        end
-    end
-else
-    coder.inline('never');
-    coder.cinclude('spalab_kernel.h');
-    
-    if isa( val, 'double'); func = 'SPL_ddot';
-    else func = 'SPL_sdot'; end
-    
-    % Decompose the work manually
+MACC_kernel_function
+
+coder.inline('never');
+if ismt
     [istart, iend] = get_local_chunk(nrows);
-    
+else
+    istart = int32(1); iend = nrows;
+end
+
+xoffset = int32(0); boffset = int32(0);
+for k=1:nrhs
     for i=istart:iend
-        for k=1:int32(size(x,2))
-            b(i,k) = coder.ceval( func, coder.rref(val( row_ptr(i))), ...
-                coder.rref( col_ind(row_ptr(i))), coder.rref(x(1,k)), ...
-                row_ptr(i+1) - row_ptr(i));
+        t = 0.0;
+        for j=row_ptr(i):row_ptr(i+1)-1
+            t = t + val(j)*x(xoffset+col_ind(j));
         end
+        b(boffset+i) = t;
     end
+    xoffset = xoffset + x_m; boffset = boffset + b_m;
 end
 
 function test %#ok<DEFNU>
@@ -140,7 +135,7 @@ function test %#ok<DEFNU>
 %! b2 = zeros(size(sp,1),2);
 %! for nthreads=int32([1 2 4 8])
 %!     if nthreads>MACC_get_max_threads; break; end
-%!     fprintf(1, '\tTesting %d threads: ', nthreads);
+%!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
 %!     tic; b2 = crs_prodAx( A, x, b2, nthreads);
 %!     fprintf(1, 'Done in %g seconds\n ', toc);
 %!     assert( norm(b0-b2)<=1.e-12);

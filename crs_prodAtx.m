@@ -68,28 +68,16 @@ if nargin>3 && ~isempty(nthreads)
     
     MACC_begin_parallel; MACC_clause_default('shared'); 
     MACC_clause_num_threads( int32(nthreads(1)));
-    
-    %% Compute b=A'*x on each thread
-    b = crs_prodAtx_internal( A.row_ptr, A.col_ind, A.val, ...
-        x, b, MACC_get_thread_num*A.ncols, A.nrows, A.ncols, ismt);
-    
-    %% Perfom summation of partial sums in b
-    if ismt
-        MACC_barrier;
-        b = accu_partsum( b, A.ncols);
-    end
+
+    %% Compute b=A'*x
+    b = crs_prodAtx_kernel( A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
+        b, int32(size(b,1)), A.nrows, A.ncols, int32(size(x,2)), MACC_get_num_threads>1);
     
     MACC_end_parallel
 else
     %% Compute b=A'*x
-    b = crs_prodAtx_internal( A.row_ptr, A.col_ind, A.val, ...
-        x, b, MACC_get_thread_num*A.ncols, A.nrows, A.ncols, ismt);
-    
-    if ismt
-        %% Perfom summation of partial sums in b
-        MACC_barrier;
-        b = accu_partsum( b, A.ncols);
-    end
+    b = crs_prodAtx_kernel( A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
+        b, int32(size(b,1)), A.nrows, A.ncols, int32(size(x,2)), ismt);
 
     if ~isempty(varargin) && ismt; MACC_barrier; end
 end
@@ -102,62 +90,53 @@ if ~isempty(varargin)
     MACC_end_single
 end
 
-function b = crs_prodAtx_internal( row_ptr, col_ind, val, x, ...
-    b, offset, nrows, ncols, ismt)
+function b = crs_prodAtx_kernel( row_ptr, col_ind, val, x, x_m, ...
+    b, b_m, nrows, ncols, nrhs, ismt)
 
-if isempty( coder.target)
-    for k=1:int32(size(x,2))
-        for j=offset+1:offset+ncols; b(j,k) = 0; end
+MACC_kernel_function
+coder.inline('never');
+
+if ismt
+    nthreads = min(MACC_get_num_threads, ...
+        int32(floor(double(b_m)/double(ncols))));
+    boffset = MACC_get_thread_num*ncols;
+    [istart, iend] = get_local_chunk(nrows, [], nthreads);
+else
+    nthreads = int32(1); boffset = int32(0);
+    istart = int32(1); iend = int32( nrows);
+end
+
+if istart<=iend;
+    xoffset = int32(0);
+    for k=1:nrhs
+        for j=boffset+1:boffset+ncols; b(j) = 0; end
         
-        for i=1:nrows
-            alpha = x(i, k);
-            n = row_ptr(i+1) - 1;
-            for j = row_ptr(i) : n
-                r = offset+col_ind(j);
-                b(r, k) = b(r, k) + alpha * val(j);
+        for i=istart:iend
+            alpha = x(i+xoffset);
+            
+            for j = row_ptr(i) : row_ptr(i+1) - 1
+                r = boffset+col_ind(j);
+                b(r) = b(r) + alpha * val(j);
             end
         end
-    end
-else
-    coder.inline('never');
-    coder.cinclude('spalab_kernel.h');
-
-    if ismt
-        nthreads = min(MACC_get_num_threads, ...
-            int32(floor(double(size(b,1))/double(ncols))));
-        [istart, iend] = get_local_chunk(nrows, [], nthreads);
-    else
-        istart = int32(1); iend = int32( nrows);
-    end
-    
-    if isa( val, 'double'); func = 'SPL_daxpy';
-    else func = 'SPL_saxpy'; end
-    
-    for k=1:int32(size(x,2))
-        for j=offset+1:offset+ncols; b(j,k) = 0; end
-
-        for i=istart:iend
-            coder.ceval( func, x(i, k), coder.rref(val( row_ptr(i))), ...
-                coder.ref( b(offset+1,k)), coder.rref( col_ind(row_ptr(i))), ...
-                row_ptr(i+1)-row_ptr(i));
-        end
+        
+        xoffset = xoffset + x_m; boffset = boffset + b_m;
     end
 end
 
-function b = accu_partsum( b, ncols)
-% This function should be called only in multi-threading mode
-
-if size(b,1)>=ncols*2
+%% Perfom summation of partial sums in b
+if nthreads>1
+    MACC_barrier;
     [istart, iend] = get_local_chunk(ncols);
-    nthreads = min(MACC_get_num_threads, ...
-        int32(floor(double(size(b,1))/double(ncols))));
     
     offset = ncols;
     for j=2:nthreads
-        for k=1:int32(size(b,2))
-            for i=istart:iend
-                b(i,k) = b(i,k) + b(offset+i,k);
+        boffset = int32(0);
+        for k=1:nrhs
+            for i=boffset+istart:boffset+iend
+                b(i) = b(i) + b(offset+i);
             end
+            boffset = boffset + b_m;
         end
         offset = offset + ncols;
     end
@@ -184,7 +163,7 @@ function test %#ok<DEFNU>
 
 %! for nthreads=int32([1 2 4 8])
 %!     if nthreads>MACC_get_max_threads; break; end
-%!     fprintf(1, '\tTesting %d threads: ', nthreads);
+%!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
 %!     tic; b2 = zeros(size(sp,2)*nthreads,2);
 %!     b2 = crs_prodAtx( A, x, b2, nthreads);
 %!     fprintf(1, 'Done in %g seconds\n ', toc);

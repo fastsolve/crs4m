@@ -131,7 +131,7 @@ function test %#ok<DEFNU>
 %! Ax = zeros(size(sp,1),2);
 %! for nthreads=int32([1 2 4 8])
 %!     if nthreads>MACC_get_max_threads; break; end
-%!     fprintf(1, '\tTesting %d threads: ', nthreads);
+%!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
 %!     b2 = zeros(size(sp,2)*nthreads,2);
 %!     tic; [b2, Ax] = crs_prodAtAx( A, x, b2, Ax, nthreads);
 %!     fprintf(1, 'Done in %g seconds\n ', toc);
