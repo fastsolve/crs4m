@@ -24,6 +24,7 @@ void crs_create_api(const mxArray ** prhs, const mxArray **plhs) {
     emxArray_real_T      vs;
 
     struct_T             A;
+    mxArray              *_sub_mx1;
 
     /* Marshall in function inputs */
     if ( mxGetData(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
@@ -107,6 +108,7 @@ void crs_create1_api(const mxArray ** prhs, const mxArray **plhs) {
     emxArray_real_T      vs;
 
     struct_T             A;
+    mxArray              *_sub_mx1;
 
     int32_T              ni;
     int32_T              nj;
