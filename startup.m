@@ -47,15 +47,7 @@ end
 addpath(pwd); %#ok<*MCAP>
 addpath([pwd '/util']); %#ok<*MCAP>
 
-if isinmpi
-    if ~exist(['./crs_prodAx.', mexext], 'file')
-        if ~ismpiroot
-            error('You must build SpaLab before using mpirun/mpiexec.');
-        else
-            build_spl
-        end
-    end
-else
+if ~isinmpi
     try
         build_spl
     catch
