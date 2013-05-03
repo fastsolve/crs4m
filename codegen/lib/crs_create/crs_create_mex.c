@@ -27,15 +27,15 @@ void crs_create_api(const mxArray ** prhs, const mxArray **plhs) {
     mxArray              *_sub_mx1;
 
     /* Marshall in function inputs */
-    if ( mxGetData(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create:WrongInputType",
             "Input argument rows has incorrect data type. int32 is expected.");
     alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&rows, "rows", 1);
-    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create:WrongInputType",
             "Input argument cols has incorrect data type. int32 is expected.");
     alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&cols, "cols", 1);
-    if ( mxGetData(prhs[2]) && mxGetClassID(prhs[2]) != mxDOUBLE_CLASS)
+    if ( mxGetNumberOfElements(prhs[2]) && mxGetClassID(prhs[2]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_create:WrongInputType",
             "Input argument vs has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(prhs[2], (emxArray__common *)&vs, "vs", 1);
@@ -73,14 +73,14 @@ void crs_create0_api(const mxArray ** prhs, const mxArray **plhs) {
     b_struct_T           A;
 
     /* Marshall in function inputs */
-    if ( mxGetData(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create0:WrongInputType",
             "Input argument ni has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(prhs[0]) != 1)
         mexErrMsgIdAndTxt("crs_create0:WrongSizeOfInputArg",
             "Argument ni should be a scalar.");
     ni = *(int32_T*)mxGetData(prhs[0]);
-    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create0:WrongInputType",
             "Input argument nj has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(prhs[1]) != 1)
@@ -114,26 +114,26 @@ void crs_create1_api(const mxArray ** prhs, const mxArray **plhs) {
     int32_T              nj;
 
     /* Marshall in function inputs */
-    if ( mxGetData(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create1:WrongInputType",
             "Input argument is has incorrect data type. int32 is expected.");
     alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&is, "is", 1);
-    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create1:WrongInputType",
             "Input argument js has incorrect data type. int32 is expected.");
     alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&js, "js", 1);
-    if ( mxGetData(prhs[2]) && mxGetClassID(prhs[2]) != mxDOUBLE_CLASS)
+    if ( mxGetNumberOfElements(prhs[2]) && mxGetClassID(prhs[2]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_create1:WrongInputType",
             "Input argument vs has incorrect data type. double is expected.");
     alias_mxArray_to_emxArray(prhs[2], (emxArray__common *)&vs, "vs", 1);
-    if ( mxGetData(prhs[3]) && mxGetClassID(prhs[3]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[3]) && mxGetClassID(prhs[3]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create1:WrongInputType",
             "Input argument ni has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(prhs[3]) != 1)
         mexErrMsgIdAndTxt("crs_create1:WrongSizeOfInputArg",
             "Argument ni should be a scalar.");
     ni = *(int32_T*)mxGetData(prhs[3]);
-    if ( mxGetData(prhs[4]) && mxGetClassID(prhs[4]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[4]) && mxGetClassID(prhs[4]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create1:WrongInputType",
             "Input argument nj has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(prhs[4]) != 1)

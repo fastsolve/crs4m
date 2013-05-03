@@ -40,7 +40,7 @@ void crs_diag_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_diag:WrongInputStruct",
             "Input argument A does not have the field row_ptr.");
-    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_diag:WrongInputType",
             "Input argument A.row_ptr has incorrect data type. int32 is expected.");
     *(void**)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));
@@ -49,7 +49,7 @@ void crs_diag_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_diag:WrongInputStruct",
             "Input argument A does not have the field col_ind.");
-    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_diag:WrongInputType",
             "Input argument A.col_ind has incorrect data type. int32 is expected.");
     *(void**)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));
@@ -58,7 +58,7 @@ void crs_diag_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_diag:WrongInputStruct",
             "Input argument A does not have the field val.");
-    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
+    if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_diag:WrongInputType",
             "Input argument A.val has incorrect data type. double is expected.");
     *(void**)&A.val = mxCalloc(1, sizeof(emxArray__common));
@@ -67,7 +67,7 @@ void crs_diag_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_diag:WrongInputStruct",
             "Input argument A does not have the field nrows.");
-    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_diag:WrongInputType",
             "Input argument A.nrows has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
@@ -78,7 +78,7 @@ void crs_diag_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_diag:WrongInputStruct",
             "Input argument A does not have the field ncols.");
-    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_diag:WrongInputType",
             "Input argument A.ncols has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
@@ -126,7 +126,7 @@ void crs_diag1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputStruct",
             "Input argument A does not have the field row_ptr.");
-    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputType",
             "Input argument A.row_ptr has incorrect data type. int32 is expected.");
     *(void**)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));
@@ -135,7 +135,7 @@ void crs_diag1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputStruct",
             "Input argument A does not have the field col_ind.");
-    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputType",
             "Input argument A.col_ind has incorrect data type. int32 is expected.");
     *(void**)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));
@@ -144,7 +144,7 @@ void crs_diag1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputStruct",
             "Input argument A does not have the field val.");
-    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
+    if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputType",
             "Input argument A.val has incorrect data type. double is expected.");
     *(void**)&A.val = mxCalloc(1, sizeof(emxArray__common));
@@ -153,7 +153,7 @@ void crs_diag1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputStruct",
             "Input argument A does not have the field nrows.");
-    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputType",
             "Input argument A.nrows has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
@@ -164,14 +164,14 @@ void crs_diag1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputStruct",
             "Input argument A does not have the field ncols.");
-    if ( mxGetData(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputType",
             "Input argument A.ncols has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("crs_diag1:WrongSizeOfInputArg",
             "Argument A.ncols should be a scalar.");
     A.ncols = *(int32_T*)mxGetData(_sub_mx1);
-    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_diag1:WrongInputType",
             "Input argument k has incorrect data type. int32 is expected.");
     if ( mxGetNumberOfElements(prhs[1]) != 1)

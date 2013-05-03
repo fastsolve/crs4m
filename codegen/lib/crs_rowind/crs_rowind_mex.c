@@ -24,11 +24,11 @@ void crs_rowind_api(const mxArray ** prhs, const mxArray **plhs) {
     emxArray_int32_T     row_ind;
 
     /* Marshall in function inputs */
-    if ( mxGetData(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_rowind:WrongInputType",
             "Input argument row_ptr has incorrect data type. int32 is expected.");
     alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&row_ptr, "row_ptr", 1);
-    if ( mxGetData(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
+    if ( mxGetNumberOfElements(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_rowind:WrongInputType",
             "Input argument col_ind has incorrect data type. int32 is expected.");
     alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&col_ind, "col_ind", 1);
