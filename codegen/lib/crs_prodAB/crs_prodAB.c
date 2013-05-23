@@ -18,7 +18,7 @@ static void msg_error(void)
 
 void crs_prodAB(const struct_T *A, const struct_T *B, struct_T *C)
 {
-  emxArray_int32_T *b_index;
+  m2cArray_int32_T *b_index;
   int32_T i0;
   int32_T u0;
   int32_T u1;
@@ -26,26 +26,26 @@ void crs_prodAB(const struct_T *A, const struct_T *B, struct_T *C)
   int32_T istart;
   int32_T clength;
   int32_T k;
-  emxArray_real_T *temp;
+  m2cArray_real_T *temp;
   if (A->ncols != B->nrows) {
     msg_error();
   }
 
-  emxInit_int32_T(&b_index, 1);
+  m2cInit_int32_T(&b_index, 1);
   i0 = C->row_ptr->size[0];
   C->row_ptr->size[0] = 0;
-  emxEnsureCapacity((emxArray__common *)C->row_ptr, i0, (int32_T)sizeof(int32_T));
+  m2cEnsureCapacity((m2cArray__common *)C->row_ptr, i0, (int32_T)sizeof(int32_T));
   i0 = C->col_ind->size[0];
   C->col_ind->size[0] = 0;
-  emxEnsureCapacity((emxArray__common *)C->col_ind, i0, (int32_T)sizeof(int32_T));
+  m2cEnsureCapacity((m2cArray__common *)C->col_ind, i0, (int32_T)sizeof(int32_T));
   i0 = C->val->size[0];
   C->val->size[0] = 0;
-  emxEnsureCapacity((emxArray__common *)C->val, i0, (int32_T)sizeof(real_T));
+  m2cEnsureCapacity((m2cArray__common *)C->val, i0, (int32_T)sizeof(real_T));
   C->nrows = A->nrows;
   C->ncols = B->ncols;
   i0 = C->row_ptr->size[0];
   C->row_ptr->size[0] = A->row_ptr->size[0];
-  emxEnsureCapacity((emxArray__common *)C->row_ptr, i0, (int32_T)sizeof(int32_T));
+  m2cEnsureCapacity((m2cArray__common *)C->row_ptr, i0, (int32_T)sizeof(int32_T));
   C->row_ptr->data[0] = 1;
   u0 = A->ncols;
   u1 = B->ncols;
@@ -56,7 +56,7 @@ void crs_prodAB(const struct_T *A, const struct_T *B, struct_T *C)
 
   i0 = b_index->size[0];
   b_index->size[0] = u0;
-  emxEnsureCapacity((emxArray__common *)b_index, i0, (int32_T)sizeof(int32_T));
+  m2cEnsureCapacity((m2cArray__common *)b_index, i0, (int32_T)sizeof(int32_T));
   for (i0 = 0; i0 < u0; i0++) {
     b_index->data[i0] = 0;
   }
@@ -91,7 +91,7 @@ void crs_prodAB(const struct_T *A, const struct_T *B, struct_T *C)
   u0 = C->row_ptr->data[A->nrows] - 1;
   i0 = C->col_ind->size[0];
   C->col_ind->size[0] = u0;
-  emxEnsureCapacity((emxArray__common *)C->col_ind, i0, (int32_T)sizeof(int32_T));
+  m2cEnsureCapacity((m2cArray__common *)C->col_ind, i0, (int32_T)sizeof(int32_T));
   for (i = 1; i <= A->nrows; i++) {
     istart = -1;
     clength = 0;
@@ -119,16 +119,16 @@ void crs_prodAB(const struct_T *A, const struct_T *B, struct_T *C)
     b_index->data[i - 1] = 0;
   }
 
-  emxInit_real_T(&temp, 1);
+  m2cInit_real_T(&temp, 1);
   u0 = C->row_ptr->data[A->nrows] - 1;
   i0 = C->val->size[0];
   C->val->size[0] = u0;
-  emxEnsureCapacity((emxArray__common *)C->val, i0, (int32_T)sizeof(real_T));
+  m2cEnsureCapacity((m2cArray__common *)C->val, i0, (int32_T)sizeof(real_T));
   i0 = temp->size[0];
   temp->size[0] = b_index->size[0];
-  emxEnsureCapacity((emxArray__common *)temp, i0, (int32_T)sizeof(real_T));
+  m2cEnsureCapacity((m2cArray__common *)temp, i0, (int32_T)sizeof(real_T));
   u0 = b_index->size[0];
-  emxFree_int32_T(&b_index);
+  m2cFree_int32_T(&b_index);
   for (i0 = 0; i0 < u0; i0++) {
     temp->data[i0] = 0.0;
   }
@@ -150,7 +150,7 @@ void crs_prodAB(const struct_T *A, const struct_T *B, struct_T *C)
     }
   }
 
-  emxFree_real_T(&temp);
+  m2cFree_real_T(&temp);
 }
 
 void crs_prodAB_initialize(void)

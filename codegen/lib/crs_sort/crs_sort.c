@@ -1,13 +1,13 @@
 #include "crs_sort.h"
 #include "m2c.h"
 
-void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,
-              emxArray_real_T *val)
+void crs_sort(const m2cArray_int32_T *row_ptr, m2cArray_int32_T *col_ind,
+              m2cArray_real_T *val)
 {
   int32_T i0;
   int32_T i;
-  emxArray_real_T *buf_val;
-  emxArray_int32_T *buf_indx;
+  m2cArray_real_T *buf_val;
+  m2cArray_int32_T *buf_indx;
   boolean_T ascend;
   int32_T j;
   int32_T n;
@@ -23,8 +23,8 @@ void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,
   boolean_T guard2 = FALSE;
   i0 = row_ptr->size[0] - 1;
   i = 1;
-  emxInit_real_T(&buf_val, 1);
-  emxInit_int32_T(&buf_indx, 1);
+  m2cInit_real_T(&buf_val, 1);
+  m2cInit_int32_T(&buf_indx, 1);
   while (i <= i0) {
     ascend = TRUE;
     j = row_ptr->data[i - 1];
@@ -42,10 +42,10 @@ void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,
     if (!ascend) {
       n = buf_indx->size[0];
       buf_indx->size[0] = row_ptr->data[i] - row_ptr->data[i - 1];
-      emxEnsureCapacity((emxArray__common *)buf_indx, n, (int32_T)sizeof(int32_T));
+      m2cEnsureCapacity((m2cArray__common *)buf_indx, n, (int32_T)sizeof(int32_T));
       n = buf_val->size[0];
       buf_val->size[0] = row_ptr->data[i] - row_ptr->data[i - 1];
-      emxEnsureCapacity((emxArray__common *)buf_val, n, (int32_T)sizeof(real_T));
+      m2cEnsureCapacity((m2cArray__common *)buf_val, n, (int32_T)sizeof(real_T));
       ind = 1U;
       n = row_ptr->data[i] - 1;
       for (j = row_ptr->data[i - 1]; j <= n; j++) {
@@ -135,15 +135,15 @@ void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,
     i++;
   }
 
-  emxFree_int32_T(&buf_indx);
-  emxFree_real_T(&buf_val);
+  m2cFree_int32_T(&buf_indx);
+  m2cFree_real_T(&buf_val);
 }
 
-void crs_sort0(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind)
+void crs_sort0(const m2cArray_int32_T *row_ptr, m2cArray_int32_T *col_ind)
 {
   int32_T i1;
   int32_T i;
-  emxArray_int32_T *buf_indx;
+  m2cArray_int32_T *buf_indx;
   boolean_T ascend;
   int32_T j;
   int32_T n;
@@ -158,7 +158,7 @@ void crs_sort0(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind)
   boolean_T guard2 = FALSE;
   i1 = row_ptr->size[0] - 1;
   i = 1;
-  emxInit_int32_T(&buf_indx, 1);
+  m2cInit_int32_T(&buf_indx, 1);
   while (i <= i1) {
     ascend = TRUE;
     j = row_ptr->data[i - 1];
@@ -176,7 +176,7 @@ void crs_sort0(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind)
     if (!ascend) {
       n = buf_indx->size[0];
       buf_indx->size[0] = row_ptr->data[i] - row_ptr->data[i - 1];
-      emxEnsureCapacity((emxArray__common *)buf_indx, n, (int32_T)sizeof(int32_T));
+      m2cEnsureCapacity((m2cArray__common *)buf_indx, n, (int32_T)sizeof(int32_T));
       ind = 1U;
       n = row_ptr->data[i] - 1;
       for (j = row_ptr->data[i - 1]; j <= n; j++) {
@@ -258,7 +258,7 @@ void crs_sort0(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind)
     i++;
   }
 
-  emxFree_int32_T(&buf_indx);
+  m2cFree_int32_T(&buf_indx);
 }
 
 void crs_sort_initialize(void)

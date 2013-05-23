@@ -19,61 +19,61 @@
 
 void crs_sort_api(const mxArray ** prhs, const mxArray **plhs) {
 
-    emxArray_int32_T     row_ptr;
-    emxArray_int32_T     col_ind;
-    emxArray_real_T      val;
+    m2cArray_int32_T     row_ptr;
+    m2cArray_int32_T     col_ind;
+    m2cArray_real_T      val;
 
     /* Marshall in function inputs */
     if ( mxGetNumberOfElements(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_sort:WrongInputType",
             "Input argument row_ptr has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&row_ptr, "row_ptr", 1);
+    alias_mxArray_to_m2cArray(prhs[0], (m2cArray__common *)&row_ptr, "row_ptr", 1);
     plhs[0] = mxDuplicateArray( prhs[1]);
     if ( mxGetNumberOfElements(plhs[0]) && mxGetClassID(plhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_sort:WrongInputType",
             "Input argument col_ind has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(plhs[0], (emxArray__common *)&col_ind, "col_ind", 1);
+    alias_mxArray_to_m2cArray(plhs[0], (m2cArray__common *)&col_ind, "col_ind", 1);
     plhs[1] = mxDuplicateArray( prhs[2]);
     if ( mxGetNumberOfElements(plhs[1]) && mxGetClassID(plhs[1]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_sort:WrongInputType",
             "Input argument val has incorrect data type. double is expected.");
-    alias_mxArray_to_emxArray(plhs[1], (emxArray__common *)&val, "val", 1);
+    alias_mxArray_to_m2cArray(plhs[1], (m2cArray__common *)&val, "val", 1);
 
     /* Invoke the target function */
     crs_sort_initialize();
     crs_sort(&row_ptr, &col_ind, &val);
     crs_sort_terminate();
     /* Marshall out function outputs */
-    if (col_ind.canFreeData) plhs[1] = move_emxArray_to_mxArray((emxArray__common*)&col_ind, mxINT32_CLASS);
-    if (val.canFreeData) plhs[2] = move_emxArray_to_mxArray((emxArray__common*)&val, mxDOUBLE_CLASS);    /* Free temporary variables */
-    free_emxArray( (emxArray__common*)&row_ptr);
-    free_emxArray( (emxArray__common*)&col_ind);
-    free_emxArray( (emxArray__common*)&val);}
+    if (col_ind.canFreeData) plhs[1] = move_m2cArray_to_mxArray((m2cArray__common*)&col_ind, mxINT32_CLASS);
+    if (val.canFreeData) plhs[2] = move_m2cArray_to_mxArray((m2cArray__common*)&val, mxDOUBLE_CLASS);    /* Free temporary variables */
+    free_m2cArray( (m2cArray__common*)&row_ptr);
+    free_m2cArray( (m2cArray__common*)&col_ind);
+    free_m2cArray( (m2cArray__common*)&val);}
 
 void crs_sort0_api(const mxArray ** prhs, const mxArray **plhs) {
 
-    emxArray_int32_T     row_ptr;
-    emxArray_int32_T     col_ind;
+    m2cArray_int32_T     row_ptr;
+    m2cArray_int32_T     col_ind;
 
     /* Marshall in function inputs */
     if ( mxGetNumberOfElements(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_sort0:WrongInputType",
             "Input argument row_ptr has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&row_ptr, "row_ptr", 1);
+    alias_mxArray_to_m2cArray(prhs[0], (m2cArray__common *)&row_ptr, "row_ptr", 1);
     plhs[0] = mxDuplicateArray( prhs[1]);
     if ( mxGetNumberOfElements(plhs[0]) && mxGetClassID(plhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_sort0:WrongInputType",
             "Input argument col_ind has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(plhs[0], (emxArray__common *)&col_ind, "col_ind", 1);
+    alias_mxArray_to_m2cArray(plhs[0], (m2cArray__common *)&col_ind, "col_ind", 1);
 
     /* Invoke the target function */
     crs_sort_initialize();
     crs_sort0(&row_ptr, &col_ind);
     crs_sort_terminate();
     /* Marshall out function outputs */
-    if (col_ind.canFreeData) plhs[1] = move_emxArray_to_mxArray((emxArray__common*)&col_ind, mxINT32_CLASS);    /* Free temporary variables */
-    free_emxArray( (emxArray__common*)&row_ptr);
-    free_emxArray( (emxArray__common*)&col_ind);}
+    if (col_ind.canFreeData) plhs[1] = move_m2cArray_to_mxArray((m2cArray__common*)&col_ind, mxINT32_CLASS);    /* Free temporary variables */
+    free_m2cArray( (m2cArray__common*)&row_ptr);
+    free_m2cArray( (m2cArray__common*)&col_ind);}
 
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {

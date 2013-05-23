@@ -43,8 +43,8 @@ void crs_prodAB_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputType",
             "Input argument A.row_ptr has incorrect data type. int32 is expected.");
-    *(void**)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));
-    alias_mxArray_to_emxArray(_sub_mx1, (emxArray__common*)A.row_ptr, "A.row_ptr", 1);
+    *(void**)&A.row_ptr = mxCalloc(1, sizeof(m2cArray__common));
+    alias_mxArray_to_m2cArray(_sub_mx1, (m2cArray__common*)A.row_ptr, "A.row_ptr", 1);
     _sub_mx1 = mxGetField( prhs[0], 0, "col_ind");
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputStruct",
@@ -52,8 +52,8 @@ void crs_prodAB_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputType",
             "Input argument A.col_ind has incorrect data type. int32 is expected.");
-    *(void**)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));
-    alias_mxArray_to_emxArray(_sub_mx1, (emxArray__common*)A.col_ind, "A.col_ind", 1);
+    *(void**)&A.col_ind = mxCalloc(1, sizeof(m2cArray__common));
+    alias_mxArray_to_m2cArray(_sub_mx1, (m2cArray__common*)A.col_ind, "A.col_ind", 1);
     _sub_mx1 = mxGetField( prhs[0], 0, "val");
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputStruct",
@@ -61,8 +61,8 @@ void crs_prodAB_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputType",
             "Input argument A.val has incorrect data type. double is expected.");
-    *(void**)&A.val = mxCalloc(1, sizeof(emxArray__common));
-    alias_mxArray_to_emxArray(_sub_mx1, (emxArray__common*)A.val, "A.val", 1);
+    *(void**)&A.val = mxCalloc(1, sizeof(m2cArray__common));
+    alias_mxArray_to_m2cArray(_sub_mx1, (m2cArray__common*)A.val, "A.val", 1);
     _sub_mx1 = mxGetField( prhs[0], 0, "nrows");
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputStruct",
@@ -103,8 +103,8 @@ void crs_prodAB_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputType",
             "Input argument B.row_ptr has incorrect data type. int32 is expected.");
-    *(void**)&B.row_ptr = mxCalloc(1, sizeof(emxArray__common));
-    alias_mxArray_to_emxArray(_sub_mx1, (emxArray__common*)B.row_ptr, "B.row_ptr", 1);
+    *(void**)&B.row_ptr = mxCalloc(1, sizeof(m2cArray__common));
+    alias_mxArray_to_m2cArray(_sub_mx1, (m2cArray__common*)B.row_ptr, "B.row_ptr", 1);
     _sub_mx1 = mxGetField( prhs[1], 0, "col_ind");
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputStruct",
@@ -112,8 +112,8 @@ void crs_prodAB_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputType",
             "Input argument B.col_ind has incorrect data type. int32 is expected.");
-    *(void**)&B.col_ind = mxCalloc(1, sizeof(emxArray__common));
-    alias_mxArray_to_emxArray(_sub_mx1, (emxArray__common*)B.col_ind, "B.col_ind", 1);
+    *(void**)&B.col_ind = mxCalloc(1, sizeof(m2cArray__common));
+    alias_mxArray_to_m2cArray(_sub_mx1, (m2cArray__common*)B.col_ind, "B.col_ind", 1);
     _sub_mx1 = mxGetField( prhs[1], 0, "val");
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputStruct",
@@ -121,8 +121,8 @@ void crs_prodAB_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputType",
             "Input argument B.val has incorrect data type. double is expected.");
-    *(void**)&B.val = mxCalloc(1, sizeof(emxArray__common));
-    alias_mxArray_to_emxArray(_sub_mx1, (emxArray__common*)B.val, "B.val", 1);
+    *(void**)&B.val = mxCalloc(1, sizeof(m2cArray__common));
+    alias_mxArray_to_m2cArray(_sub_mx1, (m2cArray__common*)B.val, "B.val", 1);
     _sub_mx1 = mxGetField( prhs[1], 0, "nrows");
     if ( _sub_mx1==NULL)
         mexErrMsgIdAndTxt("crs_prodAB:WrongInputStruct",
@@ -147,9 +147,9 @@ void crs_prodAB_api(const mxArray ** prhs, const mxArray **plhs) {
     B.ncols = *(int32_T*)mxGetData(_sub_mx1);
 
     /* Preallocate output variables */
-    *(void **)&C.row_ptr = mxCalloc(1, sizeof(emxArray__common));    init_emxArray( (emxArray__common*)C.row_ptr, 1);
-    *(void **)&C.col_ind = mxCalloc(1, sizeof(emxArray__common));    init_emxArray( (emxArray__common*)C.col_ind, 1);
-    *(void **)&C.val = mxCalloc(1, sizeof(emxArray__common));    init_emxArray( (emxArray__common*)C.val, 1);
+    *(void **)&C.row_ptr = mxCalloc(1, sizeof(m2cArray__common));    init_m2cArray( (m2cArray__common*)C.row_ptr, 1);
+    *(void **)&C.col_ind = mxCalloc(1, sizeof(m2cArray__common));    init_m2cArray( (m2cArray__common*)C.col_ind, 1);
+    *(void **)&C.val = mxCalloc(1, sizeof(m2cArray__common));    init_m2cArray( (m2cArray__common*)C.val, 1);
 
     /* Invoke the target function */
     crs_prodAB_initialize();
@@ -157,24 +157,24 @@ void crs_prodAB_api(const mxArray ** prhs, const mxArray **plhs) {
     crs_prodAB_terminate();
     /* Marshall out function outputs */
     {const char *_fields[] = { "row_ptr", "col_ind", "val", "nrows", "ncols",  ""};
-    int32_T _one=1;
+    m2cSize _one=1;
     plhs[0] = create_struct_mxArray( 1, &_one, 5, _fields);}
-    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 0, move_emxArray_to_mxArray((emxArray__common*)C.row_ptr, mxINT32_CLASS));
-    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 1, move_emxArray_to_mxArray((emxArray__common*)C.col_ind, mxINT32_CLASS));
-    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 2, move_emxArray_to_mxArray((emxArray__common*)C.val, mxDOUBLE_CLASS));
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 0, move_m2cArray_to_mxArray((m2cArray__common*)C.row_ptr, mxINT32_CLASS));
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 1, move_m2cArray_to_mxArray((m2cArray__common*)C.col_ind, mxINT32_CLASS));
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 2, move_m2cArray_to_mxArray((m2cArray__common*)C.val, mxDOUBLE_CLASS));
     mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 3, copy_scalar_to_mxArray(&C.nrows, mxINT32_CLASS));
     mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 4, copy_scalar_to_mxArray(&C.ncols, mxINT32_CLASS));    /* Free temporary variables */
-    free_emxArray( (emxArray__common*)A.val); mxFree( A.val);
-    free_emxArray( (emxArray__common*)A.col_ind); mxFree( A.col_ind);
-    free_emxArray( (emxArray__common*)A.row_ptr); mxFree( A.row_ptr);
+    free_m2cArray( (m2cArray__common*)A.val); mxFree( A.val);
+    free_m2cArray( (m2cArray__common*)A.col_ind); mxFree( A.col_ind);
+    free_m2cArray( (m2cArray__common*)A.row_ptr); mxFree( A.row_ptr);
 
-    free_emxArray( (emxArray__common*)B.val); mxFree( B.val);
-    free_emxArray( (emxArray__common*)B.col_ind); mxFree( B.col_ind);
-    free_emxArray( (emxArray__common*)B.row_ptr); mxFree( B.row_ptr);
+    free_m2cArray( (m2cArray__common*)B.val); mxFree( B.val);
+    free_m2cArray( (m2cArray__common*)B.col_ind); mxFree( B.col_ind);
+    free_m2cArray( (m2cArray__common*)B.row_ptr); mxFree( B.row_ptr);
 
-    free_emxArray( (emxArray__common*)C.val); mxFree( C.val);
-    free_emxArray( (emxArray__common*)C.col_ind); mxFree( C.col_ind);
-    free_emxArray( (emxArray__common*)C.row_ptr); mxFree( C.row_ptr);
+    free_m2cArray( (m2cArray__common*)C.val); mxFree( C.val);
+    free_m2cArray( (m2cArray__common*)C.col_ind); mxFree( C.col_ind);
+    free_m2cArray( (m2cArray__common*)C.row_ptr); mxFree( C.row_ptr);
 }
 
 

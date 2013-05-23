@@ -19,32 +19,32 @@
 
 void crs_rowind_api(const mxArray ** prhs, const mxArray **plhs) {
 
-    emxArray_int32_T     row_ptr;
-    emxArray_int32_T     col_ind;
-    emxArray_int32_T     row_ind;
+    m2cArray_int32_T     row_ptr;
+    m2cArray_int32_T     col_ind;
+    m2cArray_int32_T     row_ind;
 
     /* Marshall in function inputs */
     if ( mxGetNumberOfElements(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_rowind:WrongInputType",
             "Input argument row_ptr has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&row_ptr, "row_ptr", 1);
+    alias_mxArray_to_m2cArray(prhs[0], (m2cArray__common *)&row_ptr, "row_ptr", 1);
     if ( mxGetNumberOfElements(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_rowind:WrongInputType",
             "Input argument col_ind has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&col_ind, "col_ind", 1);
+    alias_mxArray_to_m2cArray(prhs[1], (m2cArray__common *)&col_ind, "col_ind", 1);
 
     /* Preallocate output variables */
-    init_emxArray((emxArray__common*)&row_ind, 1);
+    init_m2cArray((m2cArray__common*)&row_ind, 1);
 
     /* Invoke the target function */
     crs_rowind_initialize();
     crs_rowind(&row_ptr, &col_ind, &row_ind);
     crs_rowind_terminate();
     /* Marshall out function outputs */
-    plhs[0] = move_emxArray_to_mxArray((emxArray__common*)&row_ind, mxINT32_CLASS);    /* Free temporary variables */
-    free_emxArray( (emxArray__common*)&row_ptr);
-    free_emxArray( (emxArray__common*)&col_ind);
-    free_emxArray( (emxArray__common*)&row_ind);}
+    plhs[0] = move_m2cArray_to_mxArray((m2cArray__common*)&row_ind, mxINT32_CLASS);    /* Free temporary variables */
+    free_m2cArray( (m2cArray__common*)&row_ptr);
+    free_m2cArray( (m2cArray__common*)&col_ind);
+    free_m2cArray( (m2cArray__common*)&row_ind);}
 
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {

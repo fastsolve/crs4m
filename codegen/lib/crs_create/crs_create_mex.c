@@ -19,9 +19,9 @@
 
 void crs_create_api(const mxArray ** prhs, const mxArray **plhs) {
 
-    emxArray_int32_T     rows;
-    emxArray_int32_T     cols;
-    emxArray_real_T      vs;
+    m2cArray_int32_T     rows;
+    m2cArray_int32_T     cols;
+    m2cArray_real_T      vs;
 
     struct_T             A;
     mxArray              *_sub_mx1;
@@ -30,20 +30,20 @@ void crs_create_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( mxGetNumberOfElements(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create:WrongInputType",
             "Input argument rows has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&rows, "rows", 1);
+    alias_mxArray_to_m2cArray(prhs[0], (m2cArray__common *)&rows, "rows", 1);
     if ( mxGetNumberOfElements(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create:WrongInputType",
             "Input argument cols has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&cols, "cols", 1);
+    alias_mxArray_to_m2cArray(prhs[1], (m2cArray__common *)&cols, "cols", 1);
     if ( mxGetNumberOfElements(prhs[2]) && mxGetClassID(prhs[2]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_create:WrongInputType",
             "Input argument vs has incorrect data type. double is expected.");
-    alias_mxArray_to_emxArray(prhs[2], (emxArray__common *)&vs, "vs", 1);
+    alias_mxArray_to_m2cArray(prhs[2], (m2cArray__common *)&vs, "vs", 1);
 
     /* Preallocate output variables */
-    *(void **)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));    init_emxArray( (emxArray__common*)A.row_ptr, 1);
-    *(void **)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));    init_emxArray( (emxArray__common*)A.col_ind, 1);
-    *(void **)&A.val = mxCalloc(1, sizeof(emxArray__common));    init_emxArray( (emxArray__common*)A.val, 1);
+    *(void **)&A.row_ptr = mxCalloc(1, sizeof(m2cArray__common));    init_m2cArray( (m2cArray__common*)A.row_ptr, 1);
+    *(void **)&A.col_ind = mxCalloc(1, sizeof(m2cArray__common));    init_m2cArray( (m2cArray__common*)A.col_ind, 1);
+    *(void **)&A.val = mxCalloc(1, sizeof(m2cArray__common));    init_m2cArray( (m2cArray__common*)A.val, 1);
 
     /* Invoke the target function */
     crs_create_initialize();
@@ -51,19 +51,19 @@ void crs_create_api(const mxArray ** prhs, const mxArray **plhs) {
     crs_create_terminate();
     /* Marshall out function outputs */
     {const char *_fields[] = { "row_ptr", "col_ind", "val", "nrows", "ncols",  ""};
-    int32_T _one=1;
+    m2cSize _one=1;
     plhs[0] = create_struct_mxArray( 1, &_one, 5, _fields);}
-    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 0, move_emxArray_to_mxArray((emxArray__common*)A.row_ptr, mxINT32_CLASS));
-    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 1, move_emxArray_to_mxArray((emxArray__common*)A.col_ind, mxINT32_CLASS));
-    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 2, move_emxArray_to_mxArray((emxArray__common*)A.val, mxDOUBLE_CLASS));
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 0, move_m2cArray_to_mxArray((m2cArray__common*)A.row_ptr, mxINT32_CLASS));
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 1, move_m2cArray_to_mxArray((m2cArray__common*)A.col_ind, mxINT32_CLASS));
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 2, move_m2cArray_to_mxArray((m2cArray__common*)A.val, mxDOUBLE_CLASS));
     mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 3, copy_scalar_to_mxArray(&A.nrows, mxINT32_CLASS));
     mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 4, copy_scalar_to_mxArray(&A.ncols, mxINT32_CLASS));    /* Free temporary variables */
-    free_emxArray( (emxArray__common*)&rows);
-    free_emxArray( (emxArray__common*)&cols);
-    free_emxArray( (emxArray__common*)&vs);
-    free_emxArray( (emxArray__common*)A.val); mxFree( A.val);
-    free_emxArray( (emxArray__common*)A.col_ind); mxFree( A.col_ind);
-    free_emxArray( (emxArray__common*)A.row_ptr); mxFree( A.row_ptr);
+    free_m2cArray( (m2cArray__common*)&rows);
+    free_m2cArray( (m2cArray__common*)&cols);
+    free_m2cArray( (m2cArray__common*)&vs);
+    free_m2cArray( (m2cArray__common*)A.val); mxFree( A.val);
+    free_m2cArray( (m2cArray__common*)A.col_ind); mxFree( A.col_ind);
+    free_m2cArray( (m2cArray__common*)A.row_ptr); mxFree( A.row_ptr);
 }
 
 void crs_create0_api(const mxArray ** prhs, const mxArray **plhs) {
@@ -96,16 +96,16 @@ void crs_create0_api(const mxArray ** prhs, const mxArray **plhs) {
     crs_create_terminate();
     /* Marshall out function outputs */
     {const char *_fields[] = { "nrows", "ncols",  ""};
-    int32_T _one=1;
+    m2cSize _one=1;
     plhs[0] = create_struct_mxArray( 1, &_one, 2, _fields);}
     mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 0, copy_scalar_to_mxArray(&A.nrows, mxINT32_CLASS));
     mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 1, copy_scalar_to_mxArray(&A.ncols, mxINT32_CLASS));}
 
 void crs_create1_api(const mxArray ** prhs, const mxArray **plhs) {
 
-    emxArray_int32_T     is;
-    emxArray_int32_T     js;
-    emxArray_real_T      vs;
+    m2cArray_int32_T     is;
+    m2cArray_int32_T     js;
+    m2cArray_real_T      vs;
 
     struct_T             A;
     mxArray              *_sub_mx1;
@@ -117,15 +117,15 @@ void crs_create1_api(const mxArray ** prhs, const mxArray **plhs) {
     if ( mxGetNumberOfElements(prhs[0]) && mxGetClassID(prhs[0]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create1:WrongInputType",
             "Input argument is has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(prhs[0], (emxArray__common *)&is, "is", 1);
+    alias_mxArray_to_m2cArray(prhs[0], (m2cArray__common *)&is, "is", 1);
     if ( mxGetNumberOfElements(prhs[1]) && mxGetClassID(prhs[1]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create1:WrongInputType",
             "Input argument js has incorrect data type. int32 is expected.");
-    alias_mxArray_to_emxArray(prhs[1], (emxArray__common *)&js, "js", 1);
+    alias_mxArray_to_m2cArray(prhs[1], (m2cArray__common *)&js, "js", 1);
     if ( mxGetNumberOfElements(prhs[2]) && mxGetClassID(prhs[2]) != mxDOUBLE_CLASS)
         mexErrMsgIdAndTxt("crs_create1:WrongInputType",
             "Input argument vs has incorrect data type. double is expected.");
-    alias_mxArray_to_emxArray(prhs[2], (emxArray__common *)&vs, "vs", 1);
+    alias_mxArray_to_m2cArray(prhs[2], (m2cArray__common *)&vs, "vs", 1);
     if ( mxGetNumberOfElements(prhs[3]) && mxGetClassID(prhs[3]) != mxINT32_CLASS)
         mexErrMsgIdAndTxt("crs_create1:WrongInputType",
             "Input argument ni has incorrect data type. int32 is expected.");
@@ -142,9 +142,9 @@ void crs_create1_api(const mxArray ** prhs, const mxArray **plhs) {
     nj = *(int32_T*)mxGetData(prhs[4]);
 
     /* Preallocate output variables */
-    *(void **)&A.row_ptr = mxCalloc(1, sizeof(emxArray__common));    init_emxArray( (emxArray__common*)A.row_ptr, 1);
-    *(void **)&A.col_ind = mxCalloc(1, sizeof(emxArray__common));    init_emxArray( (emxArray__common*)A.col_ind, 1);
-    *(void **)&A.val = mxCalloc(1, sizeof(emxArray__common));    init_emxArray( (emxArray__common*)A.val, 1);
+    *(void **)&A.row_ptr = mxCalloc(1, sizeof(m2cArray__common));    init_m2cArray( (m2cArray__common*)A.row_ptr, 1);
+    *(void **)&A.col_ind = mxCalloc(1, sizeof(m2cArray__common));    init_m2cArray( (m2cArray__common*)A.col_ind, 1);
+    *(void **)&A.val = mxCalloc(1, sizeof(m2cArray__common));    init_m2cArray( (m2cArray__common*)A.val, 1);
 
     /* Invoke the target function */
     crs_create_initialize();
@@ -152,19 +152,19 @@ void crs_create1_api(const mxArray ** prhs, const mxArray **plhs) {
     crs_create_terminate();
     /* Marshall out function outputs */
     {const char *_fields[] = { "row_ptr", "col_ind", "val", "nrows", "ncols",  ""};
-    int32_T _one=1;
+    m2cSize _one=1;
     plhs[0] = create_struct_mxArray( 1, &_one, 5, _fields);}
-    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 0, move_emxArray_to_mxArray((emxArray__common*)A.row_ptr, mxINT32_CLASS));
-    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 1, move_emxArray_to_mxArray((emxArray__common*)A.col_ind, mxINT32_CLASS));
-    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 2, move_emxArray_to_mxArray((emxArray__common*)A.val, mxDOUBLE_CLASS));
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 0, move_m2cArray_to_mxArray((m2cArray__common*)A.row_ptr, mxINT32_CLASS));
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 1, move_m2cArray_to_mxArray((m2cArray__common*)A.col_ind, mxINT32_CLASS));
+    mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 2, move_m2cArray_to_mxArray((m2cArray__common*)A.val, mxDOUBLE_CLASS));
     mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 3, copy_scalar_to_mxArray(&A.nrows, mxINT32_CLASS));
     mxSetFieldByNumber( (mxArray*)(plhs[0]), 0, 4, copy_scalar_to_mxArray(&A.ncols, mxINT32_CLASS));    /* Free temporary variables */
-    free_emxArray( (emxArray__common*)&is);
-    free_emxArray( (emxArray__common*)&js);
-    free_emxArray( (emxArray__common*)&vs);
-    free_emxArray( (emxArray__common*)A.val); mxFree( A.val);
-    free_emxArray( (emxArray__common*)A.col_ind); mxFree( A.col_ind);
-    free_emxArray( (emxArray__common*)A.row_ptr); mxFree( A.row_ptr);
+    free_m2cArray( (m2cArray__common*)&is);
+    free_m2cArray( (m2cArray__common*)&js);
+    free_m2cArray( (m2cArray__common*)&vs);
+    free_m2cArray( (m2cArray__common*)A.val); mxFree( A.val);
+    free_m2cArray( (m2cArray__common*)A.col_ind); mxFree( A.col_ind);
+    free_m2cArray( (m2cArray__common*)A.row_ptr); mxFree( A.row_ptr);
 }
 
 

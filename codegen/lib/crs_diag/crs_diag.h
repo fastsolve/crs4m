@@ -6,18 +6,18 @@
 
 #include "rtwtypes.h"
 #include "crs_diag_types.h"
-extern void crs_diag(const struct_T *A, emxArray_real_T *D);
-extern void crs_diag1(const struct_T *A, int32_T k, emxArray_real_T *D);
+extern void crs_diag(const struct_T *A, m2cArray_real_T *D);
+extern void crs_diag1(const struct_T *A, int32_T k, m2cArray_real_T *D);
 extern void crs_diag_initialize(void);
 extern void crs_diag_terminate(void);
-extern emxArray_int32_T *emxCreateND_int32_T(int32_T numDimensions, int32_T *size);
-extern emxArray_real_T *emxCreateND_real_T(int32_T numDimensions, int32_T *size);
-extern emxArray_int32_T *emxCreateWrapperND_int32_T(int32_T *data, int32_T numDimensions, int32_T *size);
-extern emxArray_real_T *emxCreateWrapperND_real_T(real_T *data, int32_T numDimensions, int32_T *size);
-extern emxArray_int32_T *emxCreateWrapper_int32_T(int32_T *data, int32_T rows, int32_T cols);
-extern emxArray_real_T *emxCreateWrapper_real_T(real_T *data, int32_T rows, int32_T cols);
-extern emxArray_int32_T *emxCreate_int32_T(int32_T rows, int32_T cols);
-extern emxArray_real_T *emxCreate_real_T(int32_T rows, int32_T cols);
-extern void emxDestroyArray_int32_T(emxArray_int32_T *emxArray);
-extern void emxDestroyArray_real_T(emxArray_real_T *emxArray);
+extern m2cArray_int32_T *m2cCreateND_int32_T( m2cShort numDimensions, m2cSize *size);
+extern m2cArray_real_T *m2cCreateND_real_T( m2cShort numDimensions, m2cSize *size);
+extern m2cArray_int32_T *m2cCreateWrapperND_int32_T(int32_T *data, m2cShort numDimensions, m2cSize *size);
+extern m2cArray_real_T *m2cCreateWrapperND_real_T(real_T *data, m2cShort numDimensions, m2cSize *size);
+extern m2cArray_int32_T *m2cCreateWrapper_int32_T(int32_T *data, m2cSize rows, m2cSize cols);
+extern m2cArray_real_T *m2cCreateWrapper_real_T(real_T *data, m2cSize rows, m2cSize cols);
+extern m2cArray_int32_T *m2cCreate_int32_T( m2cSize rows, m2cSize cols);
+extern m2cArray_real_T *m2cCreate_real_T( m2cSize rows, m2cSize cols);
+extern void m2cDestroyArray_int32_T(m2cArray_int32_T *m2cArray);
+extern void m2cDestroyArray_real_T(m2cArray_real_T *m2cArray);
 #endif
