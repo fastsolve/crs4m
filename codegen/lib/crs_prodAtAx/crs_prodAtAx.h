@@ -5,34 +5,34 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "rtwtypes.h"
+#include "plctypes.h"
 #include "crs_prodAtAx_types.h"
-extern void crs_prodAtAx(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T *b, m2cArray_real_T *Ax, const m2cArray_int32_T *nthreads);
+extern void crs_prodAtAx(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b, plcArray_real_T *Ax, const plcArray_int32_T *nthreads);
 extern void crs_prodAtAx_initialize(void);
-extern void crs_prodAtAx_mpi(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T *b, m2cArray_real_T *Ax, const m2cArray_int32_T *nthreads, const b_struct_T *comm);
-extern void crs_prodAtAx_mpip(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T *b, m2cArray_real_T *Ax, const m2cArray_int32_T *nthreads, const b_struct_T *comm, const m2cArray_real_T *pbmsg);
-extern void crs_prodAtAx_mpip1(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T *b, m2cArray_real_T *Ax, const m2cArray_int32_T *nthreads, const b_struct_T *comm, const m2cArray_real_T *pbmsg, int32_T pbsz);
-extern void crs_prodAtAx_ser(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T *b);
-extern void crs_prodAtAx_ser1(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T *b);
+extern void crs_prodAtAx_mpi(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b, plcArray_real_T *Ax, const plcArray_int32_T *nthreads, const b_struct_T *comm);
+extern void crs_prodAtAx_mpip(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b, plcArray_real_T *Ax, const plcArray_int32_T *nthreads, const b_struct_T *comm, const plcArray_real_T *pbmsg);
+extern void crs_prodAtAx_mpip1(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b, plcArray_real_T *Ax, const plcArray_int32_T *nthreads, const b_struct_T *comm, const plcArray_real_T *pbmsg, int32_T pbsz);
+extern void crs_prodAtAx_ser(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b);
+extern void crs_prodAtAx_ser1(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b);
 extern void crs_prodAtAx_terminate(void);
-extern m2cArray_char_T *m2cCreateND_char_T( m2cShort numDimensions, m2cSize *size);
-extern m2cArray_int32_T *m2cCreateND_int32_T( m2cShort numDimensions, m2cSize *size);
-extern m2cArray_real_T *m2cCreateND_real_T( m2cShort numDimensions, m2cSize *size);
-extern m2cArray_uint8_T *m2cCreateND_uint8_T( m2cShort numDimensions, m2cSize *size);
-extern m2cArray_char_T *m2cCreateWrapperND_char_T(char_T *data, m2cShort numDimensions, m2cSize *size);
-extern m2cArray_int32_T *m2cCreateWrapperND_int32_T(int32_T *data, m2cShort numDimensions, m2cSize *size);
-extern m2cArray_real_T *m2cCreateWrapperND_real_T(real_T *data, m2cShort numDimensions, m2cSize *size);
-extern m2cArray_uint8_T *m2cCreateWrapperND_uint8_T(uint8_T *data, m2cShort numDimensions, m2cSize *size);
-extern m2cArray_char_T *m2cCreateWrapper_char_T(char_T *data, m2cSize rows, m2cSize cols);
-extern m2cArray_int32_T *m2cCreateWrapper_int32_T(int32_T *data, m2cSize rows, m2cSize cols);
-extern m2cArray_real_T *m2cCreateWrapper_real_T(real_T *data, m2cSize rows, m2cSize cols);
-extern m2cArray_uint8_T *m2cCreateWrapper_uint8_T(uint8_T *data, m2cSize rows, m2cSize cols);
-extern m2cArray_char_T *m2cCreate_char_T( m2cSize rows, m2cSize cols);
-extern m2cArray_int32_T *m2cCreate_int32_T( m2cSize rows, m2cSize cols);
-extern m2cArray_real_T *m2cCreate_real_T( m2cSize rows, m2cSize cols);
-extern m2cArray_uint8_T *m2cCreate_uint8_T( m2cSize rows, m2cSize cols);
-extern void m2cDestroyArray_char_T(m2cArray_char_T *m2cArray);
-extern void m2cDestroyArray_int32_T(m2cArray_int32_T *m2cArray);
-extern void m2cDestroyArray_real_T(m2cArray_real_T *m2cArray);
-extern void m2cDestroyArray_uint8_T(m2cArray_uint8_T *m2cArray);
+extern plcArray_char_T *plcCreateND_char_T( plcShort numDimensions, plcSize *size);
+extern plcArray_int32_T *plcCreateND_int32_T( plcShort numDimensions, plcSize *size);
+extern plcArray_real_T *plcCreateND_real_T( plcShort numDimensions, plcSize *size);
+extern plcArray_uint8_T *plcCreateND_uint8_T( plcShort numDimensions, plcSize *size);
+extern plcArray_char_T *plcCreateWrapperND_char_T(char_T *data, plcShort numDimensions, plcSize *size);
+extern plcArray_int32_T *plcCreateWrapperND_int32_T(int32_T *data, plcShort numDimensions, plcSize *size);
+extern plcArray_real_T *plcCreateWrapperND_real_T(real_T *data, plcShort numDimensions, plcSize *size);
+extern plcArray_uint8_T *plcCreateWrapperND_uint8_T(uint8_T *data, plcShort numDimensions, plcSize *size);
+extern plcArray_char_T *plcCreateWrapper_char_T(char_T *data, plcSize rows, plcSize cols);
+extern plcArray_int32_T *plcCreateWrapper_int32_T(int32_T *data, plcSize rows, plcSize cols);
+extern plcArray_real_T *plcCreateWrapper_real_T(real_T *data, plcSize rows, plcSize cols);
+extern plcArray_uint8_T *plcCreateWrapper_uint8_T(uint8_T *data, plcSize rows, plcSize cols);
+extern plcArray_char_T *plcCreate_char_T( plcSize rows, plcSize cols);
+extern plcArray_int32_T *plcCreate_int32_T( plcSize rows, plcSize cols);
+extern plcArray_real_T *plcCreate_real_T( plcSize rows, plcSize cols);
+extern plcArray_uint8_T *plcCreate_uint8_T( plcSize rows, plcSize cols);
+extern void plcDestroyArray_char_T(plcArray_char_T *plcArray);
+extern void plcDestroyArray_int32_T(plcArray_int32_T *plcArray);
+extern void plcDestroyArray_real_T(plcArray_real_T *plcArray);
+extern void plcDestroyArray_uint8_T(plcArray_uint8_T *plcArray);
 #endif

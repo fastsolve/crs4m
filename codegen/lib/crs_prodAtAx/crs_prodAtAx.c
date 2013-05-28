@@ -1,86 +1,80 @@
 #include "crs_prodAtAx.h"
 #include "mpi.h"
 #include "omp.h"
-#include "m2c.h"
+#include "palc.h"
 
-static int32_T MMPI_Allreduce(void * sptr, void * rptr, int32_T count,
-  MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
-static void allreduce(m2cArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
+static void allreduce(plcArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
                       varargin_1);
-static void b_allreduce(m2cArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
-  varargin_1, const m2cArray_real_T *varargin_2);
-static void b_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b);
-static void b_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b);
-static void b_crs_prodAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  const m2cArray_real_T *x, m2cArray_real_T *b);
-static define_m2cInit(b_m2cInit_real_T, real_T);
+static void b_allreduce(plcArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
+  varargin_1, const plcArray_real_T *varargin_2);
+static void b_crs_prodAtAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b);
+static void b_crs_prodAtx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b);
+static void b_crs_prodAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  const plcArray_real_T *x, plcArray_real_T *b);
+static define_plcInit(b_plcInit_real_T, real_T);
 static void b_msg_error(void);
-static void c_allreduce(m2cArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
-  varargin_1, const m2cArray_real_T *varargin_2, int32_T varargin_3);
-static void c_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b);
-static void c_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, MPI_Comm
+static void c_allreduce(plcArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
+  varargin_1, const plcArray_real_T *varargin_2, int32_T varargin_3);
+static void c_crs_prodAtAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b);
+static void c_crs_prodAtx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, MPI_Comm
   varargin_1);
 static void c_msg_error(void);
-static void crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b);
-static void crs_prodAtx_kernel(const m2cArray_int32_T *row_ptr, const
-  m2cArray_int32_T *col_ind, const m2cArray_real_T *val, const m2cArray_real_T
-  *x, int32_T x_m, m2cArray_real_T *b, int32_T b_m, int32_T nrows, int32_T ncols,
+static void crs_prodAtx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b);
+static void crs_prodAtx_kernel(const plcArray_int32_T *row_ptr, const
+  plcArray_int32_T *col_ind, const plcArray_real_T *val, const plcArray_real_T
+  *x, int32_T x_m, plcArray_real_T *b, int32_T b_m, int32_T nrows, int32_T ncols,
   int32_T nrhs, boolean_T ismt);
-static void crs_prodAx(const m2cArray_int32_T *A_row_ptr, const m2cArray_int32_T
-  *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows, const
-  m2cArray_real_T *x, m2cArray_real_T *b);
-static void crs_prodAx_kernel(const m2cArray_int32_T *row_ptr, const
-  m2cArray_int32_T *col_ind, const m2cArray_real_T *val, const m2cArray_real_T
-  *x, int32_T x_m, m2cArray_real_T *b, int32_T b_m, int32_T nrows, int32_T nrhs,
+static void crs_prodAx(const plcArray_int32_T *A_row_ptr, const plcArray_int32_T
+  *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows, const
+  plcArray_real_T *x, plcArray_real_T *b);
+static void crs_prodAx_kernel(const plcArray_int32_T *row_ptr, const
+  plcArray_int32_T *col_ind, const plcArray_real_T *val, const plcArray_real_T
+  *x, int32_T x_m, plcArray_real_T *b, int32_T b_m, int32_T nrows, int32_T nrhs,
   boolean_T ismt);
-static void d_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, m2cArray_real_T
-  *Ax, const m2cArray_int32_T *nthreads, MPI_Comm varargin_1);
-static void d_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, MPI_Comm
-  varargin_1, const m2cArray_real_T *varargin_2);
+static void d_crs_prodAtAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, plcArray_real_T
+  *Ax, const plcArray_int32_T *nthreads, MPI_Comm varargin_1);
+static void d_crs_prodAtx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, MPI_Comm
+  varargin_1, const plcArray_real_T *varargin_2);
 static void d_msg_error(void);
-static void e_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, m2cArray_real_T
-  *Ax, const m2cArray_int32_T *nthreads, MPI_Comm varargin_1, const
-  m2cArray_real_T *varargin_2);
-static void e_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, MPI_Comm
-  varargin_1, const m2cArray_real_T *varargin_2, int32_T varargin_3);
-static void e_msg_error(const m2cArray_char_T *varargin_3);
-static void f_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, m2cArray_real_T
-  *Ax, const m2cArray_int32_T *nthreads, MPI_Comm varargin_1, const
-  m2cArray_real_T *varargin_2, int32_T varargin_3);
+static void e_crs_prodAtAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, plcArray_real_T
+  *Ax, const plcArray_int32_T *nthreads, MPI_Comm varargin_1, const
+  plcArray_real_T *varargin_2);
+static void e_crs_prodAtx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, MPI_Comm
+  varargin_1, const plcArray_real_T *varargin_2, int32_T varargin_3);
+static void e_msg_error(const plcArray_char_T *varargin_3);
+static void f_crs_prodAtAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, plcArray_real_T
+  *Ax, const plcArray_int32_T *nthreads, MPI_Comm varargin_1, const
+  plcArray_real_T *varargin_2, int32_T varargin_3);
 static void f_msg_error(void);
 static void get_local_chunk(int32_T m, int32_T varargin_2, int32_T *istart,
   int32_T *iend);
 static void msg_error(void);
 static void msg_warn(void);
+static int32_T pMPI_Allreduce(void * sptr, void * rptr, int32_T count,
+  MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
 static real_T rt_roundd(real_T u);
-static int32_T MMPI_Allreduce(void * sptr, void * rptr, int32_T count,
-  MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
-{
-  return MPI_Allreduce(sptr, rptr, count, datatype, op, comm);
-}
-
-static void allreduce(m2cArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
+static void allreduce(plcArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
                       varargin_1)
 {
   int32_T size;
@@ -89,12 +83,12 @@ static void allreduce(m2cArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
   if (size > 1) {
 
     ptr = (void *)(&b->data[0]);
-    MMPI_Allreduce(MPI_IN_PLACE, ptr, sz_in, MPI_DOUBLE, op, varargin_1);
+    pMPI_Allreduce(MPI_IN_PLACE, ptr, sz_in, MPI_DOUBLE, op, varargin_1);
   }
 }
 
-static void b_allreduce(m2cArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
-  varargin_1, const m2cArray_real_T *varargin_2)
+static void b_allreduce(plcArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
+  varargin_1, const plcArray_real_T *varargin_2)
 {
   int32_T s1;
   int32_T i;
@@ -112,37 +106,37 @@ static void b_allreduce(m2cArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
   if (i > 1) {
 
     ptr = (void *)(&b->data[0]);
-    MMPI_Allreduce(MPI_IN_PLACE, ptr, s1, MPI_DOUBLE, op, varargin_1);
+    pMPI_Allreduce(MPI_IN_PLACE, ptr, s1, MPI_DOUBLE, op, varargin_1);
   }
 }
 
-static void b_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b)
+static void b_crs_prodAtAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b)
 {
   int32_T i0;
   int32_T A_ncols_idx_1;
-  m2cArray_real_T *Ax;
+  plcArray_real_T *Ax;
   i0 = b->size[0] * b->size[1];
   b->size[0] = A_ncols;
-  m2cEnsureCapacity((m2cArray__common *)b, i0, (int32_T)sizeof(real_T));
+  plcEnsureCapacity((plcArray__common *)b, i0, (int32_T)sizeof(real_T));
   A_ncols_idx_1 = x->size[1];
   i0 = b->size[0] * b->size[1];
   b->size[1] = A_ncols_idx_1;
-  m2cEnsureCapacity((m2cArray__common *)b, i0, (int32_T)sizeof(real_T));
+  plcEnsureCapacity((plcArray__common *)b, i0, (int32_T)sizeof(real_T));
   A_ncols_idx_1 = A_ncols * x->size[1];
   for (i0 = 0; i0 < A_ncols_idx_1; i0++) {
     b->data[i0] = 0.0;
   }
 
-  b_m2cInit_real_T(&Ax, 2);
+  b_plcInit_real_T(&Ax, 2);
   i0 = Ax->size[0] * Ax->size[1];
   Ax->size[0] = A_nrows;
-  m2cEnsureCapacity((m2cArray__common *)Ax, i0, (int32_T)sizeof(real_T));
+  plcEnsureCapacity((plcArray__common *)Ax, i0, (int32_T)sizeof(real_T));
   A_ncols_idx_1 = x->size[1];
   i0 = Ax->size[0] * Ax->size[1];
   Ax->size[1] = A_ncols_idx_1;
-  m2cEnsureCapacity((m2cArray__common *)Ax, i0, (int32_T)sizeof(real_T));
+  plcEnsureCapacity((plcArray__common *)Ax, i0, (int32_T)sizeof(real_T));
   A_ncols_idx_1 = A_nrows * x->size[1];
   for (i0 = 0; i0 < A_ncols_idx_1; i0++) {
     Ax->data[i0] = 0.0;
@@ -150,12 +144,12 @@ static void b_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
   b_crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
   b_crs_prodAtx(A_row_ptr, A_col_ind, A_val, A_nrows, A_ncols, Ax, b);
-  m2cFree_real_T(&Ax);
+  plcFree_real_T(&Ax);
 }
 
-static void b_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b)
+static void b_crs_prodAtx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b)
 {
   int32_T i7;
   if ((b->size[0] < A_ncols) || (b->size[1] < x->size[1])) {
@@ -166,9 +160,9 @@ static void b_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
   crs_prodAtx_kernel(A_row_ptr, A_col_ind, A_val, x, x->size[0], b, i7, A_nrows, A_ncols, x->size[1], FALSE);
 }
 
-static void b_crs_prodAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  const m2cArray_real_T *x, m2cArray_real_T *b)
+static void b_crs_prodAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  const plcArray_real_T *x, plcArray_real_T *b)
 {
   int32_T i6;
   if ((b->size[0] < A_nrows) || (b->size[1] < x->size[1])) {
@@ -190,8 +184,8 @@ static void b_msg_error(void)
   }
 }
 
-static void c_allreduce(m2cArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
-  varargin_1, const m2cArray_real_T *varargin_2, int32_T varargin_3)
+static void c_allreduce(plcArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
+  varargin_1, const plcArray_real_T *varargin_2, int32_T varargin_3)
 {
   int32_T b_varargin_2;
   int32_T c_varargin_2;
@@ -221,37 +215,37 @@ static void c_allreduce(m2cArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
   if (b_varargin_2 > 1) {
 
     ptr = (void *)(&b->data[0]);
-    MMPI_Allreduce(MPI_IN_PLACE, ptr, s1, MPI_DOUBLE, op, varargin_1);
+    pMPI_Allreduce(MPI_IN_PLACE, ptr, s1, MPI_DOUBLE, op, varargin_1);
   }
 }
 
-static void c_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b)
+static void c_crs_prodAtAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b)
 {
-  m2cArray_real_T *Ax;
+  plcArray_real_T *Ax;
   int32_T i8;
   int32_T A_nrows_idx_1;
   if ((b->size[0] < A_ncols) || (b->size[1] != x->size[1])) {
 
 #pragma omp master
 
-    M2C_BEGIN_REGION(/*omp master*/)
+    PLC_BEGIN_REGION(/*omp master*/)
 
     msg_error();
 
-    M2C_END_REGION(/*omp master*/)
+    PLC_END_REGION(/*omp master*/)
 
   }
 
-  b_m2cInit_real_T(&Ax, 2);
+  b_plcInit_real_T(&Ax, 2);
   i8 = Ax->size[0] * Ax->size[1];
   Ax->size[0] = A_nrows;
-  m2cEnsureCapacity((m2cArray__common *)Ax, i8, (int32_T)sizeof(real_T));
+  plcEnsureCapacity((plcArray__common *)Ax, i8, (int32_T)sizeof(real_T));
   A_nrows_idx_1 = x->size[1];
   i8 = Ax->size[0] * Ax->size[1];
   Ax->size[1] = A_nrows_idx_1;
-  m2cEnsureCapacity((m2cArray__common *)Ax, i8, (int32_T)sizeof(real_T));
+  plcEnsureCapacity((plcArray__common *)Ax, i8, (int32_T)sizeof(real_T));
   A_nrows_idx_1 = A_nrows * x->size[1];
   for (i8 = 0; i8 < A_nrows_idx_1; i8++) {
     Ax->data[i8] = 0.0;
@@ -259,12 +253,12 @@ static void c_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
   b_crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
   b_crs_prodAtx(A_row_ptr, A_col_ind, A_val, A_nrows, A_ncols, Ax, b);
-  m2cFree_real_T(&Ax);
+  plcFree_real_T(&Ax);
 }
 
-static void c_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, MPI_Comm
+static void c_crs_prodAtx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, MPI_Comm
   varargin_1)
 {
   int32_T n;
@@ -285,12 +279,12 @@ static void c_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp single
 
-  M2C_BEGIN_REGION(/*omp single*/)
+  PLC_BEGIN_REGION(/*omp single*/)
 
   allreduce(b, (int32_T)rt_roundd((real_T)A_ncols * (real_T)x->size[1]), MPI_SUM,
             varargin_1);
 
-  M2C_END_REGION(/*omp single*/)
+  PLC_END_REGION(/*omp single*/)
 
 }
 
@@ -305,9 +299,9 @@ static void c_msg_error(void)
   }
 }
 
-static void crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b)
+static void crs_prodAtx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b)
 {
   int32_T n;
   int32_T i4;
@@ -320,9 +314,9 @@ static void crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
   crs_prodAtx_kernel(A_row_ptr, A_col_ind, A_val, x, x->size[0], b, i4, A_nrows, A_ncols, x->size[1], n > 1);
 }
 
-static void crs_prodAtx_kernel(const m2cArray_int32_T *row_ptr, const
-  m2cArray_int32_T *col_ind, const m2cArray_real_T *val, const m2cArray_real_T
-  *x, int32_T x_m, m2cArray_real_T *b, int32_T b_m, int32_T nrows, int32_T ncols,
+static void crs_prodAtx_kernel(const plcArray_int32_T *row_ptr, const
+  plcArray_int32_T *col_ind, const plcArray_real_T *val, const plcArray_real_T
+  *x, int32_T x_m, plcArray_real_T *b, int32_T b_m, int32_T nrows, int32_T ncols,
   int32_T nrhs, boolean_T ismt)
 {
   int32_T offset;
@@ -424,9 +418,9 @@ static void crs_prodAtx_kernel(const m2cArray_int32_T *row_ptr, const
   }
 }
 
-static void crs_prodAx(const m2cArray_int32_T *A_row_ptr, const m2cArray_int32_T
-  *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows, const
-  m2cArray_real_T *x, m2cArray_real_T *b)
+static void crs_prodAx(const plcArray_int32_T *A_row_ptr, const plcArray_int32_T
+  *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows, const
+  plcArray_real_T *x, plcArray_real_T *b)
 {
   int32_T n;
   int32_T i2;
@@ -439,9 +433,9 @@ static void crs_prodAx(const m2cArray_int32_T *A_row_ptr, const m2cArray_int32_T
   crs_prodAx_kernel(A_row_ptr, A_col_ind, A_val, x, x->size[0], b, i2, A_nrows, x->size[1], n > 1);
 }
 
-static void crs_prodAx_kernel(const m2cArray_int32_T *row_ptr, const
-  m2cArray_int32_T *col_ind, const m2cArray_real_T *val, const m2cArray_real_T
-  *x, int32_T x_m, m2cArray_real_T *b, int32_T b_m, int32_T nrows, int32_T nrhs,
+static void crs_prodAx_kernel(const plcArray_int32_T *row_ptr, const
+  plcArray_int32_T *col_ind, const plcArray_real_T *val, const plcArray_real_T
+  *x, int32_T x_m, plcArray_real_T *b, int32_T b_m, int32_T nrows, int32_T nrhs,
   boolean_T ismt)
 {
   int32_T iend;
@@ -502,10 +496,10 @@ static void crs_prodAx_kernel(const m2cArray_int32_T *row_ptr, const
   }
 }
 
-static void d_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, m2cArray_real_T
-  *Ax, const m2cArray_int32_T *nthreads, MPI_Comm varargin_1)
+static void d_crs_prodAtAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, plcArray_real_T
+  *Ax, const plcArray_int32_T *nthreads, MPI_Comm varargin_1)
 {
   int32_T n;
   boolean_T b1;
@@ -513,11 +507,11 @@ static void d_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    M2C_BEGIN_REGION(/*omp master*/)
+    PLC_BEGIN_REGION(/*omp master*/)
 
     msg_error();
 
-    M2C_END_REGION(/*omp master*/)
+    PLC_END_REGION(/*omp master*/)
 
   }
 
@@ -525,11 +519,11 @@ static void d_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    M2C_BEGIN_REGION(/*omp master*/)
+    PLC_BEGIN_REGION(/*omp master*/)
 
     b_msg_error();
 
-    M2C_END_REGION(/*omp master*/)
+    PLC_END_REGION(/*omp master*/)
 
   }
 
@@ -541,16 +535,16 @@ static void d_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-      M2C_BEGIN_REGION(/*omp master*/)
+      PLC_BEGIN_REGION(/*omp master*/)
 
       msg_warn();
 
-      M2C_END_REGION(/*omp master*/)
+      PLC_END_REGION(/*omp master*/)
 
     }
 
 #pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    M2C_BEGIN_REGION(/*omp parallel*/)
+    PLC_BEGIN_REGION(/*omp parallel*/)
 
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
 
@@ -559,7 +553,7 @@ static void d_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
     c_crs_prodAtx(A_row_ptr, A_col_ind, A_val, A_nrows, A_ncols, Ax, b,
                   varargin_1);
 
-    M2C_END_REGION(/*omp parallel*/)
+    PLC_END_REGION(/*omp parallel*/)
 
   } else if (b1) {
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
@@ -574,10 +568,10 @@ static void d_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
   }
 }
 
-static void d_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, MPI_Comm
-  varargin_1, const m2cArray_real_T *varargin_2)
+static void d_crs_prodAtx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, MPI_Comm
+  varargin_1, const plcArray_real_T *varargin_2)
 {
   int32_T n;
   boolean_T b4;
@@ -597,12 +591,12 @@ static void d_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp single
 
-  M2C_BEGIN_REGION(/*omp single*/)
+  PLC_BEGIN_REGION(/*omp single*/)
 
   b_allreduce(b, (int32_T)rt_roundd((real_T)A_ncols * (real_T)x->size[1]),
               MPI_SUM, varargin_1, varargin_2);
 
-  M2C_END_REGION(/*omp single*/)
+  PLC_END_REGION(/*omp single*/)
 
 }
 
@@ -617,11 +611,11 @@ static void d_msg_error(void)
   }
 }
 
-static void e_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, m2cArray_real_T
-  *Ax, const m2cArray_int32_T *nthreads, MPI_Comm varargin_1, const
-  m2cArray_real_T *varargin_2)
+static void e_crs_prodAtAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, plcArray_real_T
+  *Ax, const plcArray_int32_T *nthreads, MPI_Comm varargin_1, const
+  plcArray_real_T *varargin_2)
 {
   int32_T n;
   boolean_T b3;
@@ -629,11 +623,11 @@ static void e_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    M2C_BEGIN_REGION(/*omp master*/)
+    PLC_BEGIN_REGION(/*omp master*/)
 
     msg_error();
 
-    M2C_END_REGION(/*omp master*/)
+    PLC_END_REGION(/*omp master*/)
 
   }
 
@@ -641,11 +635,11 @@ static void e_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    M2C_BEGIN_REGION(/*omp master*/)
+    PLC_BEGIN_REGION(/*omp master*/)
 
     b_msg_error();
 
-    M2C_END_REGION(/*omp master*/)
+    PLC_END_REGION(/*omp master*/)
 
   }
 
@@ -657,16 +651,16 @@ static void e_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-      M2C_BEGIN_REGION(/*omp master*/)
+      PLC_BEGIN_REGION(/*omp master*/)
 
       msg_warn();
 
-      M2C_END_REGION(/*omp master*/)
+      PLC_END_REGION(/*omp master*/)
 
     }
 
 #pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    M2C_BEGIN_REGION(/*omp parallel*/)
+    PLC_BEGIN_REGION(/*omp parallel*/)
 
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
 
@@ -675,7 +669,7 @@ static void e_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
     d_crs_prodAtx(A_row_ptr, A_col_ind, A_val, A_nrows, A_ncols, Ax, b,
                   varargin_1, varargin_2);
 
-    M2C_END_REGION(/*omp parallel*/)
+    PLC_END_REGION(/*omp parallel*/)
 
   } else if (b3) {
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
@@ -690,10 +684,10 @@ static void e_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
   }
 }
 
-static void e_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, MPI_Comm
-  varargin_1, const m2cArray_real_T *varargin_2, int32_T varargin_3)
+static void e_crs_prodAtx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, MPI_Comm
+  varargin_1, const plcArray_real_T *varargin_2, int32_T varargin_3)
 {
   int32_T n;
   boolean_T b6;
@@ -713,28 +707,28 @@ static void e_crs_prodAtx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp single
 
-  M2C_BEGIN_REGION(/*omp single*/)
+  PLC_BEGIN_REGION(/*omp single*/)
 
   c_allreduce(b, (int32_T)rt_roundd((real_T)A_ncols * (real_T)x->size[1]),
               MPI_SUM, varargin_1, varargin_2, varargin_3);
 
-  M2C_END_REGION(/*omp single*/)
+  PLC_END_REGION(/*omp single*/)
 
 }
 
-static void e_msg_error(const m2cArray_char_T *varargin_3)
+static void e_msg_error(const plcArray_char_T *varargin_3)
 {
   const char * msgid;
-  m2cArray_char_T *b_varargin_3;
+  plcArray_char_T *b_varargin_3;
   int32_T i1;
   int32_T loop_ub;
   msgid = "MPI_Comm:WrongType";
-  m2cInit_char_T(&b_varargin_3, 2);
+  plcInit_char_T(&b_varargin_3, 2);
   if (emlrtIsMATLABThread(emlrtRootTLSGlobal)) {
     i1 = b_varargin_3->size[0] * b_varargin_3->size[1];
     b_varargin_3->size[0] = 1;
     b_varargin_3->size[1] = varargin_3->size[1];
-    m2cEnsureCapacity((m2cArray__common *)b_varargin_3, i1, (int32_T)sizeof
+    plcEnsureCapacity((plcArray__common *)b_varargin_3, i1, (int32_T)sizeof
                       (char_T));
     loop_ub = varargin_3->size[0] * varargin_3->size[1];
     for (i1 = 0; i1 < loop_ub; i1++) {
@@ -747,7 +741,7 @@ static void e_msg_error(const m2cArray_char_T *varargin_3)
     i1 = b_varargin_3->size[0] * b_varargin_3->size[1];
     b_varargin_3->size[0] = 1;
     b_varargin_3->size[1] = varargin_3->size[1];
-    m2cEnsureCapacity((m2cArray__common *)b_varargin_3, i1, (int32_T)sizeof
+    plcEnsureCapacity((plcArray__common *)b_varargin_3, i1, (int32_T)sizeof
                       (char_T));
     loop_ub = varargin_3->size[0] * varargin_3->size[1];
     for (i1 = 0; i1 < loop_ub; i1++) {
@@ -758,14 +752,14 @@ static void e_msg_error(const m2cArray_char_T *varargin_3)
            &b_varargin_3->data[0]);
   }
 
-  m2cFree_char_T(&b_varargin_3);
+  plcFree_char_T(&b_varargin_3);
 }
 
-static void f_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
-  m2cArray_int32_T *A_col_ind, const m2cArray_real_T *A_val, int32_T A_nrows,
-  int32_T A_ncols, const m2cArray_real_T *x, m2cArray_real_T *b, m2cArray_real_T
-  *Ax, const m2cArray_int32_T *nthreads, MPI_Comm varargin_1, const
-  m2cArray_real_T *varargin_2, int32_T varargin_3)
+static void f_crs_prodAtAx(const plcArray_int32_T *A_row_ptr, const
+  plcArray_int32_T *A_col_ind, const plcArray_real_T *A_val, int32_T A_nrows,
+  int32_T A_ncols, const plcArray_real_T *x, plcArray_real_T *b, plcArray_real_T
+  *Ax, const plcArray_int32_T *nthreads, MPI_Comm varargin_1, const
+  plcArray_real_T *varargin_2, int32_T varargin_3)
 {
   int32_T n;
   boolean_T b5;
@@ -773,11 +767,11 @@ static void f_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    M2C_BEGIN_REGION(/*omp master*/)
+    PLC_BEGIN_REGION(/*omp master*/)
 
     msg_error();
 
-    M2C_END_REGION(/*omp master*/)
+    PLC_END_REGION(/*omp master*/)
 
   }
 
@@ -785,11 +779,11 @@ static void f_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-    M2C_BEGIN_REGION(/*omp master*/)
+    PLC_BEGIN_REGION(/*omp master*/)
 
     b_msg_error();
 
-    M2C_END_REGION(/*omp master*/)
+    PLC_END_REGION(/*omp master*/)
 
   }
 
@@ -801,16 +795,16 @@ static void f_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
 
 #pragma omp master
 
-      M2C_BEGIN_REGION(/*omp master*/)
+      PLC_BEGIN_REGION(/*omp master*/)
 
       msg_warn();
 
-      M2C_END_REGION(/*omp master*/)
+      PLC_END_REGION(/*omp master*/)
 
     }
 
 #pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    M2C_BEGIN_REGION(/*omp parallel*/)
+    PLC_BEGIN_REGION(/*omp parallel*/)
 
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
 
@@ -819,7 +813,7 @@ static void f_crs_prodAtAx(const m2cArray_int32_T *A_row_ptr, const
     e_crs_prodAtx(A_row_ptr, A_col_ind, A_val, A_nrows, A_ncols, Ax, b,
                   varargin_1, varargin_2, varargin_3);
 
-    M2C_END_REGION(/*omp parallel*/)
+    PLC_END_REGION(/*omp parallel*/)
 
   } else if (b5) {
     crs_prodAx(A_row_ptr, A_col_ind, A_val, A_nrows, x, Ax);
@@ -904,6 +898,12 @@ static void msg_warn(void)
   }
 }
 
+static int32_T pMPI_Allreduce(void * sptr, void * rptr, int32_T count,
+  MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
+{
+  return MPI_Allreduce(sptr, rptr, count, datatype, op, comm);
+}
+
 static real_T rt_roundd(real_T u)
 {
   real_T y;
@@ -922,8 +922,8 @@ static real_T rt_roundd(real_T u)
   return y;
 }
 
-void crs_prodAtAx(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T
-                  *b, m2cArray_real_T *Ax, const m2cArray_int32_T *nthreads)
+void crs_prodAtAx(const struct_T *A, const plcArray_real_T *x, plcArray_real_T
+                  *b, plcArray_real_T *Ax, const plcArray_int32_T *nthreads)
 {
   int32_T n;
   boolean_T b0;
@@ -931,11 +931,11 @@ void crs_prodAtAx(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T
 
 #pragma omp master
 
-    M2C_BEGIN_REGION(/*omp master*/)
+    PLC_BEGIN_REGION(/*omp master*/)
 
     msg_error();
 
-    M2C_END_REGION(/*omp master*/)
+    PLC_END_REGION(/*omp master*/)
 
   }
 
@@ -943,11 +943,11 @@ void crs_prodAtAx(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T
 
 #pragma omp master
 
-    M2C_BEGIN_REGION(/*omp master*/)
+    PLC_BEGIN_REGION(/*omp master*/)
 
     b_msg_error();
 
-    M2C_END_REGION(/*omp master*/)
+    PLC_END_REGION(/*omp master*/)
 
   }
 
@@ -959,16 +959,16 @@ void crs_prodAtAx(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T
 
 #pragma omp master
 
-      M2C_BEGIN_REGION(/*omp master*/)
+      PLC_BEGIN_REGION(/*omp master*/)
 
       msg_warn();
 
-      M2C_END_REGION(/*omp master*/)
+      PLC_END_REGION(/*omp master*/)
 
     }
 
 #pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    M2C_BEGIN_REGION(/*omp parallel*/)
+    PLC_BEGIN_REGION(/*omp parallel*/)
 
     crs_prodAx(A->row_ptr, A->col_ind, A->val, A->nrows, x, Ax);
 
@@ -976,7 +976,7 @@ void crs_prodAtAx(const struct_T *A, const m2cArray_real_T *x, m2cArray_real_T
 
     crs_prodAtx(A->row_ptr, A->col_ind, A->val, A->nrows, A->ncols, Ax, b);
 
-    M2C_END_REGION(/*omp parallel*/)
+    PLC_END_REGION(/*omp parallel*/)
 
   } else if (b0) {
     crs_prodAx(A->row_ptr, A->col_ind, A->val, A->nrows, x, Ax);
@@ -994,9 +994,9 @@ void crs_prodAtAx_initialize(void)
 {
 }
 
-void crs_prodAtAx_mpi(const struct_T *A, const m2cArray_real_T *x,
-                      m2cArray_real_T *b, m2cArray_real_T *Ax, const
-                      m2cArray_int32_T *nthreads, const b_struct_T *comm)
+void crs_prodAtAx_mpi(const struct_T *A, const plcArray_real_T *x,
+                      plcArray_real_T *b, plcArray_real_T *Ax, const
+                      plcArray_int32_T *nthreads, const b_struct_T *comm)
 {
   boolean_T p;
   boolean_T b_p;
@@ -1006,8 +1006,8 @@ void crs_prodAtAx_mpi(const struct_T *A, const m2cArray_real_T *x,
   boolean_T exitg1;
   static const char_T cv0[8] = { 'M', 'P', 'I', '_', 'C', 'o', 'm', 'm' };
 
-  m2cArray_char_T *b_comm;
-  m2cArray_uint8_T *data;
+  plcArray_char_T *b_comm;
+  plcArray_uint8_T *data;
   MPI_Comm c_comm;
   p = FALSE;
   b_p = FALSE;
@@ -1046,11 +1046,11 @@ void crs_prodAtAx_mpi(const struct_T *A, const m2cArray_real_T *x,
   }
 
   if (!p) {
-    m2cInit_char_T(&b_comm, 2);
+    plcInit_char_T(&b_comm, 2);
     i9 = b_comm->size[0] * b_comm->size[1];
     b_comm->size[0] = 1;
     b_comm->size[1] = comm->type->size[1] + 1;
-    m2cEnsureCapacity((m2cArray__common *)b_comm, i9, (int32_T)sizeof(char_T));
+    plcEnsureCapacity((plcArray__common *)b_comm, i9, (int32_T)sizeof(char_T));
     k = comm->type->size[1];
     for (i9 = 0; i9 < k; i9++) {
       b_comm->data[b_comm->size[0] * i9] = comm->type->data[comm->type->size[0] *
@@ -1059,14 +1059,14 @@ void crs_prodAtAx_mpi(const struct_T *A, const m2cArray_real_T *x,
 
     b_comm->data[b_comm->size[0] * comm->type->size[1]] = '\x00';
     e_msg_error(b_comm);
-    m2cFree_char_T(&b_comm);
+    plcFree_char_T(&b_comm);
   }
 
-  m2cInit_uint8_T(&data, 2);
+  plcInit_uint8_T(&data, 2);
   i9 = data->size[0] * data->size[1];
   data->size[0] = comm->data->size[0];
   data->size[1] = comm->data->size[1];
-  m2cEnsureCapacity((m2cArray__common *)data, i9, (int32_T)sizeof(uint8_T));
+  plcEnsureCapacity((plcArray__common *)data, i9, (int32_T)sizeof(uint8_T));
   k = comm->data->size[0] * comm->data->size[1];
   for (i9 = 0; i9 < k; i9++) {
     data->data[i9] = comm->data->data[i9];
@@ -1075,12 +1075,12 @@ void crs_prodAtAx_mpi(const struct_T *A, const m2cArray_real_T *x,
   c_comm = *(MPI_Comm*)(&data->data[0]);
   d_crs_prodAtAx(A->row_ptr, A->col_ind, A->val, A->nrows, A->ncols, x, b, Ax,
                  nthreads, c_comm);
-  m2cFree_uint8_T(&data);
+  plcFree_uint8_T(&data);
 }
 
-void crs_prodAtAx_mpip(const struct_T *A, const m2cArray_real_T *x,
-  m2cArray_real_T *b, m2cArray_real_T *Ax, const m2cArray_int32_T *nthreads,
-  const b_struct_T *comm, const m2cArray_real_T *pbmsg)
+void crs_prodAtAx_mpip(const struct_T *A, const plcArray_real_T *x,
+  plcArray_real_T *b, plcArray_real_T *Ax, const plcArray_int32_T *nthreads,
+  const b_struct_T *comm, const plcArray_real_T *pbmsg)
 {
   boolean_T p;
   boolean_T b_p;
@@ -1090,8 +1090,8 @@ void crs_prodAtAx_mpip(const struct_T *A, const m2cArray_real_T *x,
   boolean_T exitg1;
   static const char_T cv1[8] = { 'M', 'P', 'I', '_', 'C', 'o', 'm', 'm' };
 
-  m2cArray_char_T *b_comm;
-  m2cArray_uint8_T *data;
+  plcArray_char_T *b_comm;
+  plcArray_uint8_T *data;
   MPI_Comm c_comm;
   p = FALSE;
   b_p = FALSE;
@@ -1130,11 +1130,11 @@ void crs_prodAtAx_mpip(const struct_T *A, const m2cArray_real_T *x,
   }
 
   if (!p) {
-    m2cInit_char_T(&b_comm, 2);
+    plcInit_char_T(&b_comm, 2);
     i10 = b_comm->size[0] * b_comm->size[1];
     b_comm->size[0] = 1;
     b_comm->size[1] = comm->type->size[1] + 1;
-    m2cEnsureCapacity((m2cArray__common *)b_comm, i10, (int32_T)sizeof(char_T));
+    plcEnsureCapacity((plcArray__common *)b_comm, i10, (int32_T)sizeof(char_T));
     k = comm->type->size[1];
     for (i10 = 0; i10 < k; i10++) {
       b_comm->data[b_comm->size[0] * i10] = comm->type->data[comm->type->size[0]
@@ -1143,14 +1143,14 @@ void crs_prodAtAx_mpip(const struct_T *A, const m2cArray_real_T *x,
 
     b_comm->data[b_comm->size[0] * comm->type->size[1]] = '\x00';
     e_msg_error(b_comm);
-    m2cFree_char_T(&b_comm);
+    plcFree_char_T(&b_comm);
   }
 
-  m2cInit_uint8_T(&data, 2);
+  plcInit_uint8_T(&data, 2);
   i10 = data->size[0] * data->size[1];
   data->size[0] = comm->data->size[0];
   data->size[1] = comm->data->size[1];
-  m2cEnsureCapacity((m2cArray__common *)data, i10, (int32_T)sizeof(uint8_T));
+  plcEnsureCapacity((plcArray__common *)data, i10, (int32_T)sizeof(uint8_T));
   k = comm->data->size[0] * comm->data->size[1];
   for (i10 = 0; i10 < k; i10++) {
     data->data[i10] = comm->data->data[i10];
@@ -1159,12 +1159,12 @@ void crs_prodAtAx_mpip(const struct_T *A, const m2cArray_real_T *x,
   c_comm = *(MPI_Comm*)(&data->data[0]);
   e_crs_prodAtAx(A->row_ptr, A->col_ind, A->val, A->nrows, A->ncols, x, b, Ax,
                  nthreads, c_comm, pbmsg);
-  m2cFree_uint8_T(&data);
+  plcFree_uint8_T(&data);
 }
 
-void crs_prodAtAx_mpip1(const struct_T *A, const m2cArray_real_T *x,
-  m2cArray_real_T *b, m2cArray_real_T *Ax, const m2cArray_int32_T *nthreads,
-  const b_struct_T *comm, const m2cArray_real_T *pbmsg, int32_T pbsz)
+void crs_prodAtAx_mpip1(const struct_T *A, const plcArray_real_T *x,
+  plcArray_real_T *b, plcArray_real_T *Ax, const plcArray_int32_T *nthreads,
+  const b_struct_T *comm, const plcArray_real_T *pbmsg, int32_T pbsz)
 {
   boolean_T p;
   boolean_T b_p;
@@ -1174,8 +1174,8 @@ void crs_prodAtAx_mpip1(const struct_T *A, const m2cArray_real_T *x,
   boolean_T exitg1;
   static const char_T cv2[8] = { 'M', 'P', 'I', '_', 'C', 'o', 'm', 'm' };
 
-  m2cArray_char_T *b_comm;
-  m2cArray_uint8_T *data;
+  plcArray_char_T *b_comm;
+  plcArray_uint8_T *data;
   MPI_Comm c_comm;
   p = FALSE;
   b_p = FALSE;
@@ -1214,11 +1214,11 @@ void crs_prodAtAx_mpip1(const struct_T *A, const m2cArray_real_T *x,
   }
 
   if (!p) {
-    m2cInit_char_T(&b_comm, 2);
+    plcInit_char_T(&b_comm, 2);
     i11 = b_comm->size[0] * b_comm->size[1];
     b_comm->size[0] = 1;
     b_comm->size[1] = comm->type->size[1] + 1;
-    m2cEnsureCapacity((m2cArray__common *)b_comm, i11, (int32_T)sizeof(char_T));
+    plcEnsureCapacity((plcArray__common *)b_comm, i11, (int32_T)sizeof(char_T));
     k = comm->type->size[1];
     for (i11 = 0; i11 < k; i11++) {
       b_comm->data[b_comm->size[0] * i11] = comm->type->data[comm->type->size[0]
@@ -1227,14 +1227,14 @@ void crs_prodAtAx_mpip1(const struct_T *A, const m2cArray_real_T *x,
 
     b_comm->data[b_comm->size[0] * comm->type->size[1]] = '\x00';
     e_msg_error(b_comm);
-    m2cFree_char_T(&b_comm);
+    plcFree_char_T(&b_comm);
   }
 
-  m2cInit_uint8_T(&data, 2);
+  plcInit_uint8_T(&data, 2);
   i11 = data->size[0] * data->size[1];
   data->size[0] = comm->data->size[0];
   data->size[1] = comm->data->size[1];
-  m2cEnsureCapacity((m2cArray__common *)data, i11, (int32_T)sizeof(uint8_T));
+  plcEnsureCapacity((plcArray__common *)data, i11, (int32_T)sizeof(uint8_T));
   k = comm->data->size[0] * comm->data->size[1];
   for (i11 = 0; i11 < k; i11++) {
     data->data[i11] = comm->data->data[i11];
@@ -1243,17 +1243,17 @@ void crs_prodAtAx_mpip1(const struct_T *A, const m2cArray_real_T *x,
   c_comm = *(MPI_Comm*)(&data->data[0]);
   f_crs_prodAtAx(A->row_ptr, A->col_ind, A->val, A->nrows, A->ncols, x, b, Ax,
                  nthreads, c_comm, pbmsg, pbsz);
-  m2cFree_uint8_T(&data);
+  plcFree_uint8_T(&data);
 }
 
-void crs_prodAtAx_ser(const struct_T *A, const m2cArray_real_T *x,
-                      m2cArray_real_T *b)
+void crs_prodAtAx_ser(const struct_T *A, const plcArray_real_T *x,
+                      plcArray_real_T *b)
 {
   b_crs_prodAtAx(A->row_ptr, A->col_ind, A->val, A->nrows, A->ncols, x, b);
 }
 
-void crs_prodAtAx_ser1(const struct_T *A, const m2cArray_real_T *x,
-  m2cArray_real_T *b)
+void crs_prodAtAx_ser1(const struct_T *A, const plcArray_real_T *x,
+  plcArray_real_T *b)
 {
   c_crs_prodAtAx(A->row_ptr, A->col_ind, A->val, A->nrows, A->ncols, x, b);
 }

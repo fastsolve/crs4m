@@ -1,7 +1,7 @@
 #include "crs_diag.h"
-#include "m2c.h"
+#include "palc.h"
 
-void crs_diag(const struct_T *A, m2cArray_real_T *D)
+void crs_diag(const struct_T *A, plcArray_real_T *D)
 {
   int32_T i0;
   int32_T loop_ub;
@@ -9,7 +9,7 @@ void crs_diag(const struct_T *A, m2cArray_real_T *D)
   boolean_T exitg1;
   i0 = D->size[0];
   D->size[0] = A->nrows;
-  m2cEnsureCapacity((m2cArray__common *)D, i0, (int32_T)sizeof(real_T));
+  plcEnsureCapacity((plcArray__common *)D, i0, (int32_T)sizeof(real_T));
   loop_ub = A->nrows;
   for (i0 = 0; i0 < loop_ub; i0++) {
     D->data[i0] = 0.0;
@@ -30,7 +30,7 @@ void crs_diag(const struct_T *A, m2cArray_real_T *D)
   }
 }
 
-void crs_diag1(const struct_T *A, int32_T k, m2cArray_real_T *D)
+void crs_diag1(const struct_T *A, int32_T k, plcArray_real_T *D)
 {
   int32_T y;
   int32_T i1;
@@ -45,7 +45,7 @@ void crs_diag1(const struct_T *A, int32_T k, m2cArray_real_T *D)
 
   i1 = D->size[0];
   D->size[0] = A->nrows - y;
-  m2cEnsureCapacity((m2cArray__common *)D, i1, (int32_T)sizeof(real_T));
+  plcEnsureCapacity((plcArray__common *)D, i1, (int32_T)sizeof(real_T));
   y = A->nrows - y;
   for (i1 = 0; i1 < y; i1++) {
     D->data[i1] = 0.0;

@@ -1,18 +1,18 @@
 #include "crs_tril.h"
-#include "m2c.h"
+#include "palc.h"
 
-static void crs_sort(const m2cArray_int32_T *row_ptr, m2cArray_int32_T *col_ind,
-                     m2cArray_real_T *val);
-static void m2cCopyStruct_struct_T(struct_T *dst, const struct_T *src);
-static define_m2cCopy(m2cCopy_int32_T, int32_T);
-static define_m2cCopy(m2cCopy_real_T, real_T);
-static void crs_sort(const m2cArray_int32_T *row_ptr, m2cArray_int32_T *col_ind,
-                     m2cArray_real_T *val)
+static void crs_sort(const plcArray_int32_T *row_ptr, plcArray_int32_T *col_ind,
+                     plcArray_real_T *val);
+static void plcCopyStruct_struct_T(struct_T *dst, const struct_T *src);
+static define_plcCopy(plcCopy_int32_T, int32_T);
+static define_plcCopy(plcCopy_real_T, real_T);
+static void crs_sort(const plcArray_int32_T *row_ptr, plcArray_int32_T *col_ind,
+                     plcArray_real_T *val)
 {
   int32_T i2;
   int32_T i;
-  m2cArray_real_T *buf_val;
-  m2cArray_int32_T *buf_indx;
+  plcArray_real_T *buf_val;
+  plcArray_int32_T *buf_indx;
   boolean_T ascend;
   int32_T j;
   int32_T n;
@@ -28,8 +28,8 @@ static void crs_sort(const m2cArray_int32_T *row_ptr, m2cArray_int32_T *col_ind,
   boolean_T guard2 = FALSE;
   i2 = row_ptr->size[0] - 1;
   i = 1;
-  m2cInit_real_T(&buf_val, 1);
-  m2cInit_int32_T(&buf_indx, 1);
+  plcInit_real_T(&buf_val, 1);
+  plcInit_int32_T(&buf_indx, 1);
   while (i <= i2) {
     ascend = TRUE;
     j = row_ptr->data[i - 1];
@@ -47,10 +47,10 @@ static void crs_sort(const m2cArray_int32_T *row_ptr, m2cArray_int32_T *col_ind,
     if (!ascend) {
       n = buf_indx->size[0];
       buf_indx->size[0] = row_ptr->data[i] - row_ptr->data[i - 1];
-      m2cEnsureCapacity((m2cArray__common *)buf_indx, n, (int32_T)sizeof(int32_T));
+      plcEnsureCapacity((plcArray__common *)buf_indx, n, (int32_T)sizeof(int32_T));
       n = buf_val->size[0];
       buf_val->size[0] = row_ptr->data[i] - row_ptr->data[i - 1];
-      m2cEnsureCapacity((m2cArray__common *)buf_val, n, (int32_T)sizeof(real_T));
+      plcEnsureCapacity((plcArray__common *)buf_val, n, (int32_T)sizeof(real_T));
       ind = 1U;
       n = row_ptr->data[i] - 1;
       for (j = row_ptr->data[i - 1]; j <= n; j++) {
@@ -140,15 +140,15 @@ static void crs_sort(const m2cArray_int32_T *row_ptr, m2cArray_int32_T *col_ind,
     i++;
   }
 
-  m2cFree_int32_T(&buf_indx);
-  m2cFree_real_T(&buf_val);
+  plcFree_int32_T(&buf_indx);
+  plcFree_real_T(&buf_val);
 }
 
-static void m2cCopyStruct_struct_T(struct_T *dst, const struct_T *src)
+static void plcCopyStruct_struct_T(struct_T *dst, const struct_T *src)
 {
-  m2cCopy_int32_T(&dst->row_ptr, &src->row_ptr);
-  m2cCopy_int32_T(&dst->col_ind, &src->col_ind);
-  m2cCopy_real_T(&dst->val, &src->val);
+  plcCopy_int32_T(&dst->row_ptr, &src->row_ptr);
+  plcCopy_int32_T(&dst->col_ind, &src->col_ind);
+  plcCopy_real_T(&dst->val, &src->val);
   dst->nrows = src->nrows;
   dst->ncols = src->ncols;
 }
@@ -159,12 +159,12 @@ void crs_tril(const struct_T *A, struct_T *L)
   int32_T offset;
   int32_T start;
   int32_T i;
-  m2cArray_int32_T *b_A;
-  m2cArray_real_T *c_A;
-  m2cCopyStruct_struct_T(L, A);
+  plcArray_int32_T *b_A;
+  plcArray_real_T *c_A;
+  plcCopyStruct_struct_T(L, A);
   i0 = L->col_ind->size[0];
   L->col_ind->size[0] = A->col_ind->size[0];
-  m2cEnsureCapacity((m2cArray__common *)L->col_ind, i0, (int32_T)sizeof(int32_T));
+  plcEnsureCapacity((plcArray__common *)L->col_ind, i0, (int32_T)sizeof(int32_T));
   offset = A->col_ind->size[0];
   for (i0 = 0; i0 < offset; i0++) {
     L->col_ind->data[i0] = A->col_ind->data[i0];
@@ -172,7 +172,7 @@ void crs_tril(const struct_T *A, struct_T *L)
 
   i0 = L->val->size[0];
   L->val->size[0] = A->val->size[0];
-  m2cEnsureCapacity((m2cArray__common *)L->val, i0, (int32_T)sizeof(real_T));
+  plcEnsureCapacity((plcArray__common *)L->val, i0, (int32_T)sizeof(real_T));
   offset = A->val->size[0];
   for (i0 = 0; i0 < offset; i0++) {
     L->val->data[i0] = A->val->data[i0];
@@ -201,11 +201,11 @@ void crs_tril(const struct_T *A, struct_T *L)
   }
 
   if (offset != 0) {
-    m2cInit_int32_T(&b_A, 1);
+    plcInit_int32_T(&b_A, 1);
     start = L->col_ind->size[0] - offset;
     i0 = b_A->size[0];
     b_A->size[0] = L->col_ind->size[0];
-    m2cEnsureCapacity((m2cArray__common *)b_A, i0, (int32_T)sizeof(int32_T));
+    plcEnsureCapacity((plcArray__common *)b_A, i0, (int32_T)sizeof(int32_T));
     offset = L->col_ind->size[0];
     for (i0 = 0; i0 < offset; i0++) {
       b_A->data[i0] = L->col_ind->data[i0];
@@ -214,23 +214,23 @@ void crs_tril(const struct_T *A, struct_T *L)
     if (start < 1) {
       i0 = L->col_ind->size[0];
       L->col_ind->size[0] = 0;
-      m2cEnsureCapacity((m2cArray__common *)L->col_ind, i0, (int32_T)sizeof
+      plcEnsureCapacity((plcArray__common *)L->col_ind, i0, (int32_T)sizeof
                         (int32_T));
     } else {
       i0 = L->col_ind->size[0];
       L->col_ind->size[0] = start;
-      m2cEnsureCapacity((m2cArray__common *)L->col_ind, i0, (int32_T)sizeof
+      plcEnsureCapacity((plcArray__common *)L->col_ind, i0, (int32_T)sizeof
                         (int32_T));
       for (i = 0; i < start; i++) {
         L->col_ind->data[i] = b_A->data[i];
       }
     }
 
-    m2cFree_int32_T(&b_A);
-    m2cInit_real_T(&c_A, 1);
+    plcFree_int32_T(&b_A);
+    plcInit_real_T(&c_A, 1);
     i0 = c_A->size[0];
     c_A->size[0] = L->val->size[0];
-    m2cEnsureCapacity((m2cArray__common *)c_A, i0, (int32_T)sizeof(real_T));
+    plcEnsureCapacity((plcArray__common *)c_A, i0, (int32_T)sizeof(real_T));
     offset = L->val->size[0];
     for (i0 = 0; i0 < offset; i0++) {
       c_A->data[i0] = L->val->data[i0];
@@ -239,17 +239,17 @@ void crs_tril(const struct_T *A, struct_T *L)
     if (start < 1) {
       i0 = L->val->size[0];
       L->val->size[0] = 0;
-      m2cEnsureCapacity((m2cArray__common *)L->val, i0, (int32_T)sizeof(real_T));
+      plcEnsureCapacity((plcArray__common *)L->val, i0, (int32_T)sizeof(real_T));
     } else {
       i0 = L->val->size[0];
       L->val->size[0] = start;
-      m2cEnsureCapacity((m2cArray__common *)L->val, i0, (int32_T)sizeof(real_T));
+      plcEnsureCapacity((plcArray__common *)L->val, i0, (int32_T)sizeof(real_T));
       for (i = 0; i < start; i++) {
         L->val->data[i] = c_A->data[i];
       }
     }
 
-    m2cFree_real_T(&c_A);
+    plcFree_real_T(&c_A);
   }
 }
 
@@ -259,12 +259,12 @@ void crs_tril1(const struct_T *A, int32_T k, struct_T *L)
   int32_T offset;
   int32_T start;
   int32_T i;
-  m2cArray_int32_T *b_A;
-  m2cArray_real_T *c_A;
-  m2cCopyStruct_struct_T(L, A);
+  plcArray_int32_T *b_A;
+  plcArray_real_T *c_A;
+  plcCopyStruct_struct_T(L, A);
   i1 = L->col_ind->size[0];
   L->col_ind->size[0] = A->col_ind->size[0];
-  m2cEnsureCapacity((m2cArray__common *)L->col_ind, i1, (int32_T)sizeof(int32_T));
+  plcEnsureCapacity((plcArray__common *)L->col_ind, i1, (int32_T)sizeof(int32_T));
   offset = A->col_ind->size[0];
   for (i1 = 0; i1 < offset; i1++) {
     L->col_ind->data[i1] = A->col_ind->data[i1];
@@ -272,7 +272,7 @@ void crs_tril1(const struct_T *A, int32_T k, struct_T *L)
 
   i1 = L->val->size[0];
   L->val->size[0] = A->val->size[0];
-  m2cEnsureCapacity((m2cArray__common *)L->val, i1, (int32_T)sizeof(real_T));
+  plcEnsureCapacity((plcArray__common *)L->val, i1, (int32_T)sizeof(real_T));
   offset = A->val->size[0];
   for (i1 = 0; i1 < offset; i1++) {
     L->val->data[i1] = A->val->data[i1];
@@ -301,11 +301,11 @@ void crs_tril1(const struct_T *A, int32_T k, struct_T *L)
   }
 
   if (offset != 0) {
-    m2cInit_int32_T(&b_A, 1);
+    plcInit_int32_T(&b_A, 1);
     start = L->col_ind->size[0] - offset;
     i1 = b_A->size[0];
     b_A->size[0] = L->col_ind->size[0];
-    m2cEnsureCapacity((m2cArray__common *)b_A, i1, (int32_T)sizeof(int32_T));
+    plcEnsureCapacity((plcArray__common *)b_A, i1, (int32_T)sizeof(int32_T));
     offset = L->col_ind->size[0];
     for (i1 = 0; i1 < offset; i1++) {
       b_A->data[i1] = L->col_ind->data[i1];
@@ -314,23 +314,23 @@ void crs_tril1(const struct_T *A, int32_T k, struct_T *L)
     if (start < 1) {
       i1 = L->col_ind->size[0];
       L->col_ind->size[0] = 0;
-      m2cEnsureCapacity((m2cArray__common *)L->col_ind, i1, (int32_T)sizeof
+      plcEnsureCapacity((plcArray__common *)L->col_ind, i1, (int32_T)sizeof
                         (int32_T));
     } else {
       i1 = L->col_ind->size[0];
       L->col_ind->size[0] = start;
-      m2cEnsureCapacity((m2cArray__common *)L->col_ind, i1, (int32_T)sizeof
+      plcEnsureCapacity((plcArray__common *)L->col_ind, i1, (int32_T)sizeof
                         (int32_T));
       for (i = 0; i < start; i++) {
         L->col_ind->data[i] = b_A->data[i];
       }
     }
 
-    m2cFree_int32_T(&b_A);
-    m2cInit_real_T(&c_A, 1);
+    plcFree_int32_T(&b_A);
+    plcInit_real_T(&c_A, 1);
     i1 = c_A->size[0];
     c_A->size[0] = L->val->size[0];
-    m2cEnsureCapacity((m2cArray__common *)c_A, i1, (int32_T)sizeof(real_T));
+    plcEnsureCapacity((plcArray__common *)c_A, i1, (int32_T)sizeof(real_T));
     offset = L->val->size[0];
     for (i1 = 0; i1 < offset; i1++) {
       c_A->data[i1] = L->val->data[i1];
@@ -339,17 +339,17 @@ void crs_tril1(const struct_T *A, int32_T k, struct_T *L)
     if (start < 1) {
       i1 = L->val->size[0];
       L->val->size[0] = 0;
-      m2cEnsureCapacity((m2cArray__common *)L->val, i1, (int32_T)sizeof(real_T));
+      plcEnsureCapacity((plcArray__common *)L->val, i1, (int32_T)sizeof(real_T));
     } else {
       i1 = L->val->size[0];
       L->val->size[0] = start;
-      m2cEnsureCapacity((m2cArray__common *)L->val, i1, (int32_T)sizeof(real_T));
+      plcEnsureCapacity((plcArray__common *)L->val, i1, (int32_T)sizeof(real_T));
       for (i = 0; i < start; i++) {
         L->val->data[i] = c_A->data[i];
       }
     }
 
-    m2cFree_real_T(&c_A);
+    plcFree_real_T(&c_A);
   }
 }
 

@@ -1,19 +1,19 @@
 #include "crs_transp.h"
-#include "m2c.h"
+#include "palc.h"
 
-static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
-  *cols, const m2cArray_real_T *vs, m2cArray_int32_T *A_row_ptr,
-  m2cArray_int32_T *A_col_ind, m2cArray_real_T *A_val, int32_T *A_nrows, int32_T
+static void crs_create(const plcArray_int32_T *rows, const plcArray_int32_T
+  *cols, const plcArray_real_T *vs, plcArray_int32_T *A_row_ptr,
+  plcArray_int32_T *A_col_ind, plcArray_real_T *A_val, int32_T *A_nrows, int32_T
   *A_ncols);
-static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
-  *cols, const m2cArray_real_T *vs, m2cArray_int32_T *A_row_ptr,
-  m2cArray_int32_T *A_col_ind, m2cArray_real_T *A_val, int32_T *A_nrows, int32_T
+static void crs_create(const plcArray_int32_T *rows, const plcArray_int32_T
+  *cols, const plcArray_real_T *vs, plcArray_int32_T *A_row_ptr,
+  plcArray_int32_T *A_col_ind, plcArray_real_T *A_val, int32_T *A_nrows, int32_T
   *A_ncols)
 {
-  m2cArray_real_T *r0;
-  m2cArray_int32_T *x;
-  m2cArray_real_T *buf_val;
-  m2cArray_int32_T *buf_indx;
+  plcArray_real_T *r0;
+  plcArray_int32_T *x;
+  plcArray_real_T *buf_val;
+  plcArray_int32_T *buf_indx;
   int32_T i1;
   int32_T ix;
   int32_T l;
@@ -30,20 +30,20 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
   real_T t0;
   int32_T exitg2;
   boolean_T guard2 = FALSE;
-  m2cInit_real_T(&r0, 1);
-  m2cInit_int32_T(&x, 1);
-  m2cInit_real_T(&buf_val, 1);
-  m2cInit_int32_T(&buf_indx, 1);
+  plcInit_real_T(&r0, 1);
+  plcInit_int32_T(&x, 1);
+  plcInit_real_T(&buf_val, 1);
+  plcInit_int32_T(&buf_indx, 1);
   if ((rows->size[0] == 1) && (cols->size[0] == 1)) {
     i1 = A_row_ptr->size[0];
     A_row_ptr->size[0] = 0;
-    m2cEnsureCapacity((m2cArray__common *)A_row_ptr, i1, (int32_T)sizeof(int32_T));
+    plcEnsureCapacity((plcArray__common *)A_row_ptr, i1, (int32_T)sizeof(int32_T));
     i1 = A_col_ind->size[0];
     A_col_ind->size[0] = 0;
-    m2cEnsureCapacity((m2cArray__common *)A_col_ind, i1, (int32_T)sizeof(int32_T));
+    plcEnsureCapacity((plcArray__common *)A_col_ind, i1, (int32_T)sizeof(int32_T));
     i1 = A_val->size[0];
     A_val->size[0] = vs->size[0];
-    m2cEnsureCapacity((m2cArray__common *)A_val, i1, (int32_T)sizeof(real_T));
+    plcEnsureCapacity((plcArray__common *)A_val, i1, (int32_T)sizeof(real_T));
     ix = vs->size[0];
     for (i1 = 0; i1 < ix; i1++) {
       A_val->data[i1] = vs->data[i1];
@@ -72,7 +72,7 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
 
     i1 = A_row_ptr->size[0];
     A_row_ptr->size[0] = l + 1;
-    m2cEnsureCapacity((m2cArray__common *)A_row_ptr, i1, (int32_T)sizeof(int32_T));
+    plcEnsureCapacity((plcArray__common *)A_row_ptr, i1, (int32_T)sizeof(int32_T));
     for (i1 = 0; i1 <= l; i1++) {
       A_row_ptr->data[i1] = 0;
     }
@@ -104,7 +104,7 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
     if (ascend) {
       i1 = A_col_ind->size[0];
       A_col_ind->size[0] = cols->size[0];
-      m2cEnsureCapacity((m2cArray__common *)A_col_ind, i1, (int32_T)sizeof
+      plcEnsureCapacity((plcArray__common *)A_col_ind, i1, (int32_T)sizeof
                         (int32_T));
       ix = cols->size[0];
       for (i1 = 0; i1 < ix; i1++) {
@@ -113,7 +113,7 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
 
       i1 = A_val->size[0];
       A_val->size[0] = vs->size[0];
-      m2cEnsureCapacity((m2cArray__common *)A_val, i1, (int32_T)sizeof(real_T));
+      plcEnsureCapacity((plcArray__common *)A_val, i1, (int32_T)sizeof(real_T));
       ix = vs->size[0];
       for (i1 = 0; i1 < ix; i1++) {
         A_val->data[i1] = vs->data[i1];
@@ -121,11 +121,11 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
     } else {
       i1 = A_col_ind->size[0];
       A_col_ind->size[0] = cols->size[0];
-      m2cEnsureCapacity((m2cArray__common *)A_col_ind, i1, (int32_T)sizeof
+      plcEnsureCapacity((plcArray__common *)A_col_ind, i1, (int32_T)sizeof
                         (int32_T));
       i1 = A_val->size[0];
       A_val->size[0] = cols->size[0];
-      m2cEnsureCapacity((m2cArray__common *)A_val, i1, (int32_T)sizeof(real_T));
+      plcEnsureCapacity((plcArray__common *)A_val, i1, (int32_T)sizeof(real_T));
       for (i = 0; i < rows->size[0]; i++) {
         j = A_row_ptr->data[rows->data[i] - 1];
         A_val->data[A_row_ptr->data[rows->data[i] - 1] - 1] = vs->data[i];
@@ -135,7 +135,7 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
 
       i1 = x->size[0];
       x->size[0] = A_row_ptr->size[0];
-      m2cEnsureCapacity((m2cArray__common *)x, i1, (int32_T)sizeof(int32_T));
+      plcEnsureCapacity((plcArray__common *)x, i1, (int32_T)sizeof(int32_T));
       ix = A_row_ptr->size[0];
       for (i1 = 0; i1 < ix; i1++) {
         x->data[i1] = A_row_ptr->data[i1];
@@ -152,7 +152,7 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
 
     i1 = r0->size[0];
     r0->size[0] = A_val->size[0];
-    m2cEnsureCapacity((m2cArray__common *)r0, i1, (int32_T)sizeof(real_T));
+    plcEnsureCapacity((plcArray__common *)r0, i1, (int32_T)sizeof(real_T));
     ix = A_val->size[0];
     for (i1 = 0; i1 < ix; i1++) {
       r0->data[i1] = A_val->data[i1];
@@ -160,7 +160,7 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
 
     i1 = x->size[0];
     x->size[0] = A_col_ind->size[0];
-    m2cEnsureCapacity((m2cArray__common *)x, i1, (int32_T)sizeof(int32_T));
+    plcEnsureCapacity((plcArray__common *)x, i1, (int32_T)sizeof(int32_T));
     ix = A_col_ind->size[0];
     for (i1 = 0; i1 < ix; i1++) {
       x->data[i1] = A_col_ind->data[i1];
@@ -184,11 +184,11 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
       if (!ascend) {
         ix = buf_indx->size[0];
         buf_indx->size[0] = A_row_ptr->data[i] - A_row_ptr->data[i - 1];
-        m2cEnsureCapacity((m2cArray__common *)buf_indx, ix, (int32_T)sizeof
+        plcEnsureCapacity((plcArray__common *)buf_indx, ix, (int32_T)sizeof
                           (int32_T));
         ix = buf_val->size[0];
         buf_val->size[0] = A_row_ptr->data[i] - A_row_ptr->data[i - 1];
-        m2cEnsureCapacity((m2cArray__common *)buf_val, ix, (int32_T)sizeof
+        plcEnsureCapacity((plcArray__common *)buf_val, ix, (int32_T)sizeof
                           (real_T));
         ind = 1U;
         ix = A_row_ptr->data[i] - 1;
@@ -280,7 +280,7 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
 
     i1 = A_col_ind->size[0];
     A_col_ind->size[0] = x->size[0];
-    m2cEnsureCapacity((m2cArray__common *)A_col_ind, i1, (int32_T)sizeof(int32_T));
+    plcEnsureCapacity((plcArray__common *)A_col_ind, i1, (int32_T)sizeof(int32_T));
     ix = x->size[0];
     for (i1 = 0; i1 < ix; i1++) {
       A_col_ind->data[i1] = x->data[i1];
@@ -288,32 +288,32 @@ static void crs_create(const m2cArray_int32_T *rows, const m2cArray_int32_T
 
     i1 = A_val->size[0];
     A_val->size[0] = r0->size[0];
-    m2cEnsureCapacity((m2cArray__common *)A_val, i1, (int32_T)sizeof(real_T));
+    plcEnsureCapacity((plcArray__common *)A_val, i1, (int32_T)sizeof(real_T));
     ix = r0->size[0];
     for (i1 = 0; i1 < ix; i1++) {
       A_val->data[i1] = r0->data[i1];
     }
   }
 
-  m2cFree_int32_T(&buf_indx);
-  m2cFree_real_T(&buf_val);
-  m2cFree_int32_T(&x);
-  m2cFree_real_T(&r0);
+  plcFree_int32_T(&buf_indx);
+  plcFree_real_T(&buf_val);
+  plcFree_int32_T(&x);
+  plcFree_real_T(&r0);
 }
 
 void crs_transp(const struct_T *A, struct_T *At)
 {
-  m2cArray_int32_T *js;
+  plcArray_int32_T *js;
   uint32_T unnamed_idx_0;
   int32_T i0;
   int32_T nrows;
   int32_T i;
   int32_T j;
-  m2cInit_int32_T(&js, 1);
+  plcInit_int32_T(&js, 1);
   unnamed_idx_0 = (uint32_T)A->col_ind->size[0];
   i0 = js->size[0];
   js->size[0] = (int32_T)unnamed_idx_0;
-  m2cEnsureCapacity((m2cArray__common *)js, i0, (int32_T)sizeof(int32_T));
+  plcEnsureCapacity((plcArray__common *)js, i0, (int32_T)sizeof(int32_T));
   nrows = A->row_ptr->size[0] - 1;
   for (i = 1; i <= nrows; i++) {
     i0 = A->row_ptr->data[i] - 1;
@@ -324,7 +324,7 @@ void crs_transp(const struct_T *A, struct_T *At)
 
   crs_create(A->col_ind, js, A->val, At->row_ptr, At->col_ind, At->val,
              &At->nrows, &At->ncols);
-  m2cFree_int32_T(&js);
+  plcFree_int32_T(&js);
 }
 
 void crs_transp_initialize(void)

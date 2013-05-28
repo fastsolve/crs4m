@@ -1,45 +1,45 @@
-% Startup script of SpaLab
+% Startup script of palSpa
 
-if ~exist('./util/build_spl.m', 'file')
-    error('You must run the startup script in the SpaLab''s root directory.');
+if ~exist('./util/build_psp.m', 'file')
+    error('You must run the startup script in the palSpa''s root directory.');
 end
 
-% Add M2C
-if ~exist('m2c', 'file')
+% Add palCoder
+if ~exist('palc', 'file')
     try
-        run('../M2C/startup.m');
+        run('../palCoder/startup.m');
     catch %#ok<CTCH>
-        error(['Could not find M2C in the path. Please run M2C''s ' ...
+        error(['Could not find palCoder in the path. Please run palCoder''s ' ...
             'startup script manually.']);
     end
 end
 
-% Add MACC
-if ~exist('MACC_begin_parallel', 'file')
+% Add palACC
+if ~exist('pACC_begin_parallel', 'file')
     try
-        run('../MACC/startup.m');
+        run('../palACC/startup.m');
     catch %#ok<CTCH>
-        error(['Could not find MACC in the path. Please run MACC''s  ' ...
+        error(['Could not find palACC in the path. Please run palACC''s  ' ...
             'startup script manually.']);
     end
 end
 
-% Add MMPI
-if ~exist('MMPI_Init', 'file')
+% Add palMPI
+if ~exist('pMPI_Init', 'file')
     try
-        run('../MMPI/startup.m');
+        run('../palMPI/startup.m');
     catch %#ok<CTCH>
-        error(['Could not find MMPI in the path. Please run MMPI''s  ' ...
+        error(['Could not find palMPI in the path. Please run palMPI''s  ' ...
             'startup script manually.']);
     end
 end
 
-% Add LinaLab
-if ~exist('build_lal', 'file')
+% Add palLina
+if ~exist('build_pla', 'file')
     try
-        run('../LinaLab/startup.m');
+        run('../palLina/startup.m');
     catch %#ok<CTCH>
-        error(['Could not find LinaLab in the path. Please run LinaLab''s  ' ...
+        error(['Could not find palLina in the path. Please run palLina''s  ' ...
             'startup script manually.']);
     end
 end
@@ -49,8 +49,8 @@ addpath([pwd '/util']); %#ok<*MCAP>
 
 if ~isinmpi
     try
-        build_spl
+        build_psp
     catch
-        warning('Could not build LinaLab.');
+        warning('Could not build palSpa.');
     end
 end

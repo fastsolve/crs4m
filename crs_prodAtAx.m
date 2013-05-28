@@ -52,52 +52,52 @@ assert( nargin<=8);
 if nargin<3; 
     b = zeros(A.ncols,size(x,2)); 
 elseif size(b,1)<A.ncols || size(b,2)~=size(x,2)
-    MACC_begin_master
+    pACC_begin_master
     msg_error('crs_prodAAtx:IncorrectBuffer', 'Buffer b has incorrect size.');
-    MACC_end_master
+    pACC_end_master
 end
 if nargin<4;
     Ax = zeros(A.nrows,size(x,2));
 elseif size(Ax,1)<A.nrows || size(Ax,2)~=size(x,2)
-    MACC_begin_master
+    pACC_begin_master
     msg_error('prodAAtx:IncorrectBuffer', 'Buffer Ax has incorrect size.');
-    MACC_end_master
+    pACC_end_master
 end
 
-ismt = nargin>=5 && MACC_get_num_threads>1;
+ismt = nargin>=5 && pACC_get_num_threads>1;
 
 %% Declare parallel region
 if nargin>=5 && ~isempty( nthreads)
-    if ~MACC_get_nested && ismt && nthreads(1)>1
-        MACC_begin_master
+    if ~pACC_get_nested && ismt && nthreads(1)>1
+        pACC_begin_master
         msg_warn('crs_prodAtAx:NestedParallel', ...
             'You are trying to use nested parallel regions, but nested parallelism is not enabled.');
-        MACC_end_master
+        pACC_end_master
     end
     
-    [b, Ax] = MACC_begin_parallel( b, Ax);
-    MACC_clause_default( 'shared');
-    MACC_clause_num_threads( int32(nthreads(1)));
+    [b, Ax] = pACC_begin_parallel( b, Ax);
+    pACC_clause_default( 'shared');
+    pACC_clause_num_threads( int32(nthreads(1)));
     
     % Computes Ax=A*x
     Ax = crs_prodAx( A, x, Ax, []);
-    MACC_barrier;
+    pACC_barrier;
     
     % Computes b=A'*Ax
     b = crs_prodAtx( A, Ax, b, [], varargin{:});
     
-    MACC_end_parallel(Ax);
+    pACC_end_parallel(Ax);
 elseif ismt
     if nargout<2
-        MACC_begin_master
+        pACC_begin_master
         msg_warn('crs_prodAtAx:MissingBuffer', ...
             'crs_prodAtAx is called within a parallel region but Ax is not an in+out argument.');
-        MACC_end_master
+        pACC_end_master
     end
     
     % Computes Ax=A*x
     Ax = crs_prodAx( A, x, Ax, []);
-    MACC_barrier;
+    pACC_barrier;
     
     % Computes b=A'*Ax
     b = crs_prodAtx( A, Ax, b, [], varargin{:});
@@ -130,7 +130,7 @@ function test %#ok<DEFNU>
 
 %! Ax = zeros(size(sp,1),2);
 %! for nthreads=int32([1 2 4 8])
-%!     if nthreads>MACC_get_max_threads; break; end
+%!     if nthreads>pACC_get_max_threads; break; end
 %!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
 %!     b2 = zeros(size(sp,2)*nthreads,2);
 %!     tic; [b2, Ax] = crs_prodAtAx( A, x, b2, Ax, nthreads);
