@@ -1,5 +1,5 @@
-function build_psp( varargin)
-%build_psp Build script for palSpa
+function build_msp( varargin)
+%build_msp Build script for MSP
 
 % First, compile test scripts
 lines = grep_pattern( '*.m', '\n%#codegen -args');
