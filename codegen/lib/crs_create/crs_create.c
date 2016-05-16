@@ -1,4 +1,5 @@
 #include "crs_create.h"
+#include "mpi.h"
 #include "omp.h"
 #include "m2c.h"
 

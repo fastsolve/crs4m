@@ -1,7 +1,7 @@
-%Test script for palSpa
+%Test script for MSPACK
 
 % First, compile test scripts
-if exist( './test_psp.m', 'file')
+if exist( './test_msp.m', 'file')
     lines = grep_pattern( '../*.m', '\n%!test');
 else
     lines = grep_pattern( '*.m', '\n%!test');

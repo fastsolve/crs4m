@@ -52,14 +52,14 @@ if nargin<3;
     b = zeros(A.nrows,size(x,2)); 
 elseif size(b,1)<A.nrows || size(b,2)~=size(x,2)
     pACC_begin_master
-    m2cerror('crs_prodAAtx:IncorrectBuffer', 'Buffer b has incorrect size.');
+    m2c_error('crs_prodAAtx:IncorrectBuffer', 'Buffer b has incorrect size.');
     pACC_end_master
 end
 if nargin<4;
     Atx = zeros(A.ncols,size(x,2));
 elseif size(Atx,1)<A.ncols || size(Atx,2)~=size(x,2)
     pACC_begin_master
-    m2cerror('prodAAtx:IncorrectBuffer', 'Buffer Atx has incorrect size.');
+    m2c_error('prodAAtx:IncorrectBuffer', 'Buffer Atx has incorrect size.');
     pACC_end_master
 end
 
@@ -69,7 +69,7 @@ ismt = nargin>=5 && pACC_get_num_threads>1;
 if nargin>=5 && ~isempty( nthreads)
     if ~pACC_get_nested && ismt && nthreads(1)>1
         pACC_begin_master
-        m2cwarn('crs_prodAAtx:NestedParallel', ...
+        m2c_warn('crs_prodAAtx:NestedParallel', ...
             'You are trying to use nested parallel regions, but nested parallelism is not enabled.');
         pACC_end_master
     end
@@ -89,7 +89,7 @@ if nargin>=5 && ~isempty( nthreads)
 elseif ismt
     if nargout<2
         pACC_begin_master
-        m2cwarn('crs_prodAAtx:MissingBuffer', ...
+        m2c_warn('crs_prodAAtx:MissingBuffer', ...
             'crs_prodAAtx is called within a parallel region but Atx is not an in+out argument.');
         pACC_end_master
     end

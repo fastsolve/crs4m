@@ -7,5 +7,5 @@ files = regexp(lines, '(\w+.m):', 'tokens');
 
 for j=1:length(files)
     file = files{j}{1};
-    compile('-omp', '-noinf', '-O', file, varargin{:});
+    compile('-mpi', '-noinf', '-O', varargin{:}, file);
 end

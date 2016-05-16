@@ -12,7 +12,7 @@ function C = crs_prodAB(A, B)
 %3. Fill in C.val
 
 if A.ncols~=B.nrows
-    m2cerror('crs_prodMatMat:WrongSizes', 'Number of columns of A must be equal to number of rows in B.');
+    m2c_error('crs_prodMatMat:WrongSizes', 'Number of columns of A must be equal to number of rows in B.');
 end
 
 % initialization of row vector. It has the size of A.row_ptr.
