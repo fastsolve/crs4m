@@ -1,5 +1,5 @@
-function build_spl( varargin)
-%build_spl Build script for SpaLab
+function build_msp( varargin)
+%build_msp Build script for MSP
 
 % First, compile test scripts
 lines = grep_pattern( '*.m', '\n%#codegen -args');

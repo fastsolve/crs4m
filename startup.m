@@ -1,16 +1,28 @@
-% Startup script of SpaLab
+% Startup script of MSPACK
 
-if ~exist('./util/build_spl.m', 'file')
-    error('You must run the startup script in the SpaLab''s root directory.');
+addpath(pwd); %#ok<*MCAP>
+addpath([pwd '/util']); %#ok<*MCAP>
+
+if ~exist('./util/build_msp.m', 'file')
+    error('You must run the startup script in the MSPACK''s root directory.');
 end
 
 % Add M2C
 if ~exist('m2c', 'file')
     try
-        run('../M2C/startup.m');
+        if exist('../M2C','dir')==7
+            run('../M2C/startup.m');
+        elseif exist('../M2C_dist','dir')==7
+            run('../M2C_dist/startup.m');
+        else
+            run('../CodeGen/startup.m');
+        end
     catch %#ok<CTCH>
-        error(['Could not find M2C in the path. Please run M2C''s ' ...
-            'startup script manually.']);
+        error('Could not find m2c in the path. Please add M2C to your path.');
+    end
+
+    if usejava('jvm')
+        build_msp
     end
 end
 
@@ -25,7 +37,7 @@ if ~exist('MACC_begin_parallel', 'file')
 end
 
 % Add MMPI
-if ~exist('MMPI_Init', 'file')
+if ~exist('pMPI_Init', 'file')
     try
         run('../MMPI/startup.m');
     catch %#ok<CTCH>
@@ -35,22 +47,11 @@ if ~exist('MMPI_Init', 'file')
 end
 
 % Add LinaLab
-if ~exist('build_lal', 'file')
+if ~exist('build_pla', 'file')
     try
         run('../LinaLab/startup.m');
     catch %#ok<CTCH>
         error(['Could not find LinaLab in the path. Please run LinaLab''s  ' ...
             'startup script manually.']);
-    end
-end
-
-addpath(pwd); %#ok<*MCAP>
-addpath([pwd '/util']); %#ok<*MCAP>
-
-if ~isinmpi
-    try
-        build_spl
-    catch
-        warning('Could not build LinaLab.');
     end
 end
