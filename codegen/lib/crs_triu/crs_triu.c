@@ -1,112 +1,141 @@
 #include "crs_triu.h"
-#include "palc.h"
+#include "omp.h"
+#include "m2c.h"
 
-static void crs_sort(const plcArray_int32_T *row_ptr, plcArray_int32_T *col_ind,
-                     plcArray_real_T *val);
-static void plcCopyStruct_struct_T(struct_T *dst, const struct_T *src);
-static define_plcCopy(plcCopy_int32_T, int32_T);
-static define_plcCopy(plcCopy_real_T, real_T);
-static void crs_sort(const plcArray_int32_T *row_ptr, plcArray_int32_T *col_ind,
-                     plcArray_real_T *val)
+static void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,
+                     emxArray_real_T *val);
+static void emxCopyStruct_struct0_T(struct0_T *dst, const struct0_T *src);
+static void emxCopy_int32_T(emxArray_int32_T **dst, emxArray_int32_T * const
+  *src);
+static void emxCopy_real_T(emxArray_real_T **dst, emxArray_real_T * const *src);
+static void emxFreeStruct_struct0_T(struct0_T *pStruct);
+static void emxInitStruct_struct0_T(struct0_T *pStruct);
+static void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,
+                     emxArray_real_T *val)
 {
-  int32_T i2;
-  int32_T i;
-  plcArray_real_T *buf_val;
-  plcArray_int32_T *buf_indx;
+  int i2;
+  int i;
+  emxArray_real_T *buf_val;
+  emxArray_int32_T *buf_indx;
+  emxArray_int32_T *A;
+  emxArray_real_T *b_A;
   boolean_T ascend;
-  int32_T j;
-  int32_T n;
+  int i3;
+  int j;
   boolean_T exitg3;
-  uint32_T ind;
-  int32_T l;
-  int32_T exitg1;
-  boolean_T guard1 = FALSE;
-  int32_T r0;
-  real_T t0;
-  int32_T exitg2;
-  int32_T b_i;
-  boolean_T guard2 = FALSE;
+  int loop_ub;
+  unsigned int ind;
+  int n;
+  int l;
+  int ir;
+  int exitg1;
+  boolean_T guard1 = false;
+  int r0;
+  double t0;
+  int exitg2;
+  int b_i;
+  boolean_T gt;
+  boolean_T guard2 = false;
   i2 = row_ptr->size[0] - 1;
   i = 1;
-  plcInit_real_T(&buf_val, 1);
-  plcInit_int32_T(&buf_indx, 1);
+  emxInit_real_T(&buf_val, 1);
+  emxInit_int32_T(&buf_indx, 1);
+  emxInit_int32_T(&A, 1);
+  emxInit_real_T(&b_A, 1);
   while (i <= i2) {
-    ascend = TRUE;
+    ascend = true;
+    i3 = row_ptr->data[i] - 1;
     j = row_ptr->data[i - 1];
-    n = row_ptr->data[i] - 1;
-    exitg3 = FALSE;
-    while ((exitg3 == FALSE) && (j + 1 <= n)) {
+    exitg3 = false;
+    while ((!exitg3) && (j + 1 <= i3)) {
       if (col_ind->data[j] < col_ind->data[j - 1]) {
-        ascend = FALSE;
-        exitg3 = TRUE;
+        ascend = false;
+        exitg3 = true;
       } else {
         j++;
       }
     }
 
     if (!ascend) {
-      n = buf_indx->size[0];
-      buf_indx->size[0] = row_ptr->data[i] - row_ptr->data[i - 1];
-      plcEnsureCapacity((plcArray__common *)buf_indx, n, (int32_T)sizeof(int32_T));
-      n = buf_val->size[0];
-      buf_val->size[0] = row_ptr->data[i] - row_ptr->data[i - 1];
-      plcEnsureCapacity((plcArray__common *)buf_val, n, (int32_T)sizeof(real_T));
+      i3 = A->size[0];
+      A->size[0] = row_ptr->data[i] - row_ptr->data[i - 1];
+      emxEnsureCapacity((emxArray__common *)A, i3, (int)sizeof(int));
+      loop_ub = row_ptr->data[i] - row_ptr->data[i - 1];
+      for (i3 = 0; i3 < loop_ub; i3++) {
+        A->data[i3] = 0;
+      }
+
+      i3 = buf_indx->size[0];
+      buf_indx->size[0] = A->size[0];
+      emxEnsureCapacity((emxArray__common *)buf_indx, i3, (int)sizeof(int));
+      i3 = b_A->size[0];
+      b_A->size[0] = row_ptr->data[i] - row_ptr->data[i - 1];
+      emxEnsureCapacity((emxArray__common *)b_A, i3, (int)sizeof(double));
+      loop_ub = row_ptr->data[i] - row_ptr->data[i - 1];
+      for (i3 = 0; i3 < loop_ub; i3++) {
+        b_A->data[i3] = 0.0;
+      }
+
+      i3 = buf_val->size[0];
+      buf_val->size[0] = b_A->size[0];
+      emxEnsureCapacity((emxArray__common *)buf_val, i3, (int)sizeof(double));
       ind = 1U;
-      n = row_ptr->data[i] - 1;
-      for (j = row_ptr->data[i - 1]; j <= n; j++) {
-        buf_indx->data[(int32_T)ind - 1] = col_ind->data[j - 1];
-        buf_val->data[(int32_T)ind - 1] = val->data[j - 1];
+      i3 = row_ptr->data[i] - 1;
+      for (j = row_ptr->data[i - 1]; j <= i3; j++) {
+        buf_indx->data[(int)ind - 1] = col_ind->data[j - 1];
+        buf_val->data[(int)ind - 1] = val->data[j - 1];
         ind++;
       }
 
       n = buf_indx->size[0];
       if (n <= 1) {
       } else {
-        l = (int32_T)((uint32_T)n >> 1U);
+        l = (int)((unsigned int)n >> 1U);
+        ir = n;
         do {
           exitg1 = 0;
-          guard1 = FALSE;
+          guard1 = false;
           if (l + 1 <= 1) {
-            r0 = buf_indx->data[n - 1];
-            t0 = buf_val->data[n - 1];
-            buf_indx->data[n - 1] = buf_indx->data[0];
-            buf_val->data[n - 1] = buf_val->data[0];
-            n--;
-            if (n == 1) {
+            r0 = buf_indx->data[ir - 1];
+            t0 = buf_val->data[ir - 1];
+            buf_indx->data[ir - 1] = buf_indx->data[0];
+            buf_val->data[ir - 1] = buf_val->data[0];
+            ir--;
+            if (ir == 1) {
               exitg1 = 1;
             } else {
-              guard1 = TRUE;
+              guard1 = true;
             }
           } else {
             l--;
             r0 = buf_indx->data[l];
             t0 = buf_val->data[l];
-            guard1 = TRUE;
+            guard1 = true;
           }
 
-          if (guard1 == TRUE) {
+          if (guard1) {
             j = l;
             do {
               exitg2 = 0;
               b_i = j;
               j = ((j + 1) << 1) - 1;
-              ascend = FALSE;
-              guard2 = FALSE;
-              if (j + 1 >= n) {
-                if (j + 1 == n) {
-                  ascend = TRUE;
-                  guard2 = TRUE;
-                } else if (j + 1 > n) {
+              gt = false;
+              guard2 = false;
+              if (j + 1 >= ir) {
+                if (j + 1 == ir) {
+                  gt = true;
+                  guard2 = true;
+                } else if (j + 1 > ir) {
                   exitg2 = 1;
                 } else {
-                  guard2 = TRUE;
+                  guard2 = true;
                 }
               } else {
-                guard2 = TRUE;
+                guard2 = true;
               }
 
-              if (guard2 == TRUE) {
-                if ((!ascend) && (buf_indx->data[j] < buf_indx->data[j + 1])) {
+              if (guard2) {
+                if ((!gt) && (buf_indx->data[j] < buf_indx->data[j + 1])) {
                   j++;
                 }
 
@@ -129,10 +158,10 @@ static void crs_sort(const plcArray_int32_T *row_ptr, plcArray_int32_T *col_ind,
       }
 
       ind = 1U;
-      n = row_ptr->data[i] - 1;
-      for (j = row_ptr->data[i - 1]; j <= n; j++) {
-        col_ind->data[j - 1] = buf_indx->data[(int32_T)ind - 1];
-        val->data[j - 1] = buf_val->data[(int32_T)ind - 1];
+      i3 = row_ptr->data[i] - 1;
+      for (j = row_ptr->data[i - 1]; j <= i3; j++) {
+        col_ind->data[j - 1] = buf_indx->data[(int)ind - 1];
+        val->data[j - 1] = buf_val->data[(int)ind - 1];
         ind++;
       }
     }
@@ -140,160 +169,106 @@ static void crs_sort(const plcArray_int32_T *row_ptr, plcArray_int32_T *col_ind,
     i++;
   }
 
-  plcFree_int32_T(&buf_indx);
-  plcFree_real_T(&buf_val);
+  emxFree_real_T(&b_A);
+  emxFree_int32_T(&A);
+  emxFree_int32_T(&buf_indx);
+  emxFree_real_T(&buf_val);
 }
 
-static void plcCopyStruct_struct_T(struct_T *dst, const struct_T *src)
+static void emxCopyStruct_struct0_T(struct0_T *dst, const struct0_T *src)
 {
-  plcCopy_int32_T(&dst->row_ptr, &src->row_ptr);
-  plcCopy_int32_T(&dst->col_ind, &src->col_ind);
-  plcCopy_real_T(&dst->val, &src->val);
+  emxCopy_int32_T(&dst->row_ptr, &src->row_ptr);
+  emxCopy_int32_T(&dst->col_ind, &src->col_ind);
+  emxCopy_real_T(&dst->val, &src->val);
   dst->nrows = src->nrows;
   dst->ncols = src->ncols;
 }
 
-void crs_triu(const struct_T *A, struct_T *U)
+static void emxCopy_int32_T(emxArray_int32_T **dst, emxArray_int32_T * const
+  *src)
 {
-  int32_T i0;
-  int32_T offset;
-  int32_T start;
-  int32_T i;
-  plcArray_int32_T *b_A;
-  plcArray_real_T *c_A;
-  plcCopyStruct_struct_T(U, A);
-  i0 = U->col_ind->size[0];
-  U->col_ind->size[0] = A->col_ind->size[0];
-  plcEnsureCapacity((plcArray__common *)U->col_ind, i0, (int32_T)sizeof(int32_T));
-  offset = A->col_ind->size[0];
-  for (i0 = 0; i0 < offset; i0++) {
-    U->col_ind->data[i0] = A->col_ind->data[i0];
+  int numElDst;
+  int numElSrc;
+  int i;
+  numElDst = 1;
+  numElSrc = 1;
+  for (i = 0; i < (*dst)->numDimensions; i++) {
+    numElDst *= (*dst)->size[i];
+    numElSrc *= (*src)->size[i];
   }
 
-  i0 = U->val->size[0];
-  U->val->size[0] = A->val->size[0];
-  plcEnsureCapacity((plcArray__common *)U->val, i0, (int32_T)sizeof(real_T));
-  offset = A->val->size[0];
-  for (i0 = 0; i0 < offset; i0++) {
-    U->val->data[i0] = A->val->data[i0];
+  for (i = 0; i < (*dst)->numDimensions; i++) {
+    (*dst)->size[i] = (*src)->size[i];
   }
 
-  crs_sort(A->row_ptr, U->col_ind, U->val);
-  offset = 0;
-  start = 0;
-  for (i = 1; i <= A->nrows; i++) {
-    i0 = U->row_ptr->data[i] - 1;
-    while (start + 1 <= i0) {
-      if (U->col_ind->data[start] < i) {
-        offset++;
-      } else {
-        if (offset != 0) {
-          U->col_ind->data[start - offset] = U->col_ind->data[start];
-          U->val->data[start - offset] = U->val->data[start];
-        }
-      }
-
-      start++;
-    }
-
-    start = U->row_ptr->data[i] - 1;
-    U->row_ptr->data[i] -= offset;
-  }
-
-  if (offset != 0) {
-    plcInit_int32_T(&b_A, 1);
-    start = U->col_ind->size[0] - offset;
-    i0 = b_A->size[0];
-    b_A->size[0] = U->col_ind->size[0];
-    plcEnsureCapacity((plcArray__common *)b_A, i0, (int32_T)sizeof(int32_T));
-    offset = U->col_ind->size[0];
-    for (i0 = 0; i0 < offset; i0++) {
-      b_A->data[i0] = U->col_ind->data[i0];
-    }
-
-    if (start < 1) {
-      i0 = U->col_ind->size[0];
-      U->col_ind->size[0] = 0;
-      plcEnsureCapacity((plcArray__common *)U->col_ind, i0, (int32_T)sizeof
-                        (int32_T));
-    } else {
-      i0 = U->col_ind->size[0];
-      U->col_ind->size[0] = start;
-      plcEnsureCapacity((plcArray__common *)U->col_ind, i0, (int32_T)sizeof
-                        (int32_T));
-      for (i = 0; i < start; i++) {
-        U->col_ind->data[i] = b_A->data[i];
-      }
-    }
-
-    plcFree_int32_T(&b_A);
-    plcInit_real_T(&c_A, 1);
-    i0 = c_A->size[0];
-    c_A->size[0] = U->val->size[0];
-    plcEnsureCapacity((plcArray__common *)c_A, i0, (int32_T)sizeof(real_T));
-    offset = U->val->size[0];
-    for (i0 = 0; i0 < offset; i0++) {
-      c_A->data[i0] = U->val->data[i0];
-    }
-
-    if (start < 1) {
-      i0 = U->val->size[0];
-      U->val->size[0] = 0;
-      plcEnsureCapacity((plcArray__common *)U->val, i0, (int32_T)sizeof(real_T));
-    } else {
-      i0 = U->val->size[0];
-      U->val->size[0] = start;
-      plcEnsureCapacity((plcArray__common *)U->val, i0, (int32_T)sizeof(real_T));
-      for (i = 0; i < start; i++) {
-        U->val->data[i] = c_A->data[i];
-      }
-    }
-
-    plcFree_real_T(&c_A);
+  emxEnsureCapacity((emxArray__common *)*dst, numElDst, (int)sizeof(int));
+  for (i = 0; i < numElSrc; i++) {
+    (*dst)->data[i] = (*src)->data[i];
   }
 }
 
-void crs_triu1(const struct_T *A, int32_T k, struct_T *U)
+static void emxCopy_real_T(emxArray_real_T **dst, emxArray_real_T * const *src)
 {
-  int32_T i1;
-  int32_T offset;
-  int32_T start;
-  int32_T i;
-  plcArray_int32_T *b_A;
-  plcArray_real_T *c_A;
-  plcCopyStruct_struct_T(U, A);
-  i1 = U->col_ind->size[0];
-  U->col_ind->size[0] = A->col_ind->size[0];
-  plcEnsureCapacity((plcArray__common *)U->col_ind, i1, (int32_T)sizeof(int32_T));
-  offset = A->col_ind->size[0];
-  for (i1 = 0; i1 < offset; i1++) {
-    U->col_ind->data[i1] = A->col_ind->data[i1];
+  int numElDst;
+  int numElSrc;
+  int i;
+  numElDst = 1;
+  numElSrc = 1;
+  for (i = 0; i < (*dst)->numDimensions; i++) {
+    numElDst *= (*dst)->size[i];
+    numElSrc *= (*src)->size[i];
   }
 
-  i1 = U->val->size[0];
-  U->val->size[0] = A->val->size[0];
-  plcEnsureCapacity((plcArray__common *)U->val, i1, (int32_T)sizeof(real_T));
-  offset = A->val->size[0];
-  for (i1 = 0; i1 < offset; i1++) {
-    U->val->data[i1] = A->val->data[i1];
+  for (i = 0; i < (*dst)->numDimensions; i++) {
+    (*dst)->size[i] = (*src)->size[i];
   }
 
-  crs_sort(A->row_ptr, U->col_ind, U->val);
+  emxEnsureCapacity((emxArray__common *)*dst, numElDst, (int)sizeof(double));
+  for (i = 0; i < numElSrc; i++) {
+    (*dst)->data[i] = (*src)->data[i];
+  }
+}
+
+static void emxFreeStruct_struct0_T(struct0_T *pStruct)
+{
+  emxFree_int32_T(&pStruct->row_ptr);
+  emxFree_int32_T(&pStruct->col_ind);
+  emxFree_real_T(&pStruct->val);
+}
+
+static void emxInitStruct_struct0_T(struct0_T *pStruct)
+{
+  emxInit_int32_T(&pStruct->row_ptr, 1);
+  emxInit_int32_T(&pStruct->col_ind, 1);
+  emxInit_real_T(&pStruct->val, 1);
+}
+
+void crs_triu(const struct0_T *A, struct0_T *U)
+{
+  int offset;
+  int start;
+  int i;
+  int i0;
+  emxArray_int32_T *b_A;
+  int j;
+  int newlen;
+  int loop_ub;
+  emxArray_real_T *c_A;
+  emxCopyStruct_struct0_T(U, A);
+  crs_sort(U->row_ptr, U->col_ind, U->val);
   offset = 0;
   start = 0;
-  for (i = 1; i <= A->nrows; i++) {
-    i1 = U->row_ptr->data[i] - 1;
-    while (start + 1 <= i1) {
-      if (U->col_ind->data[start] < i + k) {
+  for (i = 1; i <= U->nrows; i++) {
+    i0 = U->row_ptr->data[i] - 1;
+    for (j = start; j + 1 <= i0; j++) {
+      if (U->col_ind->data[j] < i) {
         offset++;
       } else {
         if (offset != 0) {
-          U->col_ind->data[start - offset] = U->col_ind->data[start];
-          U->val->data[start - offset] = U->val->data[start];
+          U->col_ind->data[j - offset] = U->col_ind->data[j];
+          U->val->data[j - offset] = U->val->data[j];
         }
       }
-
-      start++;
     }
 
     start = U->row_ptr->data[i] - 1;
@@ -301,55 +276,136 @@ void crs_triu1(const struct_T *A, int32_T k, struct_T *U)
   }
 
   if (offset != 0) {
-    plcInit_int32_T(&b_A, 1);
-    start = U->col_ind->size[0] - offset;
-    i1 = b_A->size[0];
+    emxInit_int32_T(&b_A, 1);
+    newlen = U->col_ind->size[0] - offset;
+    i0 = b_A->size[0];
     b_A->size[0] = U->col_ind->size[0];
-    plcEnsureCapacity((plcArray__common *)b_A, i1, (int32_T)sizeof(int32_T));
-    offset = U->col_ind->size[0];
-    for (i1 = 0; i1 < offset; i1++) {
-      b_A->data[i1] = U->col_ind->data[i1];
+    emxEnsureCapacity((emxArray__common *)b_A, i0, (int)sizeof(int));
+    loop_ub = U->col_ind->size[0];
+    for (i0 = 0; i0 < loop_ub; i0++) {
+      b_A->data[i0] = U->col_ind->data[i0];
     }
 
-    if (start < 1) {
-      i1 = U->col_ind->size[0];
+    if (newlen < 1) {
+      i0 = U->col_ind->size[0];
       U->col_ind->size[0] = 0;
-      plcEnsureCapacity((plcArray__common *)U->col_ind, i1, (int32_T)sizeof
-                        (int32_T));
+      emxEnsureCapacity((emxArray__common *)U->col_ind, i0, (int)sizeof(int));
     } else {
-      i1 = U->col_ind->size[0];
-      U->col_ind->size[0] = start;
-      plcEnsureCapacity((plcArray__common *)U->col_ind, i1, (int32_T)sizeof
-                        (int32_T));
-      for (i = 0; i < start; i++) {
+      i0 = U->col_ind->size[0];
+      U->col_ind->size[0] = newlen;
+      emxEnsureCapacity((emxArray__common *)U->col_ind, i0, (int)sizeof(int));
+      for (i = 0; i < newlen; i++) {
         U->col_ind->data[i] = b_A->data[i];
       }
     }
 
-    plcFree_int32_T(&b_A);
-    plcInit_real_T(&c_A, 1);
-    i1 = c_A->size[0];
+    emxFree_int32_T(&b_A);
+    emxInit_real_T(&c_A, 1);
+    i0 = c_A->size[0];
     c_A->size[0] = U->val->size[0];
-    plcEnsureCapacity((plcArray__common *)c_A, i1, (int32_T)sizeof(real_T));
-    offset = U->val->size[0];
-    for (i1 = 0; i1 < offset; i1++) {
-      c_A->data[i1] = U->val->data[i1];
+    emxEnsureCapacity((emxArray__common *)c_A, i0, (int)sizeof(double));
+    loop_ub = U->val->size[0];
+    for (i0 = 0; i0 < loop_ub; i0++) {
+      c_A->data[i0] = U->val->data[i0];
     }
 
-    if (start < 1) {
-      i1 = U->val->size[0];
+    if (newlen < 1) {
+      i0 = U->val->size[0];
       U->val->size[0] = 0;
-      plcEnsureCapacity((plcArray__common *)U->val, i1, (int32_T)sizeof(real_T));
+      emxEnsureCapacity((emxArray__common *)U->val, i0, (int)sizeof(double));
     } else {
-      i1 = U->val->size[0];
-      U->val->size[0] = start;
-      plcEnsureCapacity((plcArray__common *)U->val, i1, (int32_T)sizeof(real_T));
-      for (i = 0; i < start; i++) {
+      i0 = U->val->size[0];
+      U->val->size[0] = newlen;
+      emxEnsureCapacity((emxArray__common *)U->val, i0, (int)sizeof(double));
+      for (i = 0; i < newlen; i++) {
         U->val->data[i] = c_A->data[i];
       }
     }
 
-    plcFree_real_T(&c_A);
+    emxFree_real_T(&c_A);
+  }
+}
+
+void crs_triu1(const struct0_T *A, int k, struct0_T *U)
+{
+  int offset;
+  int start;
+  int i;
+  int i1;
+  emxArray_int32_T *b_A;
+  int j;
+  int newlen;
+  int loop_ub;
+  emxArray_real_T *c_A;
+  emxCopyStruct_struct0_T(U, A);
+  crs_sort(U->row_ptr, U->col_ind, U->val);
+  offset = 0;
+  start = 0;
+  for (i = 1; i <= U->nrows; i++) {
+    i1 = U->row_ptr->data[i] - 1;
+    for (j = start; j + 1 <= i1; j++) {
+      if (U->col_ind->data[j] < i + k) {
+        offset++;
+      } else {
+        if (offset != 0) {
+          U->col_ind->data[j - offset] = U->col_ind->data[j];
+          U->val->data[j - offset] = U->val->data[j];
+        }
+      }
+    }
+
+    start = U->row_ptr->data[i] - 1;
+    U->row_ptr->data[i] -= offset;
+  }
+
+  if (offset != 0) {
+    emxInit_int32_T(&b_A, 1);
+    newlen = U->col_ind->size[0] - offset;
+    i1 = b_A->size[0];
+    b_A->size[0] = U->col_ind->size[0];
+    emxEnsureCapacity((emxArray__common *)b_A, i1, (int)sizeof(int));
+    loop_ub = U->col_ind->size[0];
+    for (i1 = 0; i1 < loop_ub; i1++) {
+      b_A->data[i1] = U->col_ind->data[i1];
+    }
+
+    if (newlen < 1) {
+      i1 = U->col_ind->size[0];
+      U->col_ind->size[0] = 0;
+      emxEnsureCapacity((emxArray__common *)U->col_ind, i1, (int)sizeof(int));
+    } else {
+      i1 = U->col_ind->size[0];
+      U->col_ind->size[0] = newlen;
+      emxEnsureCapacity((emxArray__common *)U->col_ind, i1, (int)sizeof(int));
+      for (i = 0; i < newlen; i++) {
+        U->col_ind->data[i] = b_A->data[i];
+      }
+    }
+
+    emxFree_int32_T(&b_A);
+    emxInit_real_T(&c_A, 1);
+    i1 = c_A->size[0];
+    c_A->size[0] = U->val->size[0];
+    emxEnsureCapacity((emxArray__common *)c_A, i1, (int)sizeof(double));
+    loop_ub = U->val->size[0];
+    for (i1 = 0; i1 < loop_ub; i1++) {
+      c_A->data[i1] = U->val->data[i1];
+    }
+
+    if (newlen < 1) {
+      i1 = U->val->size[0];
+      U->val->size[0] = 0;
+      emxEnsureCapacity((emxArray__common *)U->val, i1, (int)sizeof(double));
+    } else {
+      i1 = U->val->size[0];
+      U->val->size[0] = newlen;
+      emxEnsureCapacity((emxArray__common *)U->val, i1, (int)sizeof(double));
+      for (i = 0; i < newlen; i++) {
+        U->val->data[i] = c_A->data[i];
+      }
+    }
+
+    emxFree_real_T(&c_A);
   }
 }
 
@@ -361,3 +417,12 @@ void crs_triu_terminate(void)
 {
 }
 
+void emxDestroy_struct0_T(struct0_T emxArray)
+{
+  emxFreeStruct_struct0_T(&emxArray);
+}
+
+void emxInit_struct0_T(struct0_T *pStruct)
+{
+  emxInitStruct_struct0_T(pStruct);
+}

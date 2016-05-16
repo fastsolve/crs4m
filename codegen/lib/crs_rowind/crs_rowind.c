@@ -1,18 +1,19 @@
 #include "crs_rowind.h"
-#include "palc.h"
+#include "omp.h"
+#include "m2c.h"
 
-void crs_rowind(const plcArray_int32_T *row_ptr, const plcArray_int32_T *col_ind,
-                plcArray_int32_T *row_ind)
+void crs_rowind(const emxArray_int32_T *row_ptr, const emxArray_int32_T *col_ind,
+                emxArray_int32_T *row_ind)
 {
-  uint32_T unnamed_idx_0;
-  int32_T i0;
-  int32_T nrows;
-  int32_T i;
-  int32_T j;
-  unnamed_idx_0 = (uint32_T)col_ind->size[0];
+  unsigned int unnamed_idx_0;
+  int i0;
+  int nrows;
+  int i;
+  int j;
+  unnamed_idx_0 = (unsigned int)col_ind->size[0];
   i0 = row_ind->size[0];
-  row_ind->size[0] = (int32_T)unnamed_idx_0;
-  plcEnsureCapacity((plcArray__common *)row_ind, i0, (int32_T)sizeof(int32_T));
+  row_ind->size[0] = (int)unnamed_idx_0;
+  emxEnsureCapacity((emxArray__common *)row_ind, i0, (int)sizeof(int));
   nrows = row_ptr->size[0] - 1;
   for (i = 1; i <= nrows; i++) {
     i0 = row_ptr->data[i] - 1;
@@ -30,3 +31,7 @@ void crs_rowind_terminate(void)
 {
 }
 
+void emxInitArray_int32_T(emxArray_int32_T **pEmxArray, int numDimensions)
+{
+  emxInit_int32_T(pEmxArray, numDimensions);
+}

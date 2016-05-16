@@ -52,7 +52,7 @@ if nargin==2;
     b = nullcopy( zeros(A.ncols,size(x,2)));
 else
     if size(b,1)<A.ncols || size(b,2)<size(x,2)
-        msg_error('crs_prodAtx:BufferTooSmal', 'Buffer space for output b is too small.');
+        m2cerror('crs_prodAtx:BufferTooSmal', 'Buffer space for output b is too small.');
     end
 end
 ismt = nargin>3 && pACC_get_num_threads>1;
@@ -61,7 +61,7 @@ if nargin>3 && ~isempty(nthreads)
     %% Declare parallel region
     if ~pACC_get_nested && ismt && nthreads(1)>1
         pACC_begin_master
-        msg_warn('crs_prodAtx:NestedParallel', ...
+        m2cwarn('crs_prodAtx:NestedParallel', ...
             'You are trying to use nested parallel regions. Solution may be incorrect.');
         pACC_end_master
     end

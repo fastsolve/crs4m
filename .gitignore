@@ -27,5 +27,14 @@
 Icon?
 ehthumbs.db
 Thumbs.db
-html
+.*.m.swp
+octave-core
+**/*.eps
+**/codegen/mex
+**/codegen/lib/*/*_exe.c
+**/codegen/lib/*/README
+**/codegen/lib/*/mex_*.m
+**/codegen/lib/*/build_*_exe.m
+**/codegen/lib/*/html
+run_*_exe.m
 octave-core

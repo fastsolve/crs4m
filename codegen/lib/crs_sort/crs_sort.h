@@ -1,23 +1,28 @@
-#ifndef __CRS_SORT_H__
-#define __CRS_SORT_H__
+#ifndef CRS_SORT_H
+#define CRS_SORT_H
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "plctypes.h"
+#include "rtwtypes.h"
 #include "crs_sort_types.h"
-extern void crs_sort(const plcArray_int32_T *row_ptr, plcArray_int32_T *col_ind, plcArray_real_T *val);
-extern void crs_sort0(const plcArray_int32_T *row_ptr, plcArray_int32_T *col_ind);
+
+extern void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,
+                     emxArray_real_T *val);
+extern void crs_sort0(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind);
 extern void crs_sort_initialize(void);
 extern void crs_sort_terminate(void);
-extern plcArray_int32_T *plcCreateND_int32_T( plcShort numDimensions, plcSize *size);
-extern plcArray_real_T *plcCreateND_real_T( plcShort numDimensions, plcSize *size);
-extern plcArray_int32_T *plcCreateWrapperND_int32_T(int32_T *data, plcShort numDimensions, plcSize *size);
-extern plcArray_real_T *plcCreateWrapperND_real_T(real_T *data, plcShort numDimensions, plcSize *size);
-extern plcArray_int32_T *plcCreateWrapper_int32_T(int32_T *data, plcSize rows, plcSize cols);
-extern plcArray_real_T *plcCreateWrapper_real_T(real_T *data, plcSize rows, plcSize cols);
-extern plcArray_int32_T *plcCreate_int32_T( plcSize rows, plcSize cols);
-extern plcArray_real_T *plcCreate_real_T( plcSize rows, plcSize cols);
-extern void plcDestroyArray_int32_T(plcArray_int32_T *plcArray);
-extern void plcDestroyArray_real_T(plcArray_real_T *plcArray);
+extern emxArray_int32_T *emxCreateND_int32_T(int numDimensions, int *size);
+extern emxArray_real_T *emxCreateND_real_T(int numDimensions, int *size);
+extern emxArray_int32_T *emxCreateWrapperND_int32_T(int *data, int numDimensions,
+  int *size);
+extern emxArray_real_T *emxCreateWrapperND_real_T(double *data, int
+  numDimensions, int *size);
+extern emxArray_int32_T *emxCreateWrapper_int32_T(int *data, int rows, int cols);
+extern emxArray_real_T *emxCreateWrapper_real_T(double *data, int rows, int cols);
+extern emxArray_int32_T *emxCreate_int32_T(int rows, int cols);
+extern emxArray_real_T *emxCreate_real_T(int rows, int cols);
+extern void emxDestroyArray_int32_T(emxArray_int32_T *emxArray);
+extern void emxDestroyArray_real_T(emxArray_real_T *emxArray);
+extern void emxInitArray_int32_T(emxArray_int32_T **pEmxArray, int numDimensions);
+
 #endif
