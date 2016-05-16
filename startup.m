@@ -16,12 +16,12 @@ if ~exist('m2c', 'file')
             'startup script.']);
     end
 
-    % Add MACC
+    % Add MACC_
     if ~exist('MACC_begin_parallel', 'file')
         try
-            run('../MACC/startup.m');
+            run('../MACC_/startup.m');
         catch %#ok<CTCH>
-            error(['Could not find MACC in the path. Please run MACC''s  ' ...
+            error(['Could not find MACC_ in the path. Please run MACC_''s  ' ...
                    'startup script.']);
         end
     end

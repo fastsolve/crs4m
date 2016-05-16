@@ -53,26 +53,26 @@ else
         m2c_error('crs_prodAx:BufferTooSmal', 'Buffer space for output b is too small.');
     end
 end
-ismt = nargin>=4 && pACC_get_num_threads>1;
+ismt = nargin>=4 && MACC_get_num_threads>1;
 
 if nargin>3 && ~isempty(nthreads)
     %% Declare parallel region
-    if ~pACC_get_nested && ismt && nthreads(1)>1
-        pACC_begin_master
+    if ~MACC_get_nested && ismt && nthreads(1)>1
+        MACC_begin_master
         m2c_warn('crs_prodAx:NestedParallel', ...
             'You are trying to use nested parallel regions. Solution may be incorrect.');
-        pACC_end_master
+        MACC_end_master
     end
     
-    pACC_begin_parallel; pACC_clause_default('shared');
-    pACC_clause_num_threads( int32(nthreads(1)));
+    MACC_begin_parallel; MACC_clause_default('shared');
+    MACC_clause_num_threads( int32(nthreads(1)));
     
     %% Compute b=A*x
     b = crs_prodAx_kernel( A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
-        b, int32(size(b,1)), A.nrows, int32(size(x, 2)), pACC_get_num_threads>1);
+        b, int32(size(b,1)), A.nrows, int32(size(x, 2)), MACC_get_num_threads>1);
     
     %% End parallel region
-    pACC_end_parallel;
+    MACC_end_parallel;
 else
     %% Compute b=A*x
     b = crs_prodAx_kernel( A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
@@ -80,19 +80,19 @@ else
 end
 
 if ~isempty(varargin)
-    if isempty(nthreads) && ismt; pACC_barrier; end
+    if isempty(nthreads) && ismt; MACC_barrier; end
     
     % Perform MPI allreduce
-    pACC_begin_single
+    MACC_begin_single
     s = int32(A.nrows*size(x,2));
     b = allreduce(b, s, MPI_SUM, varargin{:});
-    pACC_end_single
+    MACC_end_single
 end
 
 function b = crs_prodAx_kernel( row_ptr, col_ind, val, ...
     x, x_m, b, b_m, nrows, nrhs, ismt)
 
-pACC_kernel_function
+MACC_kernel_function
 
 coder.inline('never');
 if ismt
@@ -134,7 +134,7 @@ function test %#ok<DEFNU>
 
 %! b2 = zeros(size(sp,1),2);
 %! for nthreads=int32([1 2 4 8])
-%!     if nthreads>pACC_get_max_threads; break; end
+%!     if nthreads>MACC_get_max_threads; break; end
 %!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
 %!     tic; b2 = crs_prodAx( A, x, b2, nthreads);
 %!     fprintf(1, 'Done in %g seconds\n ', toc);

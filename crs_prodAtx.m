@@ -8,12 +8,12 @@ function b = crs_prodAtx( A, x, b, nthreads, varargin)
 %      b = crs_prodAtx( A, x, b, nthreads)
 % Computes b=A'*x using nthreads OpenMP threads, where nthreads is an int32.
 % In this mode, there are implicit barriers in the function.
-% It will use min( nthreads, size(b,1)/A.ncols, pACC_get_max_threads) threads.
+% It will use min( nthreads, size(b,1)/A.ncols, MACC_get_max_threads) threads.
 %
 %      b = crs_prodAtx( A, x, b, [])
 % Computes b=A'*x locally within each OpenMP thread, assuming the parallel
 % region has already been initialized. The argument b has been preallocated.
-% It will use min( size(b,1)/A.ncols, pACC_get_mnum_threads)
+% It will use min( size(b,1)/A.ncols, MACC_get_mnum_threads)
 % threads forcomputations. In this mode, there is no implicit barrier.
 %
 %      b = crs_prodAtx( A, x, b, nthreads, comm)
@@ -55,51 +55,51 @@ else
         m2c_error('crs_prodAtx:BufferTooSmal', 'Buffer space for output b is too small.');
     end
 end
-ismt = nargin>3 && pACC_get_num_threads>1;
+ismt = nargin>3 && MACC_get_num_threads>1;
 
 if nargin>3 && ~isempty(nthreads)
     %% Declare parallel region
-    if ~pACC_get_nested && ismt && nthreads(1)>1
-        pACC_begin_master
+    if ~MACC_get_nested && ismt && nthreads(1)>1
+        MACC_begin_master
         m2c_warn('crs_prodAtx:NestedParallel', ...
             'You are trying to use nested parallel regions. Solution may be incorrect.');
-        pACC_end_master
+        MACC_end_master
     end
     
-    pACC_begin_parallel; pACC_clause_default('shared'); 
-    pACC_clause_num_threads( int32(nthreads(1)));
+    MACC_begin_parallel; MACC_clause_default('shared'); 
+    MACC_clause_num_threads( int32(nthreads(1)));
 
     %% Compute b=A'*x
     b = crs_prodAtx_kernel( A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
-        b, int32(size(b,1)), A.nrows, A.ncols, int32(size(x,2)), pACC_get_num_threads>1);
+        b, int32(size(b,1)), A.nrows, A.ncols, int32(size(x,2)), MACC_get_num_threads>1);
     
-    pACC_end_parallel
+    MACC_end_parallel
 else
     %% Compute b=A'*x
     b = crs_prodAtx_kernel( A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
         b, int32(size(b,1)), A.nrows, A.ncols, int32(size(x,2)), ismt);
 
-    if ~isempty(varargin) && ismt; pACC_barrier; end
+    if ~isempty(varargin) && ismt; MACC_barrier; end
 end
 
 if ~isempty(varargin)
     % Perform MPI allreduce
-    pACC_begin_single
+    MACC_begin_single
     s = int32(A.ncols*size(x,2));
     b = allreduce(b, s, MPI_SUM, varargin{:});
-    pACC_end_single
+    MACC_end_single
 end
 
 function b = crs_prodAtx_kernel( row_ptr, col_ind, val, x, x_m, ...
     b, b_m, nrows, ncols, nrhs, ismt)
 
-pACC_kernel_function
+MACC_kernel_function
 coder.inline('never');
 
 if ismt
-    nthreads = min(pACC_get_num_threads, ...
+    nthreads = min(MACC_get_num_threads, ...
         int32(floor(double(b_m)/double(ncols))));
-    boffset = pACC_get_thread_num*ncols;
+    boffset = MACC_get_thread_num*ncols;
     [istart, iend] = get_local_chunk(nrows, [], nthreads);
 else
     nthreads = int32(1); boffset = int32(0);
@@ -126,7 +126,7 @@ end
 
 %% Perfom summation of partial sums in b
 if nthreads>1
-    pACC_barrier;
+    MACC_barrier;
     [istart, iend] = get_local_chunk(ncols);
     
     offset = ncols;
@@ -162,7 +162,7 @@ function test %#ok<DEFNU>
 %! assert( norm(b0-b1)/norm(b0)<=1.e-10);
 
 %! for nthreads=int32([1 2 4 8])
-%!     if nthreads>pACC_get_max_threads; break; end
+%!     if nthreads>MACC_get_max_threads; break; end
 %!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
 %!     tic; b2 = zeros(size(sp,2)*nthreads,2);
 %!     b2 = crs_prodAtx( A, x, b2, nthreads);
