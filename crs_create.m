@@ -1,12 +1,12 @@
-function A = crs_create( rows, cols, vs, varargin)
+function A = crs_create(rows, cols, vs, varargin)
 %crs_create  Create a sparse matrix in CRS-format from ijv format
 %
-%    A = crs_create( rows, cols, vs [, ni, nj]);
-%    [row_ptr, col_ind, val, ni, nj] = crs_create( ...);
+%    A = crs_create(rows, cols, vs [, ni, nj]);
+%    [row_ptr, col_ind, val, ni, nj] = crs_create(...);
 % In the first case, A is a struct with fields row_ptr, col_ind,
 % val, nrows, and ncols.
 %
-%    A = crs_create( m, n);
+%    A = crs_create(m, n);
 % Create an empty matrix with m rows and n colmns.
 %
 % See also crs_matrix
@@ -20,7 +20,7 @@ function A = crs_create( rows, cols, vs, varargin)
 if nargin<=3 && isscalar(rows) && isscalar(cols)
     if nargin<3; vs = zeros(0,1); end
     
-    A = struct( 'row_ptr', zeros(0,1,'int32'), 'col_ind', zeros(0,1,'int32'), ...
+    A = struct('row_ptr', zeros(0,1,'int32'), 'col_ind', zeros(0,1,'int32'), ...
         'val', vs, 'nrows', int32(rows(1)), 'ncols', int32(cols(1)));
     return;
 end
@@ -30,7 +30,7 @@ else nrows = int32(varargin{1}); end
 if nargin<5; ncols = max(cols);
 else ncols = int32(varargin{2}); end
 
-A = struct( 'row_ptr', zeros(nrows+1,1,'int32'), ...
+A = struct('row_ptr', zeros(nrows+1,1,'int32'), ...
     'col_ind', nullcopy(zeros(size(cols),'int32')), ...
     'val', nullcopy(zeros(size(cols), class(vs))), ...
     'nrows', nrows, 'ncols', ncols);
