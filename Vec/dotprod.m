@@ -1,4 +1,4 @@
-function prod = dotprod(u, v, prod, nthreads, varargin)
+function prod = dotprod(u, v, prod, nthreads)
 %DOTPROD  computes dot prod of column vectors.
 %
 %      prod = dotprod(u, v)
@@ -17,16 +17,7 @@ function prod = dotprod(u, v, prod, nthreads, varargin)
 % and size(prod,1) should be >= nthreads to facilitate concurrency.
 % Otherwise, it will use up to size(prod,1) threads.
 %
-%      prod = dotprod(u, v, prod, nthreads, comm)
-% also performs an allreduce on the dot product within the MPI communicator.
-%
-%      prod = dotprod(u, v, prod, nthreads, comm, pgmsg [, pgsize])
-% specifies an additiona message that should be summed during
-% allreduce and strored in prod. This is to piggy-back on allreduce
-% to help aggregate small messages to optimize MPI communication.
-% This should be done only if both u and v are column vectors.
-%
-% In multithread or multiprocess mode, this is a collective function.
+% In multithread, this is a collective function.
 % In multithread mode, there is an implicit barrier at the beginning and
 % at the end of this function.
 %
@@ -38,8 +29,6 @@ function prod = dotprod(u, v, prod, nthreads, varargin)
 %#codegen -args {coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]),
 %#codegen coder.typeof(0, [inf,inf]), coder.typeof(int32(1), [1,1], [1,0])}
 %#codegen dotprod_ser -args {coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf])}
-% %#codegen dotprod_mpi -args {coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]),
-% %#codegen coder.typeof(0, [inf,inf]), coder.typeof(int32(1), [1,1], [1,0]), MPI_Comm}
 
 coder.inline('never');
 
@@ -89,13 +78,6 @@ else
     prod = dotprod_partial(u, v, prod);
 end
 
-if ~isempty(varargin)
-    % Perform MPI allreduce
-    momp_begin_single
-    prod = allreduce(prod, int32(size(prod,2)), MPI_SUM, varargin{:});
-    momp_end_single
-end
-
 function prod = dotprod_partial(u, v, prod, varargin)
 % Compute partial dot product with each therad
 
@@ -117,7 +99,7 @@ end
 
 function prod = accu_partsum(prod)
 % Accumulate the partial sums of all columns
-coder.inline('never');
+coder.inline('always');
 
 [istart, iend] = get_local_chunk(int32(size(prod,2)));
 n = min(momp_get_num_threads, int32(size(prod,1)));
@@ -152,9 +134,3 @@ function test %#ok<DEFNU>
 %!     fprintf(1, 'Done in %g seconds\n ', toc);
 %!     assert(norm(b0-b2(1,:))/norm(b0)<=1.e-6);
 %! end
-
-% %! fprintf(1, '\tTesting 2 threads with MPI call: ');
-% %! b2 = zeros(2,2);
-% %! tic; b2 = dotprod(u, v, b2, int32(2), MPI_COMM_SELF);
-% %! fprintf(1, 'Done in %g seconds\n', toc);
-% %! assert(norm(b0-b2(1,:))/norm(b0)<=1.e-10);
