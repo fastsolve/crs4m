@@ -1,6 +1,4 @@
 #include "crs_create.h"
-#include "mpi.h"
-#include "omp.h"
 #include "m2c.h"
 
 static void crs_sort(const emxArray_int32_T *row_ptr, emxArray_int32_T *col_ind,

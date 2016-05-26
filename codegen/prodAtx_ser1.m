@@ -1,5 +1,5 @@
-function b = prodAtx_ser1( A, x, b) %#codegen
+function b = prodAtx_ser1(A, x, b) %#codegen
 
-b = prodAtx( A, x, b);
+b = prodAtx(A, x, b);
 
 end

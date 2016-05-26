@@ -1,5 +1,4 @@
 #include "crs_prodPtAP.h"
-#include "omp.h"
 #include "m2c.h"
 
 static void crs_create(const emxArray_int32_T *rows, const emxArray_int32_T

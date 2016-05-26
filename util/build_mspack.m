@@ -1,4 +1,4 @@
-function build_msp(varargin)
+function build_mspack(varargin)
 %build_msp Build script for MSP
 
 mspackroot = fileparts(which('startup_mspack'));
@@ -7,7 +7,7 @@ cd(mspackroot);
 
 try
     % First, compile test scripts
-    lines = grep_pattern('crs*.m', '\n%#codegen -args');
+    lines = grep_pattern('*.m', '\n%#codegen -args');
     files = regexp(lines, '(\w+.m):', 'tokens');
     
     for j=1:length(files)

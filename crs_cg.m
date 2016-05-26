@@ -1,4 +1,4 @@
-function [x, num_its, nrm_res] = crs_cg( row_ptr, col_ind, val, y, x, maxit, tol)
+function [x, num_its, nrm_res] = crs_cg(row_ptr, col_ind, val, y, x, maxit, tol)
 % Conjugate Gradient Method for symmetric CRS sparse matrices in NumGeom.
 % Algorithm from Trefethen and Bau p. 294.
 

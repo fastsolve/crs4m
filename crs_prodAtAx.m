@@ -1,17 +1,17 @@
-function [b, Ax] = crs_prodAtAx( A, x, b, Ax, nthreads, varargin)
+function [b, Ax] = crs_prodAtAx(A, x, b, Ax, nthreads, varargin)
 %crs_prodAtAx Compute A'*A*x for a sparse matrix A in CRS format.
 %
-%      b = crs_prodAtAx( A, x [, b]) or [b, Ax] = crs_prodAtAx( A, x, b, Ax)
+%      b = crs_prodAtAx(A, x [, b]) or [b, Ax] = crs_prodAtAx(A, x, b, Ax)
 % computes in serial. Ax is a buffer for storing the
 % intermediate result Ax. If passed as input, b and Ax are assumed
 % to have been preallocated.
 %
-%      [b, Ax] = crs_prodAtAx( A, x, b, Ax, nthreads)
+%      [b, Ax] = crs_prodAtAx(A, x, b, Ax, nthreads)
 % Computes using nthreads OpenMP threads, where nthreads is an int32.
 % Note that size(b,1) should be >= A.ncols*nthreads to facilitate concurrency.
 % Otherwise, computation of At*Ax will use up to size(b,1)/A.ncols threads.
 %
-%      [b, Ax] = crs_prodAtAx( A, x, b, Ax, [])
+%      [b, Ax] = crs_prodAtAx(A, x, b, Ax, [])
 % computes locally within each OpenMP thread, assuming the
 % parallel region has already been initialized. In this mode, Ax must
 % be a buffer shared by all threads in the team, and it must be both
@@ -19,11 +19,11 @@ function [b, Ax] = crs_prodAtAx( A, x, b, Ax, nthreads, varargin)
 % b must be preallocated, the computation of At*Ax will use up to
 % size(b,1)/A.ncols threads.
 %
-%      [b, Ax] = crs_prodAtAx( A, x, b, Ax, nthreads, comm)
+%      [b, Ax] = crs_prodAtAx(A, x, b, Ax, nthreads, comm)
 % assumes that A is partitioned rowwise, and x is dupliplicate on all
 % processes. It performs a reduction on b within the MPI communicator.
 %
-%      [b, Ax] = crs_prodAtAx( A, x, b, Ax, nthreads, comm, pgmsg [, pgsz])
+%      [b, Ax] = crs_prodAtAx(A, x, b, Ax, nthreads, comm, pgmsg [, pgsz])
 % specifies an additiona message that should be summed during
 % allreduce and strored in b. This is to piggy-back on allreduce
 % to help aggregate small messages to optimize MPI communication.
@@ -35,82 +35,82 @@ function [b, Ax] = crs_prodAtAx( A, x, b, Ax, nthreads, varargin)
 % The M file works for both single and double precision.
 
 %#codegen -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]), 
-%#codegen coder.typeof(0, [inf,inf]), coder.typeof( int32(1), [1,1], [1,0])}
+%#codegen coder.typeof(0, [inf,inf]), coder.typeof(int32(1), [1,1], [1,0])}
 %#codegen crs_prodAtAx_ser -args {crs_matrix, coder.typeof(0, [inf,inf])}
 %#codegen crs_prodAtAx_ser1 -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf])}
-%#codegen crs_prodAtAx_mpi -args {crs_matrix, coder.typeof(0, [inf,inf]),
-%#codegen coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]), coder.typeof( int32(1), [1,1], [1,0]), MPI_Comm}
-%#codegen crs_prodAtAx_mpip -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]),
-%#codegen coder.typeof(0, [inf,inf]), coder.typeof( int32(1), [1,1], [1,0]), MPI_Comm, coder.typeof(0, [inf,1])}
-%#codegen crs_prodAtAx_mpip1 -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]),
-%#codegen coder.typeof(0, [inf,inf]), coder.typeof( int32(1), [1,1], [1,0]), MPI_Comm, coder.typeof(0, [inf,1]), int32(0)}
+% %#codegen crs_prodAtAx_mpi -args {crs_matrix, coder.typeof(0, [inf,inf]),
+% %#codegen coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]), coder.typeof(int32(1), [1,1], [1,0]), MPI_Comm}
+% %#codegen crs_prodAtAx_mpip -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]),
+% %#codegen coder.typeof(0, [inf,inf]), coder.typeof(int32(1), [1,1], [1,0]), MPI_Comm, coder.typeof(0, [inf,1])}
+% %#codegen crs_prodAtAx_mpip1 -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]),
+% %#codegen coder.typeof(0, [inf,inf]), coder.typeof(int32(1), [1,1], [1,0]), MPI_Comm, coder.typeof(0, [inf,1]), int32(0)}
 
 coder.inline('never');
 
-assert( nargin<=8);
+assert(nargin<=8);
 
 if nargin<3; 
     b = zeros(A.ncols,size(x,2)); 
 elseif size(b,1)<A.ncols || size(b,2)~=size(x,2)
-    MACC_begin_master
+    momp_begin_master
     m2c_error('crs_prodAAtx:IncorrectBuffer', 'Buffer b has incorrect size.');
-    MACC_end_master
+    momp_end_master
 end
 if nargin<4;
     Ax = zeros(A.nrows,size(x,2));
 elseif size(Ax,1)<A.nrows || size(Ax,2)~=size(x,2)
-    MACC_begin_master
+    momp_begin_master
     m2c_error('prodAAtx:IncorrectBuffer', 'Buffer Ax has incorrect size.');
-    MACC_end_master
+    momp_end_master
 end
 
-ismt = nargin>=5 && MACC_get_num_threads>1;
+ismt = nargin>=5 && momp_get_num_threads>1;
 
 %% Declare parallel region
-if nargin>=5 && ~isempty( nthreads)
-    if ~MACC_get_nested && ismt && nthreads(1)>1
-        MACC_begin_master
+if nargin>=5 && ~isempty(nthreads)
+    if ~momp_get_nested && ismt && nthreads(1)>1
+        momp_begin_master
         m2c_warn('crs_prodAtAx:NestedParallel', ...
             'You are trying to use nested parallel regions, but nested parallelism is not enabled.');
-        MACC_end_master
+        momp_end_master
     end
     
-    [b, Ax] = MACC_begin_parallel( b, Ax);
-    MACC_clause_default( 'shared');
-    MACC_clause_num_threads( int32(nthreads(1)));
+    [b, Ax] = momp_begin_parallel(b, Ax);
+    momp_clause_default('shared');
+    momp_clause_num_threads(int32(nthreads(1)));
     
     % Computes Ax=A*x
-    Ax = crs_prodAx( A, x, Ax, []);
-    MACC_barrier;
+    Ax = crs_prodAx(A, x, Ax, []);
+    momp_barrier;
     
     % Computes b=A'*Ax
-    b = crs_prodAtx( A, Ax, b, [], varargin{:});
+    b = crs_prodAtx(A, Ax, b, [], varargin{:});
     
-    MACC_end_parallel(Ax);
+    momp_end_parallel(Ax);
 elseif ismt
     if nargout<2
-        MACC_begin_master
+        momp_begin_master
         m2c_warn('crs_prodAtAx:MissingBuffer', ...
             'crs_prodAtAx is called within a parallel region but Ax is not an in+out argument.');
-        MACC_end_master
+        momp_end_master
     end
     
     % Computes Ax=A*x
-    Ax = crs_prodAx( A, x, Ax, []);
-    MACC_barrier;
+    Ax = crs_prodAx(A, x, Ax, []);
+    momp_barrier;
     
     % Computes b=A'*Ax
-    b = crs_prodAtx( A, Ax, b, [], varargin{:});
+    b = crs_prodAtx(A, Ax, b, [], varargin{:});
 else
     % Computes Ax=A*x
-    Ax = crs_prodAx( A, x, Ax);
+    Ax = crs_prodAx(A, x, Ax);
     % Computes b=A'*Ax
-    b = crs_prodAtx( A, Ax, b);
+    b = crs_prodAtx(A, Ax, b);
 end
 
 function test %#ok<DEFNU>
 %!test
-%! if ~exist( ['crs_prodAtAx.' mexext], 'file')
+%! if ~exist(['crs_prodAtAx.' mexext], 'file')
 %!    m=100; n = 20;
 %! else
 %!    m=10000; n = 2000;
@@ -124,30 +124,30 @@ function test %#ok<DEFNU>
 %! fprintf(1, '\tConverted into crs_matrix in %g seconds\n', toc);
 
 %! fprintf(1, '\tTesting serial: ');
-%! tic; b1 = crs_prodAtAx( A, x);
+%! tic; b1 = crs_prodAtAx(A, x);
 %! fprintf(1, 'Done in %g seconds\n ', toc);
-%! assert( norm(b0-b1)<=1.e-10);
+%! assert(norm(b0-b1)<=1.e-10);
 
 %! Ax = zeros(size(sp,1),2);
 %! for nthreads=int32([1 2 4 8])
-%!     if nthreads>MACC_get_max_threads; break; end
+%!     if nthreads>momp_get_max_threads; break; end
 %!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
 %!     b2 = zeros(size(sp,2)*nthreads,2);
-%!     tic; [b2, Ax] = crs_prodAtAx( A, x, b2, Ax, nthreads);
+%!     tic; [b2, Ax] = crs_prodAtAx(A, x, b2, Ax, nthreads);
 %!     fprintf(1, 'Done in %g seconds\n ', toc);
-%!     assert( norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
+%!     assert(norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
 %! end
 
-%! nprocs = double(comm_size(MPI_COMM_WORLD));
-%! fprintf(1, '\tTesting 2 threads with MPI call: ');
-%! b2 = zeros(size(sp,2)*2,2);
-%! tic; [b2, Ax] = crs_prodAtAx( A, x, b2, Ax, int32(2), MPI_COMM_WORLD);
-%! fprintf(1, 'Done in %g seconds\n ', toc);
-%! assert( norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
-
-%! b3 = zeros(2*size(sp,2)+1,1); Ax = zeros(size(sp,1),1);
-%! fprintf(1, '\tTesting 2 threads with piggy-back: ');
-%! tic; [b3, Ax] = crs_prodAtAx( A, x(:,1), b3, Ax, int32(2), MPI_COMM_WORLD, 1, int32(1));
-%! fprintf(1, 'Done in %g seconds\n ', toc);
-%! assert( nprocs>1 || norm(b0(:,1)-b3(1:size(sp,2)))/norm(b0)<=1.e-10);
-%! assert( b3(size(sp,2)+1)==nprocs);
+% %! nprocs = double(comm_size(MPI_COMM_WORLD));
+% %! fprintf(1, '\tTesting 2 threads with MPI call: ');
+% %! b2 = zeros(size(sp,2)*2,2);
+% %! tic; [b2, Ax] = crs_prodAtAx(A, x, b2, Ax, int32(2), MPI_COMM_WORLD);
+% %! fprintf(1, 'Done in %g seconds\n ', toc);
+% %! assert(norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
+% 
+% %! b3 = zeros(2*size(sp,2)+1,1); Ax = zeros(size(sp,1),1);
+% %! fprintf(1, '\tTesting 2 threads with piggy-back: ');
+% %! tic; [b3, Ax] = crs_prodAtAx(A, x(:,1), b3, Ax, int32(2), MPI_COMM_WORLD, 1, int32(1));
+% %! fprintf(1, 'Done in %g seconds\n ', toc);
+% %! assert(nprocs>1 || norm(b0(:,1)-b3(1:size(sp,2)))/norm(b0)<=1.e-10);
+% %! assert(b3(size(sp,2)+1)==nprocs);

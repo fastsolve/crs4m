@@ -1,3 +1,3 @@
-function prod = dotprod_ser( u, v) %#codegen
+function prod = dotprod_ser(u, v) %#codegen
 
-prod = dotprod( u, v);
+prod = dotprod(u, v);

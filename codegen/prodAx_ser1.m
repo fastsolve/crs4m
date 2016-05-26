@@ -1,3 +1,3 @@
-function b = prodAx_ser1( A, x, b) %#codegen
+function b = prodAx_ser1(A, x, b) %#codegen
 
-b = prodAx( A, x, b);
+b = prodAx(A, x, b);

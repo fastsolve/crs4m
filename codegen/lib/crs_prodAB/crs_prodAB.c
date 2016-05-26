@@ -1,5 +1,4 @@
 #include "crs_prodAB.h"
-#include "omp.h"
 #include "m2c.h"
 
 static void emxFreeStruct_struct0_T(struct0_T *pStruct);

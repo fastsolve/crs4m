@@ -1,3 +1,3 @@
 % Startup script of MSPACK
 
-startup_mpsack;
+startup_mspack;

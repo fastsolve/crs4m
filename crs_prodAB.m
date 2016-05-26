@@ -16,7 +16,7 @@ if A.ncols~=B.nrows
 end
 
 % initialization of row vector. It has the size of A.row_ptr.
-C = crs_matrix( A.nrows, B.ncols);
+C = crs_matrix(A.nrows, B.ncols);
 C.row_ptr = nullcopy(zeros(length(A.row_ptr),1,'int32'));
 C.row_ptr(1)=1;
 
@@ -97,5 +97,5 @@ function test  %#ok<DEFNU>
 %!     A = crs_matrix(spA);
 %!     B = crs_matrix(spB);
 %!     C = crs_prodAB(A, B);
-%!     assert( norm(spC-crs_2sparse(C), 'fro')<1.e-12);
+%!     assert(norm(spC-crs_2sparse(C), 'fro')<1.e-12);
 %! end

@@ -21,8 +21,8 @@ for i=1:int32(length(row_ptr))-1
     if ~ascend
         if nargin==3
             % copy data into buffer
-            buf_indx = nullcopy( zeros(row_ptr(i+1)-row_ptr(i),1,'int32'));
-            buf_val = nullcopy( zeros(row_ptr(i+1)-row_ptr(i),1, class(val)));
+            buf_indx = nullcopy(zeros(row_ptr(i+1)-row_ptr(i),1,'int32'));
+            buf_val = nullcopy(zeros(row_ptr(i+1)-row_ptr(i),1, class(val)));
             ind = 1;
             for j=row_ptr(i) : row_ptr(i+1)-1
                 buf_indx(ind) = col_ind(j);
@@ -42,7 +42,7 @@ for i=1:int32(length(row_ptr))-1
             end
         else
             % copy data into buffer
-            buf_indx = nullcopy( zeros(row_ptr(i+1)-row_ptr(i),1,'int32'));
+            buf_indx = nullcopy(zeros(row_ptr(i+1)-row_ptr(i),1,'int32'));
             ind = 1;
             for j=row_ptr(i) : row_ptr(i+1)-1
                 buf_indx(ind) = col_ind(j);

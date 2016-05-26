@@ -9,9 +9,9 @@ function sp = crs_2sparse(varargin)
 % It is provided for convenience of testing.
 % It does not use multithreading.
 
-assert( nargin==1 || nargin==3 || nargin==5);
+assert(nargin==1 || nargin==3 || nargin==5);
 
-if isstruct( varargin{1})
+if isstruct(varargin{1})
     row_ptr = varargin{1}.row_ptr;
     col_ind = varargin{1}.col_ind;
     val = varargin{1}.val;
@@ -48,5 +48,5 @@ end
 %!     [row_ptr, col_ind, val] = crs_matrix(sp);
 %!     sp1 = crs_2sparse(row_ptr, col_ind, val, int32(20), int32(10));
 %!
-%!     assert( isequal( sp, sp1));
+%!     assert(isequal(sp, sp1));
 %! end

@@ -1,22 +1,22 @@
-function b = crs_prodAtx( A, x, b, nthreads, varargin)
+function b = crs_prodAtx(A, x, b, nthreads, varargin)
 %crs_prodAtx Compute b=A'*x for a sparse matrix A in CRS format,
 % assuming that number of columns of A is equal to size(x,1).
 %
-%      b = crs_prodAtx( A, x [, b])
+%      b = crs_prodAtx(A, x [, b])
 % Computes b=A'*x in serial.
 %
-%      b = crs_prodAtx( A, x, b, nthreads)
+%      b = crs_prodAtx(A, x, b, nthreads)
 % Computes b=A'*x using nthreads OpenMP threads, where nthreads is an int32.
 % In this mode, there are implicit barriers in the function.
-% It will use min( nthreads, size(b,1)/A.ncols, MACC_get_max_threads) threads.
+% It will use min(nthreads, size(b,1)/A.ncols, momp_get_max_threads) threads.
 %
-%      b = crs_prodAtx( A, x, b, [])
+%      b = crs_prodAtx(A, x, b, [])
 % Computes b=A'*x locally within each OpenMP thread, assuming the parallel
 % region has already been initialized. The argument b has been preallocated.
-% It will use min( size(b,1)/A.ncols, MACC_get_mnum_threads)
+% It will use min(size(b,1)/A.ncols, momp_get_mnum_threads)
 % threads forcomputations. In this mode, there is no implicit barrier.
 %
-%      b = crs_prodAtx( A, x, b, nthreads, comm)
+%      b = crs_prodAtx(A, x, b, nthreads, comm)
 % also performs communication within the MPI communicator.
 % It assumes that A is partitioned rowwise, and hence A'*x is
 % a partial sum on each process. An allreduce is performed on b
@@ -25,7 +25,7 @@ function b = crs_prodAtx( A, x, b, nthreads, varargin)
 % If A is partitioned columnwise, then b must be duplicated on all 
 % processes, and crs_prodAtx should be called without the communicator.
 %
-%      b = crs_prodAtx( A, x, b, nthreads, comm, pgmsg [, pgsz])
+%      b = crs_prodAtx(A, x, b, nthreads, comm, pgmsg [, pgsz])
 % specifies an additiona message that should be summed during
 % allreduce and strored in b. This is to piggy-back on allreduce
 % to help aggregate small messages to optimize MPI communication.
@@ -36,74 +36,74 @@ function b = crs_prodAtx( A, x, b, nthreads, varargin)
 % See http://www.netlib.org/linalg/html_templates/node98.html
 
 %#codegen -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf]), 
-%#codegen coder.typeof( int32(1), [1,1], [1,0])}
+%#codegen coder.typeof(int32(1), [1,1], [1,0])}
 %#codegen crs_prodAtx_ser -args {crs_matrix, coder.typeof(0, [inf,inf])}
 %#codegen crs_prodAtx_ser1 -args {crs_matrix, coder.typeof(0, [inf,inf]), coder.typeof(0, [inf,inf])}
-%#codegen crs_prodAtx_mpi -args {crs_matrix, coder.typeof(0, [inf,inf]),
-%#codegen coder.typeof(0, [inf,inf]), coder.typeof( int32(1), [1,1], [1,0]), opaque_obj}
-%#codegen crs_prodAtx_mpip -args {crs_matrix, coder.typeof(0, [inf,inf]),
-%#codegen coder.typeof(0, [inf,inf]), coder.typeof( int32(1), [1,1], [1,0]), opaque_obj, coder.typeof(0, [inf,1])}
-%#codegen crs_prodAtx_mpip1 -args {crs_matrix, coder.typeof(0, [inf,inf]),
-%#codegen coder.typeof(0, [inf,inf]), coder.typeof( int32(1), [1,1], [1,0]), opaque_obj,coder.typeof(0, [inf,1]), int32(0)}
+% %#codegen crs_prodAtx_mpi -args {crs_matrix, coder.typeof(0, [inf,inf]),
+% %#codegen coder.typeof(0, [inf,inf]), coder.typeof(int32(1), [1,1], [1,0]), opaque_obj}
+% %#codegen crs_prodAtx_mpip -args {crs_matrix, coder.typeof(0, [inf,inf]),
+% %#codegen coder.typeof(0, [inf,inf]), coder.typeof(int32(1), [1,1], [1,0]), opaque_obj, coder.typeof(0, [inf,1])}
+% %#codegen crs_prodAtx_mpip1 -args {crs_matrix, coder.typeof(0, [inf,inf]),
+% %#codegen coder.typeof(0, [inf,inf]), coder.typeof(int32(1), [1,1], [1,0]), opaque_obj,coder.typeof(0, [inf,1]), int32(0)}
 
 coder.inline('never');
 
 if nargin==2;
-    b = nullcopy( zeros(A.ncols,size(x,2)));
+    b = nullcopy(zeros(A.ncols,size(x,2)));
 else
     if size(b,1)<A.ncols || size(b,2)<size(x,2)
         m2c_error('crs_prodAtx:BufferTooSmal', 'Buffer space for output b is too small.');
     end
 end
-ismt = nargin>3 && MACC_get_num_threads>1;
+ismt = nargin>3 && momp_get_num_threads>1;
 
 if nargin>3 && ~isempty(nthreads)
     %% Declare parallel region
-    if ~MACC_get_nested && ismt && nthreads(1)>1
-        MACC_begin_master
+    if ~momp_get_nested && ismt && nthreads(1)>1
+        momp_begin_master
         m2c_warn('crs_prodAtx:NestedParallel', ...
             'You are trying to use nested parallel regions. Solution may be incorrect.');
-        MACC_end_master
+        momp_end_master
     end
     
-    MACC_begin_parallel; MACC_clause_default('shared'); 
-    MACC_clause_num_threads( int32(nthreads(1)));
+    momp_begin_parallel; momp_clause_default('shared'); 
+    momp_clause_num_threads(int32(nthreads(1)));
 
     %% Compute b=A'*x
-    b = crs_prodAtx_kernel( A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
-        b, int32(size(b,1)), A.nrows, A.ncols, int32(size(x,2)), MACC_get_num_threads>1);
+    b = crs_prodAtx_kernel(A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
+        b, int32(size(b,1)), A.nrows, A.ncols, int32(size(x,2)), momp_get_num_threads>1);
     
-    MACC_end_parallel
+    momp_end_parallel
 else
     %% Compute b=A'*x
-    b = crs_prodAtx_kernel( A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
+    b = crs_prodAtx_kernel(A.row_ptr, A.col_ind, A.val, x, int32(size(x,1)), ...
         b, int32(size(b,1)), A.nrows, A.ncols, int32(size(x,2)), ismt);
 
-    if ~isempty(varargin) && ismt; MACC_barrier; end
+    if ~isempty(varargin) && ismt; momp_barrier; end
 end
 
 if ~isempty(varargin)
     % Perform MPI allreduce
-    MACC_begin_single
+    momp_begin_single
     s = int32(A.ncols*size(x,2));
     b = allreduce(b, s, MPI_SUM, varargin{:});
-    MACC_end_single
+    momp_end_single
 end
 
-function b = crs_prodAtx_kernel( row_ptr, col_ind, val, x, x_m, ...
+function b = crs_prodAtx_kernel(row_ptr, col_ind, val, x, x_m, ...
     b, b_m, nrows, ncols, nrhs, ismt)
 
-MACC_kernel_function
+momp_kernel_function
 coder.inline('never');
 
 if ismt
-    nthreads = min(MACC_get_num_threads, ...
+    nthreads = min(momp_get_num_threads, ...
         int32(floor(double(b_m)/double(ncols))));
-    boffset = MACC_get_thread_num*ncols;
+    boffset = momp_get_thread_num*ncols;
     [istart, iend] = get_local_chunk(nrows, [], nthreads);
 else
     nthreads = int32(1); boffset = int32(0);
-    istart = int32(1); iend = int32( nrows);
+    istart = int32(1); iend = int32(nrows);
 end
 
 if istart<=iend;
@@ -126,7 +126,7 @@ end
 
 %% Perfom summation of partial sums in b
 if nthreads>1
-    MACC_barrier;
+    momp_barrier;
     [istart, iend] = get_local_chunk(ncols);
     
     offset = ncols;
@@ -144,7 +144,7 @@ end
 
 function test %#ok<DEFNU>
 %!test
-%! if ~exist( ['crs_prodAtx.' mexext], 'file')
+%! if ~exist(['crs_prodAtx.' mexext], 'file')
 %!    m=100; n = 20;
 %! else
 %!    m=10000; n = 2000;
@@ -157,29 +157,29 @@ function test %#ok<DEFNU>
 %! tic; A = crs_matrix(int32(is), int32(js), vs, int32(size(sp,1)), int32(size(sp,2)));
 %! fprintf(1, '\tConverted into crs_matrix in %g seconds\n', toc);
 %! fprintf(1, '\tTesting serial: ');
-%! tic; b1 = crs_prodAtx( A, x);
+%! tic; b1 = crs_prodAtx(A, x);
 %! fprintf(1, 'Done in %g seconds\n ', toc);
-%! assert( norm(b0-b1)/norm(b0)<=1.e-10);
+%! assert(norm(b0-b1)/norm(b0)<=1.e-10);
 
 %! for nthreads=int32([1 2 4 8])
-%!     if nthreads>MACC_get_max_threads; break; end
+%!     if nthreads>momp_get_max_threads; break; end
 %!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
 %!     tic; b2 = zeros(size(sp,2)*nthreads,2);
-%!     b2 = crs_prodAtx( A, x, b2, nthreads);
+%!     b2 = crs_prodAtx(A, x, b2, nthreads);
 %!     fprintf(1, 'Done in %g seconds\n ', toc);
-%!     assert( norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
+%!     assert(norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
 %! end
 
-%! nprocs = double(comm_size(MPI_COMM_WORLD));
-%! fprintf(1, '\tTesting 2 threads with MPI call: ');
-%! b2 = zeros(size(sp,2)*2,2);
-%! tic; b2 = crs_prodAtx( A, x, b2, int32(2), MPI_COMM_WORLD);
-%! fprintf(1, 'Done in %g seconds\n ', toc);
-%! assert( norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
-
-%! b3 = zeros(2*size(sp,2)+1,1);
-%! fprintf(1, '\tTesting 2 threads with piggy-back: ');
-%! tic; b3 = crs_prodAtx( A, x(:,1), b3, int32(2), MPI_COMM_WORLD, 1, int32(1));
-%! fprintf(1, 'Done in %g seconds\n ', toc);
-%! assert( nprocs>1 || norm(b0(:,1)-b3(1:size(sp,2)))/norm(b0)<=1.e-10);
-%! assert( b3(size(sp,2)+1)==nprocs);
+% %! nprocs = double(comm_size(MPI_COMM_WORLD));
+% %! fprintf(1, '\tTesting 2 threads with MPI call: ');
+% %! b2 = zeros(size(sp,2)*2,2);
+% %! tic; b2 = crs_prodAtx(A, x, b2, int32(2), MPI_COMM_WORLD);
+% %! fprintf(1, 'Done in %g seconds\n ', toc);
+% %! assert(norm(b0-b2(1:size(sp,2),:))/norm(b0)<=1.e-10);
+% 
+% %! b3 = zeros(2*size(sp,2)+1,1);
+% %! fprintf(1, '\tTesting 2 threads with piggy-back: ');
+% %! tic; b3 = crs_prodAtx(A, x(:,1), b3, int32(2), MPI_COMM_WORLD, 1, int32(1));
+% %! fprintf(1, 'Done in %g seconds\n ', toc);
+% %! assert(nprocs>1 || norm(b0(:,1)-b3(1:size(sp,2)))/norm(b0)<=1.e-10);
+% %! assert(b3(size(sp,2)+1)==nprocs);

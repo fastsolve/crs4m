@@ -1,49 +1,21 @@
 #include "prodAtAx.h"
-#include "mpi.h"
 #include "omp.h"
 #include "m2c.h"
 
-static int32_T MMPI_Allreduce(void * sptr, void * rptr, int32_T count,
-  MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
-static void allreduce(emxArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
-                      varargin_1);
-static void b_allreduce(emxArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
-  varargin_1, const emxArray_real_T *varargin_2);
-static void b_msg_error(void);
+static void b_m2c_error(void);
 static void b_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
   emxArray_real_T *b);
 static void b_prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
                       emxArray_real_T *b);
 static void b_prodAx(const emxArray_real_T *A, const emxArray_real_T *x,
                      emxArray_real_T *b);
-static void c_allreduce(emxArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
-  varargin_1, const emxArray_real_T *varargin_2, int32_T varargin_3);
-static void c_msg_error(void);
+static void c_m2c_error(void);
 static void c_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
   emxArray_real_T *b);
-static void c_prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
-                      emxArray_real_T *b, MPI_Comm varargin_1);
-static void d_msg_error(void);
-static void d_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
-  emxArray_real_T *b, emxArray_real_T *Ax, const emxArray_int32_T *nthreads,
-  MPI_Comm varargin_1);
-static void d_prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
-                      emxArray_real_T *b, MPI_Comm varargin_1, const
-                      emxArray_real_T *varargin_2);
-static void e_msg_error(const emxArray_char_T *varargin_3);
-static void e_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
-  emxArray_real_T *b, emxArray_real_T *Ax, const emxArray_int32_T *nthreads,
-  MPI_Comm varargin_1, const emxArray_real_T *varargin_2);
-static void e_prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
-                      emxArray_real_T *b, MPI_Comm varargin_1, const
-                      emxArray_real_T *varargin_2, int32_T varargin_3);
-static void f_msg_error(void);
-static void f_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
-  emxArray_real_T *b, emxArray_real_T *Ax, const emxArray_int32_T *nthreads,
-  MPI_Comm varargin_1, const emxArray_real_T *varargin_2, int32_T varargin_3);
-static void get_local_chunk(real_T m, int32_T *istart, int32_T *iend);
-static void msg_error(void);
-static void msg_warn(void);
+static void d_m2c_error(void);
+static void get_local_chunk(double m, int *istart, int *iend);
+static void m2c_error(void);
+static void m2c_warn(void);
 static void prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
                     emxArray_real_T *b);
 static void prodAtx_internal(const emxArray_real_T *A, const emxArray_real_T *x,
@@ -52,94 +24,38 @@ static void prodAx(const emxArray_real_T *A, const emxArray_real_T *x,
                    emxArray_real_T *b);
 static void prodAx_internal(const emxArray_real_T *A, const emxArray_real_T *x,
   emxArray_real_T *b);
-static real_T rt_roundd(real_T u);
-static int32_T MMPI_Allreduce(void * sptr, void * rptr, int32_T count,
-  MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
+static double rt_roundd(double u);
+static void b_m2c_error(void)
 {
-  return MPI_Allreduce(sptr, rptr, count, datatype, op, comm);
-}
-
-static void allreduce(emxArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
-                      varargin_1)
-{
-  int32_T size;
-  void * ptr;
-  MPI_Comm_size(varargin_1, &size);
-  if (size > 1) {
-
-    ptr = (void *)(&b->data[0]);
-    MMPI_Allreduce(MPI_IN_PLACE, ptr, sz_in, MPI_DOUBLE, op, varargin_1);
-  }
-}
-
-static void b_allreduce(emxArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
-  varargin_1, const emxArray_real_T *varargin_2)
-{
-  int32_T s1;
-  int32_T i;
-  void * ptr;
-  s1 = sz_in + varargin_2->size[0] * varargin_2->size[1];
-  if (s1 > b->size[0] * b->size[1]) {
-    f_msg_error();
-  } else {
-    for (i = sz_in; i + 1 <= s1; i++) {
-      b->data[i] = varargin_2->data[i - sz_in];
-    }
-  }
-
-  MPI_Comm_size(varargin_1, &i);
-  if (i > 1) {
-
-    ptr = (void *)(&b->data[0]);
-    MMPI_Allreduce(MPI_IN_PLACE, ptr, s1, MPI_DOUBLE, op, varargin_1);
-  }
-}
-
-static void b_msg_error(void)
-{
-  const char * msgid;
-  msgid = "prodAtAx:IncorrectBuffer";
-  if (emlrtIsMATLABThread(emlrtRootTLSGlobal)) {
-    mexErrMsgIdAndTxt(msgid, "Buffer Ax has incorrect size.");
-  } else {
-    printf("Error %s\nBuffer Ax has incorrect size.", msgid);
-  }
+  M2C_error("prodAtAx:IncorrectBuffer", "Buffer Ax has incorrect size.");
 }
 
 static void b_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
   emxArray_real_T *b)
 {
-  int32_T A_idx_0;
-  int32_T i0;
   emxArray_real_T *Ax;
-  A_idx_0 = A->size[1];
-  i0 = b->size[0] * b->size[1];
-  b->size[0] = A_idx_0;
-  emxEnsureCapacity((emxArray__common *)b, i0, (int32_T)sizeof(real_T));
-  A_idx_0 = x->size[1];
-  i0 = b->size[0] * b->size[1];
-  b->size[1] = A_idx_0;
-  emxEnsureCapacity((emxArray__common *)b, i0, (int32_T)sizeof(real_T));
-  A_idx_0 = A->size[1] * x->size[1];
-  for (i0 = 0; i0 < A_idx_0; i0++) {
-    b->data[i0] = 0.0;
-  }
-
+  int i0;
+  int loop_ub;
   emxInit_real_T(&Ax, 2);
-  A_idx_0 = A->size[0];
   i0 = Ax->size[0] * Ax->size[1];
-  Ax->size[0] = A_idx_0;
-  emxEnsureCapacity((emxArray__common *)Ax, i0, (int32_T)sizeof(real_T));
-  A_idx_0 = x->size[1];
-  i0 = Ax->size[0] * Ax->size[1];
-  Ax->size[1] = A_idx_0;
-  emxEnsureCapacity((emxArray__common *)Ax, i0, (int32_T)sizeof(real_T));
-  A_idx_0 = A->size[0] * x->size[1];
-  for (i0 = 0; i0 < A_idx_0; i0++) {
+  Ax->size[0] = A->size[0];
+  Ax->size[1] = x->size[1];
+  emxEnsureCapacity((emxArray__common *)Ax, i0, (int)sizeof(double));
+  loop_ub = A->size[0] * x->size[1];
+  for (i0 = 0; i0 < loop_ub; i0++) {
     Ax->data[i0] = 0.0;
   }
 
   b_prodAx(A, x, Ax);
+  i0 = b->size[0] * b->size[1];
+  b->size[0] = A->size[1];
+  b->size[1] = x->size[1];
+  emxEnsureCapacity((emxArray__common *)b, i0, (int)sizeof(double));
+  loop_ub = A->size[1] * x->size[1];
+  for (i0 = 0; i0 < loop_ub; i0++) {
+    b->data[i0] = 0.0;
+  }
+
   b_prodAtx(A, Ax, b);
   emxFree_real_T(&Ax);
 }
@@ -148,7 +64,7 @@ static void b_prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
                       emxArray_real_T *b)
 {
   if ((b->size[0] < A->size[1]) || (b->size[1] < x->size[1])) {
-    d_msg_error();
+    d_m2c_error();
   }
 
   prodAtx_internal(A, x, b);
@@ -158,87 +74,42 @@ static void b_prodAx(const emxArray_real_T *A, const emxArray_real_T *x,
                      emxArray_real_T *b)
 {
   if ((b->size[0] < A->size[0]) || (b->size[1] < x->size[1])) {
-    c_msg_error();
+    c_m2c_error();
   }
 
   prodAx_internal(A, x, b);
 }
 
-static void c_allreduce(emxArray_real_T *b, int32_T sz_in, MPI_Op op, MPI_Comm
-  varargin_1, const emxArray_real_T *varargin_2, int32_T varargin_3)
+static void c_m2c_error(void)
 {
-  int32_T b_varargin_2;
-  int32_T c_varargin_2;
-  int32_T s1;
-  void * ptr;
-  b_varargin_2 = varargin_2->size[0] * varargin_2->size[1];
-  if (varargin_3 <= b_varargin_2) {
-    b_varargin_2 = varargin_3;
-  }
-
-  if (b_varargin_2 < 0) {
-    c_varargin_2 = 0;
-  } else {
-    c_varargin_2 = b_varargin_2;
-  }
-
-  s1 = sz_in + c_varargin_2;
-  if (s1 > b->size[0] * b->size[1]) {
-    f_msg_error();
-  } else {
-    for (b_varargin_2 = sz_in; b_varargin_2 + 1 <= s1; b_varargin_2++) {
-      b->data[b_varargin_2] = varargin_2->data[b_varargin_2 - sz_in];
-    }
-  }
-
-  MPI_Comm_size(varargin_1, &b_varargin_2);
-  if (b_varargin_2 > 1) {
-
-    ptr = (void *)(&b->data[0]);
-    MMPI_Allreduce(MPI_IN_PLACE, ptr, s1, MPI_DOUBLE, op, varargin_1);
-  }
-}
-
-static void c_msg_error(void)
-{
-  const char * msgid;
-  msgid = "prodAx:BufferTooSmal";
-  if (emlrtIsMATLABThread(emlrtRootTLSGlobal)) {
-    mexErrMsgIdAndTxt(msgid, "Buffer space for output b is too small.");
-  } else {
-    printf("Error %s\nBuffer space for output b is too small.", msgid);
-  }
+  M2C_error("prodAx:BufferTooSmal", "Buffer space for output b is too small.");
 }
 
 static void c_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
   emxArray_real_T *b)
 {
   emxArray_real_T *Ax;
-  int32_T A_idx_0;
-  int32_T i2;
+  int i2;
+  int loop_ub;
   if ((b->size[0] < A->size[1]) || (b->size[1] != x->size[1])) {
 
 #pragma omp master
 
     M2C_BEGIN_REGION(/*omp master*/)
 
-    msg_error();
+    m2c_error();
 
     M2C_END_REGION(/*omp master*/)
 
   }
 
   emxInit_real_T(&Ax, 2);
-  A_idx_0 = A->size[0];
   i2 = Ax->size[0] * Ax->size[1];
-  Ax->size[0] = A_idx_0;
-  emxEnsureCapacity((emxArray__common *)Ax, i2, (int32_T)sizeof(real_T));
-  A_idx_0 = x->size[1];
-  i2 = Ax->size[0] * Ax->size[1];
-  Ax->size[1] = A_idx_0;
-  emxEnsureCapacity((emxArray__common *)Ax, i2, (int32_T)sizeof(real_T));
-  A_idx_0 = A->size[0] * x->size[1];
-  for (i2 = 0; i2 < A_idx_0; i2++) {
+  Ax->size[0] = A->size[0];
+  Ax->size[1] = x->size[1];
+  emxEnsureCapacity((emxArray__common *)Ax, i2, (int)sizeof(double));
+  loop_ub = A->size[0] * x->size[1];
+  for (i2 = 0; i2 < loop_ub; i2++) {
     Ax->data[i2] = 0.0;
   }
 
@@ -247,421 +118,62 @@ static void c_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
   emxFree_real_T(&Ax);
 }
 
-static void c_prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
-                      emxArray_real_T *b, MPI_Comm varargin_1)
+static void d_m2c_error(void)
 {
-  int32_T n;
-  if ((b->size[0] < A->size[1]) || (b->size[1] < x->size[1])) {
-    d_msg_error();
-  }
-
-  n = omp_get_num_threads();
-  prodAtx_internal(A, x, b);
-  if (n > 1) {
-
-#pragma omp barrier
-
-  }
-
-#pragma omp single
-
-  M2C_BEGIN_REGION(/*omp single*/)
-
-  allreduce(b, (int32_T)rt_roundd((real_T)A->size[1] * (real_T)x->size[1]),
-            MPI_SUM, varargin_1);
-
-  M2C_END_REGION(/*omp single*/)
-
+  M2C_error("prodAtx:BufferTooSmal", "Buffer space for output b is too small.");
 }
 
-static void d_msg_error(void)
+static void get_local_chunk(double m, int *istart, int *iend)
 {
-  const char * msgid;
-  msgid = "prodAtx:BufferTooSmal";
-  if (emlrtIsMATLABThread(emlrtRootTLSGlobal)) {
-    mexErrMsgIdAndTxt(msgid, "Buffer space for output b is too small.");
-  } else {
-    printf("Error %s\nBuffer space for output b is too small.", msgid);
-  }
-}
-
-static void d_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
-  emxArray_real_T *b, emxArray_real_T *Ax, const emxArray_int32_T *nthreads,
-  MPI_Comm varargin_1)
-{
-  int32_T n;
-  boolean_T b1;
-  if ((b->size[0] < A->size[1]) || (b->size[1] != x->size[1])) {
-
-#pragma omp master
-
-    M2C_BEGIN_REGION(/*omp master*/)
-
-    msg_error();
-
-    M2C_END_REGION(/*omp master*/)
-
-  }
-
-  if ((Ax->size[0] < A->size[0]) || (Ax->size[1] != x->size[1])) {
-
-#pragma omp master
-
-    M2C_BEGIN_REGION(/*omp master*/)
-
-    b_msg_error();
-
-    M2C_END_REGION(/*omp master*/)
-
-  }
-
-  n = omp_get_num_threads();
-  b1 = (n > 1);
-  if (!(nthreads->size[0] == 0)) {
-    n = omp_get_nested();
-    if ((!(n != 0)) && b1 && (nthreads->data[0] > 1)) {
-
-#pragma omp master
-
-      M2C_BEGIN_REGION(/*omp master*/)
-
-      msg_warn();
-
-      M2C_END_REGION(/*omp master*/)
-
-    }
-
-#pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    M2C_BEGIN_REGION(/*omp parallel*/)
-
-    prodAx(A, x, Ax);
-
-#pragma omp barrier
-
-    c_prodAtx(A, Ax, b, varargin_1);
-
-    M2C_END_REGION(/*omp parallel*/)
-
-  } else if (b1) {
-    prodAx(A, x, Ax);
-
-#pragma omp barrier
-
-    c_prodAtx(A, Ax, b, varargin_1);
-  } else {
-    b_prodAx(A, x, Ax);
-    b_prodAtx(A, Ax, b);
-  }
-}
-
-static void d_prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
-                      emxArray_real_T *b, MPI_Comm varargin_1, const
-                      emxArray_real_T *varargin_2)
-{
-  int32_T n;
-  if ((b->size[0] < A->size[1]) || (b->size[1] < x->size[1])) {
-    d_msg_error();
-  }
-
-  n = omp_get_num_threads();
-  prodAtx_internal(A, x, b);
-  if (n > 1) {
-
-#pragma omp barrier
-
-  }
-
-#pragma omp single
-
-  M2C_BEGIN_REGION(/*omp single*/)
-
-  b_allreduce(b, (int32_T)rt_roundd((real_T)A->size[1] * (real_T)x->size[1]),
-              MPI_SUM, varargin_1, varargin_2);
-
-  M2C_END_REGION(/*omp single*/)
-
-}
-
-static void e_msg_error(const emxArray_char_T *varargin_3)
-{
-  const char * msgid;
-  emxArray_char_T *b_varargin_3;
-  int32_T i1;
-  int32_T loop_ub;
-  msgid = "MPI_Comm:WrongType";
-  emxInit_char_T(&b_varargin_3, 2);
-  if (emlrtIsMATLABThread(emlrtRootTLSGlobal)) {
-    i1 = b_varargin_3->size[0] * b_varargin_3->size[1];
-    b_varargin_3->size[0] = 1;
-    b_varargin_3->size[1] = varargin_3->size[1];
-    emxEnsureCapacity((emxArray__common *)b_varargin_3, i1, (int32_T)sizeof
-                      (char_T));
-    loop_ub = varargin_3->size[0] * varargin_3->size[1];
-    for (i1 = 0; i1 < loop_ub; i1++) {
-      b_varargin_3->data[i1] = varargin_3->data[i1];
-    }
-
-    mexErrMsgIdAndTxt(msgid, "Incorrect data type %s. Expected MPI_Datatype.",
-                      &b_varargin_3->data[0]);
-  } else {
-    i1 = b_varargin_3->size[0] * b_varargin_3->size[1];
-    b_varargin_3->size[0] = 1;
-    b_varargin_3->size[1] = varargin_3->size[1];
-    emxEnsureCapacity((emxArray__common *)b_varargin_3, i1, (int32_T)sizeof
-                      (char_T));
-    loop_ub = varargin_3->size[0] * varargin_3->size[1];
-    for (i1 = 0; i1 < loop_ub; i1++) {
-      b_varargin_3->data[i1] = varargin_3->data[i1];
-    }
-
-    printf("Error %s\nIncorrect data type %s. Expected MPI_Datatype.", msgid,
-           &b_varargin_3->data[0]);
-  }
-
-  emxFree_char_T(&b_varargin_3);
-}
-
-static void e_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
-  emxArray_real_T *b, emxArray_real_T *Ax, const emxArray_int32_T *nthreads,
-  MPI_Comm varargin_1, const emxArray_real_T *varargin_2)
-{
-  int32_T n;
-  boolean_T b2;
-  if ((b->size[0] < A->size[1]) || (b->size[1] != x->size[1])) {
-
-#pragma omp master
-
-    M2C_BEGIN_REGION(/*omp master*/)
-
-    msg_error();
-
-    M2C_END_REGION(/*omp master*/)
-
-  }
-
-  if ((Ax->size[0] < A->size[0]) || (Ax->size[1] != x->size[1])) {
-
-#pragma omp master
-
-    M2C_BEGIN_REGION(/*omp master*/)
-
-    b_msg_error();
-
-    M2C_END_REGION(/*omp master*/)
-
-  }
-
-  n = omp_get_num_threads();
-  b2 = (n > 1);
-  if (!(nthreads->size[0] == 0)) {
-    n = omp_get_nested();
-    if ((!(n != 0)) && b2 && (nthreads->data[0] > 1)) {
-
-#pragma omp master
-
-      M2C_BEGIN_REGION(/*omp master*/)
-
-      msg_warn();
-
-      M2C_END_REGION(/*omp master*/)
-
-    }
-
-#pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    M2C_BEGIN_REGION(/*omp parallel*/)
-
-    prodAx(A, x, Ax);
-
-#pragma omp barrier
-
-    d_prodAtx(A, Ax, b, varargin_1, varargin_2);
-
-    M2C_END_REGION(/*omp parallel*/)
-
-  } else if (b2) {
-    prodAx(A, x, Ax);
-
-#pragma omp barrier
-
-    d_prodAtx(A, Ax, b, varargin_1, varargin_2);
-  } else {
-    b_prodAx(A, x, Ax);
-    b_prodAtx(A, Ax, b);
-  }
-}
-
-static void e_prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
-                      emxArray_real_T *b, MPI_Comm varargin_1, const
-                      emxArray_real_T *varargin_2, int32_T varargin_3)
-{
-  int32_T n;
-  if ((b->size[0] < A->size[1]) || (b->size[1] < x->size[1])) {
-    d_msg_error();
-  }
-
-  n = omp_get_num_threads();
-  prodAtx_internal(A, x, b);
-  if (n > 1) {
-
-#pragma omp barrier
-
-  }
-
-#pragma omp single
-
-  M2C_BEGIN_REGION(/*omp single*/)
-
-  c_allreduce(b, (int32_T)rt_roundd((real_T)A->size[1] * (real_T)x->size[1]),
-              MPI_SUM, varargin_1, varargin_2, varargin_3);
-
-  M2C_END_REGION(/*omp single*/)
-
-}
-
-static void f_msg_error(void)
-{
-  const char * msgid;
-  msgid = "allreduce:bufferOverflow";
-  if (emlrtIsMATLABThread(emlrtRootTLSGlobal)) {
-    mexErrMsgIdAndTxt(msgid,
-                      "The given buffer is too small for the piggy-back message.");
-  } else {
-    printf("Error %s\nThe given buffer is too small for the piggy-back message.",
-           msgid);
-  }
-}
-
-static void f_prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
-  emxArray_real_T *b, emxArray_real_T *Ax, const emxArray_int32_T *nthreads,
-  MPI_Comm varargin_1, const emxArray_real_T *varargin_2, int32_T varargin_3)
-{
-  int32_T n;
-  boolean_T b3;
-  if ((b->size[0] < A->size[1]) || (b->size[1] != x->size[1])) {
-
-#pragma omp master
-
-    M2C_BEGIN_REGION(/*omp master*/)
-
-    msg_error();
-
-    M2C_END_REGION(/*omp master*/)
-
-  }
-
-  if ((Ax->size[0] < A->size[0]) || (Ax->size[1] != x->size[1])) {
-
-#pragma omp master
-
-    M2C_BEGIN_REGION(/*omp master*/)
-
-    b_msg_error();
-
-    M2C_END_REGION(/*omp master*/)
-
-  }
-
-  n = omp_get_num_threads();
-  b3 = (n > 1);
-  if (!(nthreads->size[0] == 0)) {
-    n = omp_get_nested();
-    if ((!(n != 0)) && b3 && (nthreads->data[0] > 1)) {
-
-#pragma omp master
-
-      M2C_BEGIN_REGION(/*omp master*/)
-
-      msg_warn();
-
-      M2C_END_REGION(/*omp master*/)
-
-    }
-
-#pragma omp parallel default(shared) num_threads(nthreads->data[0])
-    M2C_BEGIN_REGION(/*omp parallel*/)
-
-    prodAx(A, x, Ax);
-
-#pragma omp barrier
-
-    e_prodAtx(A, Ax, b, varargin_1, varargin_2, varargin_3);
-
-    M2C_END_REGION(/*omp parallel*/)
-
-  } else if (b3) {
-    prodAx(A, x, Ax);
-
-#pragma omp barrier
-
-    e_prodAtx(A, Ax, b, varargin_1, varargin_2, varargin_3);
-  } else {
-    b_prodAx(A, x, Ax);
-    b_prodAtx(A, Ax, b);
-  }
-}
-
-static void get_local_chunk(real_T m, int32_T *istart, int32_T *iend)
-{
-  int32_T nthreads;
-  int32_T thr_id;
-  real_T u;
-  int32_T chunk;
-  int32_T b_remainder;
+  int nthreads;
+  int thr_id;
+  double y;
+  double b_y;
+  int chunk;
+  int b_remainder;
+  int c_remainder;
   nthreads = omp_get_num_threads();
   if (nthreads == 1) {
     *istart = 1;
-    *iend = (int32_T)rt_roundd(m);
+    *iend = (int)rt_roundd(m);
   } else {
     thr_id = omp_get_thread_num();
-    u = m / (real_T)nthreads;
-    if (u < 0.0) {
-      u = ceil(u);
+    y = m / (double)nthreads;
+    if (y < 0.0) {
+      b_y = ceil(y);
     } else {
-      u = floor(u);
+      b_y = floor(y);
     }
 
-    chunk = (int32_T)rt_roundd(u);
-    b_remainder = (int32_T)rt_roundd(m - (real_T)(nthreads * chunk));
+    chunk = (int)rt_roundd(b_y);
+    b_remainder = (int)rt_roundd(m - (double)(nthreads * chunk));
     if (b_remainder <= thr_id) {
-      nthreads = b_remainder;
+      c_remainder = b_remainder;
     } else {
-      nthreads = thr_id;
+      c_remainder = thr_id;
     }
 
-    *istart = (thr_id * chunk + nthreads) + 1;
+    *istart = (thr_id * chunk + c_remainder) + 1;
     *iend = ((*istart + chunk) + (thr_id < b_remainder)) - 1;
   }
 }
 
-static void msg_error(void)
+static void m2c_error(void)
 {
-  const char * msgid;
-  msgid = "prodAtAx:IncorrectBuffer";
-  if (emlrtIsMATLABThread(emlrtRootTLSGlobal)) {
-    mexErrMsgIdAndTxt(msgid, "Buffer b has incorrect size.");
-  } else {
-    printf("Error %s\nBuffer b has incorrect size.", msgid);
-  }
+  M2C_error("prodAtAx:IncorrectBuffer", "Buffer b has incorrect size.");
 }
 
-static void msg_warn(void)
+static void m2c_warn(void)
 {
-  const char * msgid;
-  msgid = "prodAtAx:NestedParallel";
-  if (emlrtIsMATLABThread(emlrtRootTLSGlobal)) {
-    mexWarnMsgIdAndTxt(msgid,
-                       "You are trying to use nested parallel regions, but nested parallelism is not enabled.");
-  } else {
-    printf("Warning %s\nYou are trying to use nested parallel regions, but nested parallelism is not enabled.",
-           msgid);
-  }
+  M2C_warn("prodAtAx:NestedParallel",
+           "You are trying to use nested parallel regions, but nested parallelism is not enabled.");
 }
 
 static void prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
                     emxArray_real_T *b)
 {
   if ((b->size[0] < A->size[1]) || (b->size[1] < x->size[1])) {
-    d_msg_error();
+    d_m2c_error();
   }
 
   omp_get_num_threads();
@@ -671,20 +183,16 @@ static void prodAtx(const emxArray_real_T *A, const emxArray_real_T *x,
 static void prodAtx_internal(const emxArray_real_T *A, const emxArray_real_T *x,
   emxArray_real_T *b)
 {
-  int32_T nrows;
-  int32_T nrhs;
-  int32_T jend;
-  int32_T j;
-  int32_T k;
-  real_T t;
-  int32_T i;
-  nrows = A->size[0];
-  nrhs = x->size[1];
+  int j;
+  int jend;
+  int k;
+  double t;
+  int i;
   get_local_chunk(A->size[1], &j, &jend);
   while (j <= jend) {
-    for (k = 0; k + 1 <= nrhs; k++) {
+    for (k = 0; k + 1 <= x->size[1]; k++) {
       t = 0.0;
-      for (i = 0; i + 1 <= nrows; i++) {
+      for (i = 0; i + 1 <= A->size[0]; i++) {
         t += A->data[i + A->size[0] * (j - 1)] * x->data[i + x->size[0] * k];
       }
 
@@ -699,7 +207,7 @@ static void prodAx(const emxArray_real_T *A, const emxArray_real_T *x,
                    emxArray_real_T *b)
 {
   if ((b->size[0] < A->size[0]) || (b->size[1] < x->size[1])) {
-    c_msg_error();
+    c_m2c_error();
   }
 
   omp_get_num_threads();
@@ -709,20 +217,16 @@ static void prodAx(const emxArray_real_T *A, const emxArray_real_T *x,
 static void prodAx_internal(const emxArray_real_T *A, const emxArray_real_T *x,
   emxArray_real_T *b)
 {
-  int32_T ncols;
-  int32_T nrhs;
-  int32_T iend;
-  int32_T i;
-  int32_T k;
-  real_T t;
-  int32_T j;
-  ncols = A->size[1];
-  nrhs = x->size[1];
+  int i;
+  int iend;
+  int k;
+  double t;
+  int j;
   get_local_chunk(A->size[0], &i, &iend);
   while (i <= iend) {
-    for (k = 0; k + 1 <= nrhs; k++) {
+    for (k = 0; k + 1 <= x->size[1]; k++) {
       t = 0.0;
-      for (j = 0; j + 1 <= ncols; j++) {
+      for (j = 0; j + 1 <= A->size[1]; j++) {
         t += A->data[(i + A->size[0] * j) - 1] * x->data[j + x->size[0] * k];
       }
 
@@ -733,9 +237,9 @@ static void prodAx_internal(const emxArray_real_T *A, const emxArray_real_T *x,
   }
 }
 
-static real_T rt_roundd(real_T u)
+static double rt_roundd(double u)
 {
-  real_T y;
+  double y;
   if (fabs(u) < 4.503599627370496E+15) {
     if (u >= 0.5) {
       y = floor(u + 0.5);
@@ -751,11 +255,21 @@ static real_T rt_roundd(real_T u)
   return y;
 }
 
+void emxInitArray_int32_T(emxArray_int32_T **pEmxArray, int numDimensions)
+{
+  emxInit_int32_T(pEmxArray, numDimensions);
+}
+
+void emxInitArray_real_T(emxArray_real_T **pEmxArray, int numDimensions)
+{
+  emxInit_real_T(pEmxArray, numDimensions);
+}
+
 void prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
               emxArray_real_T *b, emxArray_real_T *Ax, const emxArray_int32_T
               *nthreads)
 {
-  int32_T n;
+  int n;
   boolean_T b0;
   if ((b->size[0] < A->size[1]) || (b->size[1] != x->size[1])) {
 
@@ -763,7 +277,7 @@ void prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
 
     M2C_BEGIN_REGION(/*omp master*/)
 
-    msg_error();
+    m2c_error();
 
     M2C_END_REGION(/*omp master*/)
 
@@ -775,7 +289,7 @@ void prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
 
     M2C_BEGIN_REGION(/*omp master*/)
 
-    b_msg_error();
+    b_m2c_error();
 
     M2C_END_REGION(/*omp master*/)
 
@@ -791,7 +305,7 @@ void prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
 
       M2C_BEGIN_REGION(/*omp master*/)
 
-      msg_warn();
+      m2c_warn();
 
       M2C_END_REGION(/*omp master*/)
 
@@ -822,257 +336,6 @@ void prodAtAx(const emxArray_real_T *A, const emxArray_real_T *x,
 
 void prodAtAx_initialize(void)
 {
-}
-
-void prodAtAx_mpi(const emxArray_real_T *A, const emxArray_real_T *x,
-                  emxArray_real_T *b, emxArray_real_T *Ax, const
-                  emxArray_int32_T *nthreads, const struct_T *comm)
-{
-  boolean_T p;
-  boolean_T b_p;
-  int32_T k;
-  int32_T exitg2;
-  int32_T i3;
-  boolean_T exitg1;
-  static const char_T cv0[8] = { 'M', 'P', 'I', '_', 'C', 'o', 'm', 'm' };
-
-  emxArray_char_T *b_comm;
-  emxArray_uint8_T *data;
-  MPI_Comm c_comm;
-  p = FALSE;
-  b_p = FALSE;
-  k = 0;
-  do {
-    exitg2 = 0;
-    if (k < 2) {
-      i3 = comm->type->size[k];
-      if (i3 != 7 * k + 1) {
-        exitg2 = 1;
-      } else {
-        k++;
-      }
-    } else {
-      b_p = TRUE;
-      exitg2 = 1;
-    }
-  } while (exitg2 == 0);
-
-  if (b_p && (!(comm->type->size[1] == 0))) {
-    k = 0;
-    exitg1 = FALSE;
-    while ((exitg1 == FALSE) && (k <= comm->type->size[1] - 1)) {
-      if (!(comm->type->data[k] == cv0[k])) {
-        b_p = FALSE;
-        exitg1 = TRUE;
-      } else {
-        k++;
-      }
-    }
-  }
-
-  if (!b_p) {
-  } else {
-    p = TRUE;
-  }
-
-  if (!p) {
-    emxInit_char_T(&b_comm, 2);
-    i3 = b_comm->size[0] * b_comm->size[1];
-    b_comm->size[0] = 1;
-    b_comm->size[1] = comm->type->size[1] + 1;
-    emxEnsureCapacity((emxArray__common *)b_comm, i3, (int32_T)sizeof(char_T));
-    k = comm->type->size[1];
-    for (i3 = 0; i3 < k; i3++) {
-      b_comm->data[b_comm->size[0] * i3] = comm->type->data[comm->type->size[0] *
-        i3];
-    }
-
-    b_comm->data[b_comm->size[0] * comm->type->size[1]] = '\x00';
-    e_msg_error(b_comm);
-    emxFree_char_T(&b_comm);
-  }
-
-  emxInit_uint8_T(&data, 2);
-  i3 = data->size[0] * data->size[1];
-  data->size[0] = comm->data->size[0];
-  data->size[1] = comm->data->size[1];
-  emxEnsureCapacity((emxArray__common *)data, i3, (int32_T)sizeof(uint8_T));
-  k = comm->data->size[0] * comm->data->size[1];
-  for (i3 = 0; i3 < k; i3++) {
-    data->data[i3] = comm->data->data[i3];
-  }
-
-  c_comm = *(MPI_Comm*)(&data->data[0]);
-  d_prodAtAx(A, x, b, Ax, nthreads, c_comm);
-  emxFree_uint8_T(&data);
-}
-
-void prodAtAx_mpip(const emxArray_real_T *A, const emxArray_real_T *x,
-                   emxArray_real_T *b, emxArray_real_T *Ax, const
-                   emxArray_int32_T *nthreads, const struct_T *comm, const
-                   emxArray_real_T *pbmsg)
-{
-  boolean_T p;
-  boolean_T b_p;
-  int32_T k;
-  int32_T exitg2;
-  int32_T i4;
-  boolean_T exitg1;
-  static const char_T cv1[8] = { 'M', 'P', 'I', '_', 'C', 'o', 'm', 'm' };
-
-  emxArray_char_T *b_comm;
-  emxArray_uint8_T *data;
-  MPI_Comm c_comm;
-  p = FALSE;
-  b_p = FALSE;
-  k = 0;
-  do {
-    exitg2 = 0;
-    if (k < 2) {
-      i4 = comm->type->size[k];
-      if (i4 != 7 * k + 1) {
-        exitg2 = 1;
-      } else {
-        k++;
-      }
-    } else {
-      b_p = TRUE;
-      exitg2 = 1;
-    }
-  } while (exitg2 == 0);
-
-  if (b_p && (!(comm->type->size[1] == 0))) {
-    k = 0;
-    exitg1 = FALSE;
-    while ((exitg1 == FALSE) && (k <= comm->type->size[1] - 1)) {
-      if (!(comm->type->data[k] == cv1[k])) {
-        b_p = FALSE;
-        exitg1 = TRUE;
-      } else {
-        k++;
-      }
-    }
-  }
-
-  if (!b_p) {
-  } else {
-    p = TRUE;
-  }
-
-  if (!p) {
-    emxInit_char_T(&b_comm, 2);
-    i4 = b_comm->size[0] * b_comm->size[1];
-    b_comm->size[0] = 1;
-    b_comm->size[1] = comm->type->size[1] + 1;
-    emxEnsureCapacity((emxArray__common *)b_comm, i4, (int32_T)sizeof(char_T));
-    k = comm->type->size[1];
-    for (i4 = 0; i4 < k; i4++) {
-      b_comm->data[b_comm->size[0] * i4] = comm->type->data[comm->type->size[0] *
-        i4];
-    }
-
-    b_comm->data[b_comm->size[0] * comm->type->size[1]] = '\x00';
-    e_msg_error(b_comm);
-    emxFree_char_T(&b_comm);
-  }
-
-  emxInit_uint8_T(&data, 2);
-  i4 = data->size[0] * data->size[1];
-  data->size[0] = comm->data->size[0];
-  data->size[1] = comm->data->size[1];
-  emxEnsureCapacity((emxArray__common *)data, i4, (int32_T)sizeof(uint8_T));
-  k = comm->data->size[0] * comm->data->size[1];
-  for (i4 = 0; i4 < k; i4++) {
-    data->data[i4] = comm->data->data[i4];
-  }
-
-  c_comm = *(MPI_Comm*)(&data->data[0]);
-  e_prodAtAx(A, x, b, Ax, nthreads, c_comm, pbmsg);
-  emxFree_uint8_T(&data);
-}
-
-void prodAtAx_mpip1(const emxArray_real_T *A, const emxArray_real_T *x,
-                    emxArray_real_T *b, emxArray_real_T *Ax, const
-                    emxArray_int32_T *nthreads, const struct_T *comm, const
-                    emxArray_real_T *pbmsg, int32_T pbsz)
-{
-  boolean_T p;
-  boolean_T b_p;
-  int32_T k;
-  int32_T exitg2;
-  int32_T i5;
-  boolean_T exitg1;
-  static const char_T cv2[8] = { 'M', 'P', 'I', '_', 'C', 'o', 'm', 'm' };
-
-  emxArray_char_T *b_comm;
-  emxArray_uint8_T *data;
-  MPI_Comm c_comm;
-  p = FALSE;
-  b_p = FALSE;
-  k = 0;
-  do {
-    exitg2 = 0;
-    if (k < 2) {
-      i5 = comm->type->size[k];
-      if (i5 != 7 * k + 1) {
-        exitg2 = 1;
-      } else {
-        k++;
-      }
-    } else {
-      b_p = TRUE;
-      exitg2 = 1;
-    }
-  } while (exitg2 == 0);
-
-  if (b_p && (!(comm->type->size[1] == 0))) {
-    k = 0;
-    exitg1 = FALSE;
-    while ((exitg1 == FALSE) && (k <= comm->type->size[1] - 1)) {
-      if (!(comm->type->data[k] == cv2[k])) {
-        b_p = FALSE;
-        exitg1 = TRUE;
-      } else {
-        k++;
-      }
-    }
-  }
-
-  if (!b_p) {
-  } else {
-    p = TRUE;
-  }
-
-  if (!p) {
-    emxInit_char_T(&b_comm, 2);
-    i5 = b_comm->size[0] * b_comm->size[1];
-    b_comm->size[0] = 1;
-    b_comm->size[1] = comm->type->size[1] + 1;
-    emxEnsureCapacity((emxArray__common *)b_comm, i5, (int32_T)sizeof(char_T));
-    k = comm->type->size[1];
-    for (i5 = 0; i5 < k; i5++) {
-      b_comm->data[b_comm->size[0] * i5] = comm->type->data[comm->type->size[0] *
-        i5];
-    }
-
-    b_comm->data[b_comm->size[0] * comm->type->size[1]] = '\x00';
-    e_msg_error(b_comm);
-    emxFree_char_T(&b_comm);
-  }
-
-  emxInit_uint8_T(&data, 2);
-  i5 = data->size[0] * data->size[1];
-  data->size[0] = comm->data->size[0];
-  data->size[1] = comm->data->size[1];
-  emxEnsureCapacity((emxArray__common *)data, i5, (int32_T)sizeof(uint8_T));
-  k = comm->data->size[0] * comm->data->size[1];
-  for (i5 = 0; i5 < k; i5++) {
-    data->data[i5] = comm->data->data[i5];
-  }
-
-  c_comm = *(MPI_Comm*)(&data->data[0]);
-  f_prodAtAx(A, x, b, Ax, nthreads, c_comm, pbmsg, pbsz);
-  emxFree_uint8_T(&data);
 }
 
 void prodAtAx_ser(const emxArray_real_T *A, const emxArray_real_T *x,

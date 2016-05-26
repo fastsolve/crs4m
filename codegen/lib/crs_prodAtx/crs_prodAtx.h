@@ -1,38 +1,35 @@
-#ifndef __CRS_PRODATX_H__
-#define __CRS_PRODATX_H__
+#ifndef CRS_PRODATX_H
+#define CRS_PRODATX_H
 #include <math.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "plctypes.h"
+#include "rtwtypes.h"
 #include "crs_prodAtx_types.h"
-extern void crs_prodAtx(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b, const plcArray_int32_T *nthreads);
+
+extern void crs_prodAtx(const struct0_T *A, const emxArray_real_T *x,
+  emxArray_real_T *b, const emxArray_int32_T *nthreads);
 extern void crs_prodAtx_initialize(void);
-extern void crs_prodAtx_mpi(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b, const plcArray_int32_T *nthreads, const b_struct_T *comm);
-extern void crs_prodAtx_mpip(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b, const plcArray_int32_T *nthreads, const b_struct_T *comm, const plcArray_real_T *pbmsg);
-extern void crs_prodAtx_mpip1(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b, const plcArray_int32_T *nthreads, const b_struct_T *comm, const plcArray_real_T *pbmsg, int32_T pbsz);
-extern void crs_prodAtx_ser(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b);
-extern void crs_prodAtx_ser1(const struct_T *A, const plcArray_real_T *x, plcArray_real_T *b);
+extern void crs_prodAtx_ser(const struct0_T *A, const emxArray_real_T *x,
+  emxArray_real_T *b);
+extern void crs_prodAtx_ser1(const struct0_T *A, const emxArray_real_T *x,
+  emxArray_real_T *b);
 extern void crs_prodAtx_terminate(void);
-extern plcArray_char_T *plcCreateND_char_T( plcShort numDimensions, plcSize *size);
-extern plcArray_int32_T *plcCreateND_int32_T( plcShort numDimensions, plcSize *size);
-extern plcArray_real_T *plcCreateND_real_T( plcShort numDimensions, plcSize *size);
-extern plcArray_uint8_T *plcCreateND_uint8_T( plcShort numDimensions, plcSize *size);
-extern plcArray_char_T *plcCreateWrapperND_char_T(char_T *data, plcShort numDimensions, plcSize *size);
-extern plcArray_int32_T *plcCreateWrapperND_int32_T(int32_T *data, plcShort numDimensions, plcSize *size);
-extern plcArray_real_T *plcCreateWrapperND_real_T(real_T *data, plcShort numDimensions, plcSize *size);
-extern plcArray_uint8_T *plcCreateWrapperND_uint8_T(uint8_T *data, plcShort numDimensions, plcSize *size);
-extern plcArray_char_T *plcCreateWrapper_char_T(char_T *data, plcSize rows, plcSize cols);
-extern plcArray_int32_T *plcCreateWrapper_int32_T(int32_T *data, plcSize rows, plcSize cols);
-extern plcArray_real_T *plcCreateWrapper_real_T(real_T *data, plcSize rows, plcSize cols);
-extern plcArray_uint8_T *plcCreateWrapper_uint8_T(uint8_T *data, plcSize rows, plcSize cols);
-extern plcArray_char_T *plcCreate_char_T( plcSize rows, plcSize cols);
-extern plcArray_int32_T *plcCreate_int32_T( plcSize rows, plcSize cols);
-extern plcArray_real_T *plcCreate_real_T( plcSize rows, plcSize cols);
-extern plcArray_uint8_T *plcCreate_uint8_T( plcSize rows, plcSize cols);
-extern void plcDestroyArray_char_T(plcArray_char_T *plcArray);
-extern void plcDestroyArray_int32_T(plcArray_int32_T *plcArray);
-extern void plcDestroyArray_real_T(plcArray_real_T *plcArray);
-extern void plcDestroyArray_uint8_T(plcArray_uint8_T *plcArray);
+extern emxArray_int32_T *emxCreateND_int32_T(int numDimensions, int *size);
+extern emxArray_real_T *emxCreateND_real_T(int numDimensions, int *size);
+extern emxArray_int32_T *emxCreateWrapperND_int32_T(int *data, int numDimensions,
+  int *size);
+extern emxArray_real_T *emxCreateWrapperND_real_T(double *data, int
+  numDimensions, int *size);
+extern emxArray_int32_T *emxCreateWrapper_int32_T(int *data, int rows, int cols);
+extern emxArray_real_T *emxCreateWrapper_real_T(double *data, int rows, int cols);
+extern emxArray_int32_T *emxCreate_int32_T(int rows, int cols);
+extern emxArray_real_T *emxCreate_real_T(int rows, int cols);
+extern void emxDestroyArray_int32_T(emxArray_int32_T *emxArray);
+extern void emxDestroyArray_real_T(emxArray_real_T *emxArray);
+extern void emxDestroy_struct0_T(struct0_T emxArray);
+extern void emxInitArray_int32_T(emxArray_int32_T **pEmxArray, int numDimensions);
+extern void emxInitArray_real_T(emxArray_real_T **pEmxArray, int numDimensions);
+extern void emxInit_struct0_T(struct0_T *pStruct);
+
 #endif

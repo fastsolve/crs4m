@@ -1,3 +1,3 @@
-function s = sqnormf_ser( A) %#codegen
+function s = sqnormf_ser(A) %#codegen
 
-s = sqnormf( A);
+s = sqnormf(A);

@@ -1,5 +1,4 @@
 #include "crs_rowind.h"
-#include "omp.h"
 #include "m2c.h"
 
 void crs_rowind(const emxArray_int32_T *row_ptr, const emxArray_int32_T *col_ind,

@@ -10,7 +10,7 @@ is = A.col_ind;
 js = crs_rowind(A.row_ptr, A.col_ind);
 
 % Exchange row and col_ind.
-At = crs_create( is, js, A.val);
+At = crs_create(is, js, A.val);
 
 function test %#ok<DEFNU>
 %!test
@@ -21,4 +21,4 @@ function test %#ok<DEFNU>
 %! fprintf(1, '\tConverted into crs_matrix in %g seconds\n', toc);
 %! tic; At = crs_transp(A);
 %! fprintf(1, '\tComputed transpose in %g seconds\n', toc);
-%! assert( isequal( sp', crs_2sparse( At)));
+%! assert(isequal(sp', crs_2sparse(At)));
