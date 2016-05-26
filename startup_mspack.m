@@ -3,6 +3,10 @@
 msproot = fileparts(which('startup_mspack.m'));
 
 addpath(msproot); %#ok<*MCAP>
+addpath([msproot '/Mat']); %#ok<*MCAP>
+addpath([msproot '/Vec']); %#ok<*MCAP>
+addpath([msproot '/KSP']); %#ok<*MCAP>
+addpath([msproot '/PC']); %#ok<*MCAP>
 addpath([msproot '/util']); %#ok<*MCAP>
 
 if ~exist('./util/build_mspack.m', 'file')
