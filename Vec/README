@@ -1,0 +1,3 @@
+This directory implements basic vector operations, similar to those in 
+PETSc as described in section 2.2 of PETSc Users Manual at
+http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf
