@@ -15,7 +15,8 @@ try
     
     for j=1:length(files)
         file = files{j}{1};
-        m2c('-omp', '-mex', '-noinf', '-O', varargin{:}, file);
+        m2c('-omp', '-mex', '-noinf', '-O', '-cppflags', ...
+            ['{''-I' mspackroot '/include''}'], varargin{:}, file);
     end
 catch ME
     cd(curpath);
