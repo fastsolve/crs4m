@@ -1,0 +1,2 @@
+function val = CUSPARSE_STATUS_NOT_INITIALIZED %#codegen 
+val = cuSparseGetEnum('CUSPARSE_STATUS_NOT_INITIALIZED');
