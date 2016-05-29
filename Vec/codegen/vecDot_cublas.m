@@ -1,6 +1,7 @@
-function prod = vecDot_cublas(u, v, prod, nthreads, mode, cublasHdl) %#codegen
-if ~isequal(mode, 'cublas')
-    m2c_warn('vecDot:WrongMode', 'Incorrect mode. Assuming ''cublas''.\n');
+function [prod,buf] = vecDot_cublas(u, v, buf, mode, cublasHdl) %#codegen
+
+if ~isequal(mode, 'cuda')
+    m2c_warn('vecDot:WrongInput', 'Wrong mode name. cuda is assumed.\n');
 end
 
-prod = vecDot(u, v, prod, nthreads, 'cublas', cublasHdl);
+[prod,buf] = vecDot(u, v, buf, true, cublasHdl);

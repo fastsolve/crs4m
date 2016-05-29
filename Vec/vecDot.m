@@ -1,74 +1,120 @@
-function prod = vecDot(x, y, prod, nthreads, varargin)
+function [prod, buf, toplevel] = vecDot(x, y, buf, varargin)
 %Computes dot product x'*y for column vectors x and y.
 %
 % Syntax:
+%  Serial modes:
 %      prod = vecDot(x, y)
-%      prod = vecDot(x, y, [], n)
-%      prod = vecDot(x, y, prod, n)
-%      prod = vecDot(x, y, prod, n, 'acc')
-%      prod = vecDot(x, y, prod, n, 'blas')
+%      [prod,buf] = vecDot(x, y, buf)
 %
 %      Both x and y must be column vectors.
 %
+%  OpenMP modes:
+%      prod = vecDot(x, y, [], n)
+%      [prod,buf] = vecDot(x, y, buf, n)
+%
+%      Both x and y must be column vectors.
+%
+%  CUDA modes:
+%      vecDot(x, y, hdl, 'cuda', cublasHandle)
+%      prod = vecDot(x, y, [], 'cuda', cublasHandle, ['sync'])
+%
+%      Both x and y must be CudaVec handles.
+%
 % Description:
 %
-% prod = vecDot(x, y) computes x'*y in serial.
+% prod = vecDot(x, y) computes x'*y in serial and returns a scalar.
+%
+% [prod,buf] = vecDot(x, y, buf) computes x'*y and saves the output into prod.
 %
 % prod = vecDot(x, y, [], n) computes the dot product by starting n threads.
 % If n>OMP_NUM_THREADS, it will be reduced to OMP_NUM_THREADS automatically.
 %
-% prod = vecDot(x, y, prod, n) computes x'*y using m threads, assuming
-% the function is called from one particular thread. The function must be
-% called collectively by all the threads in the team, and prod is a vector
-% shared by all the threads in the team. The length of prod must be >=
-% nthreads, or memory error may occur.  The final output will be saved
-% in prod(1). There is an implicit barrier at the beginning and the end
+% [prod,buf] = vecDot(x, y, buf, n) computes x'*y using m threads, assuming
+% the function is called from one particular thread. In this mode, the
+% function must be called collectively by all the threads in the team,
+% and buf is a vector shared by all the threads in the team. The length
+% of buf must be >= nthreads, and it is important that buf is passed both
+% as input and output with the same name. The final output will be saved
+% in prod. There is an implicit barrier at the beginning and the end
 % of this function. This mode is not supported when vecDot is a top-level
 % function during code generation.
 %
-% prod = vecDot(x, y, prod, n, 'acc') accelerates the computation using
-% OpenACC within each thread. It is left to the copmiler to decide whether
-% x and y  are already on GPU.
+% If blas is enabled, it calls BLAS routines automatically for vectors
+% with more than 1000 entries in the CPU mode.
 %
-% prod = vecDot(x, y, prod, nthreads, 'blas') uses the BLAS routine to
-% evaluate within each thread.
+% vecDot(x, y, prod, 'cuda', cublasHandle) uses CUDA BLAS for acceleration,
+% assuming x, y, and prod are all CudaVec handles. It uses the
+% asynchronous mode of CUDA BLAS. This should be the default mode on CUDA.
+% The output values are meaningless.
 %
-% Note: 'acc' and 'blas' must be known at compile time. For other
-% strings, the solution is undefined.
+% prod = vecDot(x, y, [], 'cuda', cublasHandle, ['sync']) uses the
+% synchronous mode and returns a scalar to the host.
+% The last argument is required when calling the MEX version of vecDot.
 %
 % The compiled code only supports double-precision real numbers. The
-% uncompiled code also works with complex numbers.
+% uncompiled code also works with single-precision real numbers and
+% with complex numbers for code generation.
+%
+% The function checks errors when m2c_debug is on or when the function is
+% compiled into a MEX function.
 %
 % See also vecMDot, VecTDot, VecNorm
 
-%#codegen -args {m2c_realcol, m2c_realcol, m2c_realcol, m2c_int}
-%#codegen vecDot_ser -args {m2c_realcol, m2c_realcol}
-%#codegen vecDot_acc -args {m2c_realcol, m2c_realcol, m2c_realcol, m2c_int, m2c_string}
+%#codegen -args {m2c_vec, m2c_vec, m2c_vec}
+%#codegen vecDot_ser -args {m2c_vec, m2c_vec}
+%#codegen vecDot_omp -args {m2c_vec, m2c_vec, m2c_mat, m2c_int}
+%#codegen vecDot_cublas -args {CudaVec, CudaVec, CudaVec, ...
+%#codegen         m2c_string, CublasHandle}
+%#codegen vecDot_cublas_sync -args {CudaVec, CudaVec, m2c_mat, ...
+%#codegen         m2c_string, CublasHandle, m2c_string}
 
-coder.inline('never');
+if nargin==4;
+    coder.inline('never'); % Never inline in OpenMP mode
+end
+narginchk(2, 6);
 
-toplevel = nargout>1;
+toplevel = nargout>2 || ~isempty(varargin) && islogical(varargin{1});
+if (isnumeric(x) && (size(x,1)~=size(y,1) || ~isequal(class(x), class(y))) ||...
+        isstruct(x) && (x.len~=y.len || x.type ~= y.type)) ...
+        && (toplevel || m2c_debug)
+    m2c_error('vecDot:IncorrectSize', 'Vectors x and y must have the same type and size.\n');
+end
 
-if size(x,1)~=size(y,1) && (toplevel || m2c_debug)
-    momp_begin_master
-    m2c_error('vecDot:IncorrectSize', 'Dimensions for x and y must match.');
-    momp_end_master
+if nargin==4 && ~isempty(buf) && length(buf)<varargin{1} && (toplevel || m2c_debug)
+    m2c_error('vecDot:BufferTooSmall', 'Array buf must hold one entry per threads.\n');
+end
+
+if nargin>=5
+    if ischar(varargin{1}) && ~isequal(varargin{1}, 'cuda') && (toplevel || m2c_debug)
+        m2c_warn('vecDot:WrongInput', 'Wrong mode name. cuda is assumed.\n');
+    elseif toplevel && x.type ~= CUDA_DOUBLE
+        m2c_error('vecDot:WrongInput', 'When using mex functions, vecDot only supports double.\n');
+    end
+    
+    [prod, errCode] = vecDot_cuda_kernel(x, y, buf, varargin{2}, toplevel, varargin{3:end});
+    
+    if errCode && (toplevel || m2c_debug)
+        if errCode<0
+            m2c_error('vecDot:WrongPointerMode', 'The given cuBLAS handle has incorrect pointer mode.\n.');
+        else
+            m2c_error('cuBLAS:RuntimeError', 'cuBLAS returned an error code %s\n.', ...
+                cuBlasGetErrorCode(errCode));
+        end
+    end
+    return;
 end
 
 if nargin>3;
-    nthreads = min(nthreads, momp_get_max_threads);
+    nthreads = min(int32(varargin{1}), momp_get_max_threads);
 end
 
-if nargin>3 && isempty(prod) && momp_get_num_threads>1
-    %% Compute prod_local=x'*y
-    prod = vecDot_partial(x, y, prod, true, varargin{:});
-    momp_barrier
+if nargin>3 && isempty(buf) && momp_get_num_threads>1
+    %% Compute prod_local = x'*y
+    buf = vecDot_partial(x, y, buf, nthreads, int32(size(x,1)));
     
-    momp_begin_master
-    prod = accu_partsum(prod, nthreads);
-    momp_end_master
-    
-    momp_barrier
+    momp_barrier; momp_begin_master
+    [prod,buf] = accu_partsum(buf, nthreads);
+    momp_end_master; momp_barrier
 elseif nargin>3 && nthreads>1
     %% Declare parallel region
     if ~momp_get_nested && momp_get_num_threads>1 && nthreads>1 && (toplevel || m2c_debug)
@@ -78,115 +124,171 @@ elseif nargin>3 && nthreads>1
         momp_end_master
     end
     
-    prod = zeros(nthreads, 1);
-    
+    buf = zeros(nthreads, 1);
+    m = int32(size(x,1));
     momp_begin_parallel; momp_clause_num_threads(nthreads);
-    % In general, we should always use momp_clause_default('none')
-    % and then explicitly define the shared varialble.
-    momp_clause_default('none'); momp_clause_shared(x, y, prod);
+    momp_clause_shared(x, y, buf, nthreads, m);
     
     %% Compute prod_local=x'*y
-    prod = vecDot_partial(x, y, prod, true, varargin{:});
-
+    buf = vecDot_partial(x, y, buf, nthreads, m);
+    
     %% End parallel region
     momp_end_parallel;
     
-    prod = accu_partsum(prod, nthreads);
+    [prod,buf] = accu_partsum(buf, nthreads);
 else
     % Does not appear to be parallel. Use serial.
     prod = 0;
-    prod = vecDot_partial(x, y, prod, false, varargin{:});
+    prod = vecDot_partial(x, y, prod, int32(1), int32(size(x,1)));
 end
 
-function prod = vecDot_partial(x, y, prod, is_mt, varargin)
-if is_mt
-    coder.inline('never');
-    [istart, iend] = get_local_chunk(int32(size(x,1)));
-    ind = momp_get_thread_num+1;
+function prod = vecDot_partial(x, y, prod, nthreads, n)
+% Never inline in OpenMP mode to avoid private variables become shared
+coder.inline('never');
+
+if nthreads>1
+    threadId = momp_get_thread_num;
+    [istart, iend] = momp_get_local_chunk(n, nthreads, threadId);
 else
-    ind = int32(1);
-    istart = 1; iend = int32(size(x,1));
+    threadId = int32(0);
+    istart = int32(1); iend = n;
 end
 
-% Compute partial dot product with each therad
-if ~isempty(varargin) && isequal(varargin{1}, 'blas')
-    mode = 'blas';
-elseif ~isempty(varargin) && isequal(varargin{1}, 'acc')
-    mode = 'acc';
-elseif isempty(varargin)
-    mode = 'plane';
-else
-    % Should never reach here.
-    mode = UNDEFINED;
-end
+LARGE = 1000;
 
-if isequal(mode, 'blas') && m2c_blas
-    % Call BLAS routine. Not yet implemented
-    prod(ind) = coder.ceval('cblas_ddot', iend-istart+1, ...
-        m2c_opaque_ptr_const(x, 'double *', istart-1), int32(1), ...
-        m2c_opaque_ptr_const(y, 'double *', istart-1), int32(1));
-else
-    prod(ind) = 0.;
-    if isequal(mode, 'acc')
-        % Add pragma for acc kernel
-        macc_begin_kernels;
+if iend>=istart+LARGE && m2c_blas  % Use BLAS only for large-enough vectors
+    % Call BLAS routine.
+    if isreal(x)
+        if isa(x, 'double')
+            func = 'cblas_ddot'; type = 'double';
+        elseif isa(x, 'single')
+            func = 'cblas_sdot'; type = 'single';
+        end
+        prod(threadId+1) = coder.ceval(func, iend-istart+1, ...
+            m2c_opaque_ptr_const(x, [type '*'], istart-1), int32(1), ...
+            m2c_opaque_ptr_const(y, [type '*'], istart-1), int32(1));
+    else
+        if isa(x, 'double')
+            func = 'cblas_zdotc_sub'; type = 'creal64_T';
+        elseif isa(x, 'single')
+            func = 'cblas_cdotc_sub'; type = 'creal32_T';
+        end
+        coder.ceval(func, iend-istart+1, ...
+            m2c_opaque_ptr_const(x, [type '*'], istart-1), int32(1), ...
+            m2c_opaque_ptr_const(y, [type '*'], istart-1), int32(1), ...
+            m2c_opaque_ptr(prod, [type '*'], threadId));
     end
+else
+    prod(threadId+1) = 0.;
     for i=istart:iend
-        prod(ind) = prod(ind) + x(i)' * y(i);
-    end
-    if isequal(mode, 'acc')
-        % Add pragma for acc kernel
-        macc_end_kernels;
+        prod(threadId+1) = prod(threadId+1) + x(i)' * y(i);
     end
 end
 
-function prod = accu_partsum(prod, n)
+function [prod, buf] = accu_partsum(buf, n)
+coder.inline('always');
 for j=2:n
-    prod(1) = prod(1) + prod(j);
+    buf(1) = buf(1) + buf(j);
+end
+prod = buf(1);
+
+function [output, errCode] = vecDot_cuda_kernel(x, y, hdl, cublasHdl, toplevel, varargin)
+coder.inline('always');
+
+if toplevel || x.type==CUDA_DOUBLE
+    func = 'cublasDdot'; type = 'double'; mzero = 0;
+elseif x.type==CUDA_SINGLE
+    func = 'cublasSdot'; type = 'single'; mzero = single(0);
+elseif x.type==CUDA_DOUBLE_COMPLEX
+    func = 'cublasZdotc'; type = 'cuDoubleComplex';
+    mzero = zeros(1, 1, 'like', 1i);
+elseif  x.type==CUDA_COMPLEX
+    func = 'cublasCdotc'; type = 'cuComplex';
+    mzero = zeros(1, 1, 'like', single(1i));
+else
+    % Undefined behavior. x.type must be a constant string.
+    % This causes a compilation error.
+    return;
+end
+
+output = mzero;
+n = x.len;
+errCode = int32(0); %#ok<NASGU>
+if toplevel || m2c_debug
+    [mode, errCode] = cuBlasGetPointerMode(CublasHandle(cublasHdl));
+    if errCode; return; end
+    
+    if ((isempty(hdl) || ~isempty(varargin)) && mode ~= CUBLAS_POINTER_MODE_HOST) || ...
+            (~isempty(hdl) && isempty(varargin) && mode ~= CUBLAS_POINTER_MODE_DEVICE)
+        errCode = int32(-1);
+        return;
+    end
+end
+
+if isempty(hdl) || ~isempty(varargin)
+    % Calls the synchronous version of cuBLAS
+    errCode = coder.ceval(func, CublasHandle(cublasHdl), n, ...
+        CudaVec(x, [type '*']), int32(1), ...
+        CudaVec(y, [type '*']), int32(1), coder.wref(output));
+else
+    % Calls the asynchronous version of cuBLAS
+    errCode = coder.ceval(func, CublasHandle(cublasHdl), n, ...
+        CudaVec(x, [type '*']), int32(1), ...
+        CudaVec(y, [type '*']), int32(1), ...
+        CudaVec(hdl, [type '*']));
 end
 
 function test %#ok<DEFNU>
-%!shared x, y, b0
+%!shared x, y, b0, m
 %!test
 %! if ~exist(['vecDot.' mexext], 'file')
-%!    m=200;
+%!    m=int32(200);
 %! else
-%!    m=1000000;
+%!    m=int32(1000000);
 %! end
 %! tic; x =rand(m,1); y=rand(m,1);
 %! fprintf(1, '\n\tGenerated random matrix in %g seconds\n', toc);
 %! tic; b0 = x(:,1)'*y(:,1);
 %! fprintf(1, '\tComputed reference solution in %g seconds\n', toc);
 %! fprintf(1, '\tTesting serial: ');
-%! tic; b1 = vecDot(x, y);
+%! tic; prod = vecDot(x, y);
 %! fprintf(1, 'Done in %g seconds\n ', toc);
-%! assert(abs(b0-b1)/abs(b0)<=1.e-6);
+%! assert(abs(b0-prod)/abs(b0)<=1.e-6);
 %!
+%! fprintf(1, 'Running  with blas mode (if blas is enabled):\n');
 %! for nthreads=int32([1 2 4 8])
 %!     if nthreads>momp_get_max_threads; break; end
 %!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
 %!     b2 = zeros(nthreads,1);
-%!     tic; b2 = vecDot(x, y, b2, nthreads);
+%!     tic; [prod, b2] = vecDot(x, y, b2, nthreads);
 %!     fprintf(1, 'Done in %g seconds\n ', toc);
-%!     assert(norm(b0-b2(1,1))/norm(b0)<=1.e-6);
+%!     assert(norm(b0-prod)/abs(b0)<=1.e-6);
 %! end
 
 %!test
-%! for nthreads=int32([1 2 4 8])
-%!     if nthreads>momp_get_max_threads; break; end
-%!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
-%!     b2 = zeros(nthreads,1);
-%!     tic; b2 = vecDot(x, y, b2, nthreads, 'blas');
-%!     fprintf(1, 'Done in %g seconds\n ', toc);
-%!     assert(norm(b0-b2(1,1))/norm(b0)<=1.e-6);
-%! end
+%! fprintf(1, 'Running with cuda in synchronous mode:\n');
+%! cuda = cuBlasCreate;
+%! cuda_x = cudaVecCreate(m); cudaVecCopyFromHost(x, cuda_x);
+%! cuda_y = cudaVecCreate(m); cudaVecCopyFromHost(y, cuda_y);
+%! tic; prod = vecDot(cuda_x, cuda_y, [], 'cuda', cuda, 'sync');
+%! fprintf(1, 'Done in %g seconds\n ', toc);
+%! cudaVecDestroy(cuda_x);
+%! cudaVecDestroy(cuda_y);
+%! cuBlasDestroy(cuda);
+%! assert(norm(b0-prod)/norm(b0)<=1.e-6);
 
 %!test
-%! for nthreads=int32([1 2 4 8])
-%!     if nthreads>momp_get_max_threads; break; end
-%!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
-%!     b2 = zeros(nthreads,1);
-%!     tic; b2 = vecDot(x, y, b2, nthreads, 'acc');
-%!     fprintf(1, 'Done in %g seconds\n ', toc);
-%!     assert(norm(b0-b2(1,1))/norm(b0)<=1.e-6);
-%! end
+%! fprintf(1, 'Running with cuda in asynchronous mode:\n');
+%! prod = 0;
+%! cuda = cuBlasCreate; cuBlasSetPointerMode(cuda, CUBLAS_POINTER_MODE_DEVICE);
+%! cuda_x = cudaVecCreate(m); cudaVecCopyFromHost(x, cuda_x);
+%! cuda_y = cudaVecCreate(m); cudaVecCopyFromHost(y, cuda_y);
+%! cuda_prod = cudaVecCreate(int32(1));
+%! tic; vecDot(cuda_x, cuda_y, cuda_prod, 'cuda', cuda);
+%! fprintf(1, 'Done in %g seconds\n ', toc);
+%! prod = cudaVecCopyToHost(cuda_prod, prod);
+%! cudaVecDestroy(cuda_x);
+%! cudaVecDestroy(cuda_y);
+%! cudaVecDestroy(cuda_prod);
+%! cuBlasDestroy(cuda);
+%! assert(norm(b0-prod)/abs(b0)<=1.e-6);
