@@ -5,6 +5,11 @@ mspackroot = fileparts(which('startup_mspack'));
 curpath = pwd;
 cd(mspackroot);
 
+opts = m2c_cuda_options;
+if isempty(opts)
+    warning('build_cuda:NoCUDA_PATH', 'CUDA_PATH was not set. Compiling without CUDA.\n');
+end
+
 try
     % First, compile test scripts
     lines = grep_pattern('cuda/*.m', '\n%#codegen -args');
@@ -12,7 +17,7 @@ try
     
     for j=1:length(files)
         file = files{j}{1};
-        m2c('-cuda', '-mex', '-noinf', '-O', '-cppflags', ...
+        m2c(opts{:}, '-mex', '-noinf', '-O', '-cppflags', ...
             ['{''-I' mspackroot '/include''}'], varargin{:}, file);
     end
 catch ME
