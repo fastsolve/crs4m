@@ -56,13 +56,13 @@ void cudaVecCopySubToHost_api(const mxArray ** prhs, const mxArray **plhs) {
     if (_sub_mx1==NULL)
         mexErrMsgIdAndTxt("cudaVecCopySubToHost:WrongInputStruct",
             "Input argument cuVec does not have the field data.");
-    if (mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxUINT32_CLASS)
+    if (mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxUINT64_CLASS)
         mexErrMsgIdAndTxt("cudaVecCopySubToHost:WrongInputType",
-            "Input argument cuVec.data has incorrect data type. uint32 is expected.");
-    if (mxGetNumberOfElements(_sub_mx1) != 2)
+            "Input argument cuVec.data has incorrect data type. uint64 is expected.");
+    if (mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("cudaVecCopySubToHost:WrongSizeOfInputArg",
-            "Argument cuVec.data must contain 2 numbers.");
-    copy_mxArray_to_array(_sub_mx1, cuVec.data, 2);
+            "Argument cuVec.data should be a scalar.");
+    cuVec.data = *(uint64_T*)mxGetData(_sub_mx1);
     _sub_mx1 = mxGetField(prhs[1], 0, "type");
     if (_sub_mx1==NULL)
         mexErrMsgIdAndTxt("cudaVecCopySubToHost:WrongInputStruct",

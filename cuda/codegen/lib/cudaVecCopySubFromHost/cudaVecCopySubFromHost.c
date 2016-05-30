@@ -97,10 +97,10 @@ static void m2c_error(void)
 void cudaVecCopySubFromHost(int n, const emxArray_real_T *vec, int istart, int
   inc, const struct0_T *cuVec, int incCuVec, int *errCode, boolean_T *toplevel)
 {
-  int i;
+  int quotient;
   int sizepe;
   char * ptr;
-  unsigned int data[2];
+  unsigned long data;
   void * output;
   int varargin_2;
   int varargin_3;
@@ -148,8 +148,8 @@ void cudaVecCopySubFromHost(int n, const emxArray_real_T *vec, int istart, int
   if ((cuVec->type != 2) && (cuVec->type != 1)) {
     m2c_error();
   } else {
-    i = M2C_INTDIV(cuVec->len, incCuVec);
-    if (n > i) {
+    quotient = M2C_INTDIV(cuVec->len, incCuVec);
+    if (n > quotient) {
       b_m2c_error();
     }
   }
@@ -165,20 +165,17 @@ void cudaVecCopySubFromHost(int n, const emxArray_real_T *vec, int istart, int
     c_m2c_error();
   }
 
-  i = (istart - 1) * sizepe;
+  quotient = (istart - 1) * sizepe;
   ptr = (char *)(&vec->data[0]);
-  if (i != 0) {
-    ptr = M2C_OFFSET_PTR(ptr, i);
+  if (quotient != 0) {
+    ptr = M2C_OFFSET_PTR(ptr, quotient);
   }
 
-  for (i = 0; i < 2; i++) {
-    data[i] = cuVec->data[i];
-  }
-
-  output = *(void **)(data);
+  data = cuVec->data;
+  output = *(void **)(&data);
   *errCode = cublasSetVector(n, sizepe, ptr, inc, output, incCuVec);
   if (*errCode != 0) {
-    i = (CUBLAS_STATUS_SUCCESS);
+    quotient = (CUBLAS_STATUS_SUCCESS);
     varargin_2 = (CUBLAS_STATUS_NOT_INITIALIZED);
     varargin_3 = (CUBLAS_STATUS_ALLOC_FAILED);
     varargin_4 = (CUBLAS_STATUS_INVALID_VALUE);
@@ -186,115 +183,115 @@ void cudaVecCopySubFromHost(int n, const emxArray_real_T *vec, int istart, int
     varargin_6 = (CUBLAS_STATUS_MAPPING_ERROR);
     varargin_7 = (CUBLAS_STATUS_EXECUTION_FAILED);
     varargin_8 = (CUBLAS_STATUS_INTERNAL_ERROR);
-    if (i == *errCode) {
-      i = 0;
+    if (quotient == *errCode) {
+      quotient = 0;
     } else if (varargin_2 == *errCode) {
-      i = 1;
+      quotient = 1;
     } else if (varargin_3 == *errCode) {
-      i = 2;
+      quotient = 2;
     } else if (varargin_4 == *errCode) {
-      i = 3;
+      quotient = 3;
     } else if (varargin_5 == *errCode) {
-      i = 4;
+      quotient = 4;
     } else if (varargin_6 == *errCode) {
-      i = 5;
+      quotient = 5;
     } else if (varargin_7 == *errCode) {
-      i = 6;
+      quotient = 6;
     } else if (varargin_8 == *errCode) {
-      i = 7;
+      quotient = 7;
     } else {
-      i = -1;
+      quotient = -1;
     }
 
     emxInit_char_T(&cstr, 2);
-    switch (i) {
+    switch (quotient) {
      case 0:
-      i = cstr->size[0] * cstr->size[1];
+      quotient = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 22;
-      emxEnsureCapacity((emxArray__common *)cstr, i, (int)sizeof(char));
-      for (i = 0; i < 22; i++) {
-        cstr->data[i] = cv1[i];
+      emxEnsureCapacity((emxArray__common *)cstr, quotient, (int)sizeof(char));
+      for (quotient = 0; quotient < 22; quotient++) {
+        cstr->data[quotient] = cv1[quotient];
       }
       break;
 
      case 1:
-      i = cstr->size[0] * cstr->size[1];
+      quotient = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 30;
-      emxEnsureCapacity((emxArray__common *)cstr, i, (int)sizeof(char));
-      for (i = 0; i < 30; i++) {
-        cstr->data[i] = cv2[i];
+      emxEnsureCapacity((emxArray__common *)cstr, quotient, (int)sizeof(char));
+      for (quotient = 0; quotient < 30; quotient++) {
+        cstr->data[quotient] = cv2[quotient];
       }
       break;
 
      case 2:
-      i = cstr->size[0] * cstr->size[1];
+      quotient = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 27;
-      emxEnsureCapacity((emxArray__common *)cstr, i, (int)sizeof(char));
-      for (i = 0; i < 27; i++) {
-        cstr->data[i] = cv3[i];
+      emxEnsureCapacity((emxArray__common *)cstr, quotient, (int)sizeof(char));
+      for (quotient = 0; quotient < 27; quotient++) {
+        cstr->data[quotient] = cv3[quotient];
       }
       break;
 
      case 3:
-      i = cstr->size[0] * cstr->size[1];
+      quotient = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 28;
-      emxEnsureCapacity((emxArray__common *)cstr, i, (int)sizeof(char));
-      for (i = 0; i < 28; i++) {
-        cstr->data[i] = cv4[i];
+      emxEnsureCapacity((emxArray__common *)cstr, quotient, (int)sizeof(char));
+      for (quotient = 0; quotient < 28; quotient++) {
+        cstr->data[quotient] = cv4[quotient];
       }
       break;
 
      case 4:
-      i = cstr->size[0] * cstr->size[1];
+      quotient = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 28;
-      emxEnsureCapacity((emxArray__common *)cstr, i, (int)sizeof(char));
-      for (i = 0; i < 28; i++) {
-        cstr->data[i] = cv5[i];
+      emxEnsureCapacity((emxArray__common *)cstr, quotient, (int)sizeof(char));
+      for (quotient = 0; quotient < 28; quotient++) {
+        cstr->data[quotient] = cv5[quotient];
       }
       break;
 
      case 5:
-      i = cstr->size[0] * cstr->size[1];
+      quotient = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 28;
-      emxEnsureCapacity((emxArray__common *)cstr, i, (int)sizeof(char));
-      for (i = 0; i < 28; i++) {
-        cstr->data[i] = cv6[i];
+      emxEnsureCapacity((emxArray__common *)cstr, quotient, (int)sizeof(char));
+      for (quotient = 0; quotient < 28; quotient++) {
+        cstr->data[quotient] = cv6[quotient];
       }
       break;
 
      case 6:
-      i = cstr->size[0] * cstr->size[1];
+      quotient = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 31;
-      emxEnsureCapacity((emxArray__common *)cstr, i, (int)sizeof(char));
-      for (i = 0; i < 31; i++) {
-        cstr->data[i] = cv7[i];
+      emxEnsureCapacity((emxArray__common *)cstr, quotient, (int)sizeof(char));
+      for (quotient = 0; quotient < 31; quotient++) {
+        cstr->data[quotient] = cv7[quotient];
       }
       break;
 
      case 7:
-      i = cstr->size[0] * cstr->size[1];
+      quotient = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 29;
-      emxEnsureCapacity((emxArray__common *)cstr, i, (int)sizeof(char));
-      for (i = 0; i < 29; i++) {
-        cstr->data[i] = cv8[i];
+      emxEnsureCapacity((emxArray__common *)cstr, quotient, (int)sizeof(char));
+      for (quotient = 0; quotient < 29; quotient++) {
+        cstr->data[quotient] = cv8[quotient];
       }
       break;
 
      default:
-      i = cstr->size[0] * cstr->size[1];
+      quotient = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 14;
-      emxEnsureCapacity((emxArray__common *)cstr, i, (int)sizeof(char));
-      for (i = 0; i < 14; i++) {
-        cstr->data[i] = cv0[i];
+      emxEnsureCapacity((emxArray__common *)cstr, quotient, (int)sizeof(char));
+      for (quotient = 0; quotient < 14; quotient++) {
+        cstr->data[quotient] = cv0[quotient];
       }
       break;
     }

@@ -26,7 +26,7 @@ typedef struct emxArray_real_T emxArray_real_T;
 #define typedef_struct0_T
 
 typedef struct {
-  unsigned int data[2];
+  unsigned long data;
   int type;
   int len;
 } struct0_T;

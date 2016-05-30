@@ -1,4 +1,5 @@
-function [errCode, toplevel] = cudaVecCopySubFromHost(n, vec, istart, inc, cuVec, incCuVec)
+function [errCode, toplevel] = cudaVecCopySubFromHost(n, vec, ...
+    istart, inc, cuVec, incCuVec)
 % Copies a sub-vector from MATLAB to CUDA
 %
 % cudaVecCopyFromHost(n, vec, istart, inc, cuVec, incCuVec) copies
