@@ -13,12 +13,13 @@ static void c_m2c_error(void);
 static void c_vecDot_partial(const emxArray_real_T *x, const emxArray_real_T *y,
   emxArray_real_T *prod, int nthreads, int n);
 static void cuBlasGetErrorCode(int errCode, emxArray_char_T *cstr);
-static void d_m2c_error(const emxArray_char_T *varargin_3);
+static void d_m2c_error(void);
 static void e_m2c_error(const emxArray_char_T *varargin_3);
 static void emxFreeStruct_struct1_T(struct1_T *pStruct);
 static void emxInitStruct_struct1_T(struct1_T *pStruct);
-static void f_m2c_error(void);
-static void g_m2c_error(const emxArray_char_T *varargin_3);
+static void f_m2c_error(const emxArray_char_T *varargin_3);
+static void g_m2c_error(void);
+static void h_m2c_error(const emxArray_char_T *varargin_3);
 static boolean_T isequal(const emxArray_char_T *varargin_1);
 static void m2c_error(void);
 static void m2c_warn(void);
@@ -476,7 +477,12 @@ static void cuBlasGetErrorCode(int errCode, emxArray_char_T *cstr)
   }
 }
 
-static void d_m2c_error(const emxArray_char_T *varargin_3)
+static void d_m2c_error(void)
+{
+  M2C_error("vecDot:WrongInput", "CUDA was not enabled during compilation.\n");
+}
+
+static void e_m2c_error(const emxArray_char_T *varargin_3)
 {
   emxArray_char_T *b_varargin_3;
   int i1;
@@ -497,7 +503,19 @@ static void d_m2c_error(const emxArray_char_T *varargin_3)
   emxFree_char_T(&b_varargin_3);
 }
 
-static void e_m2c_error(const emxArray_char_T *varargin_3)
+static void emxFreeStruct_struct1_T(struct1_T *pStruct)
+{
+  emxFree_uint8_T(&pStruct->data);
+  emxFree_char_T(&pStruct->type);
+}
+
+static void emxInitStruct_struct1_T(struct1_T *pStruct)
+{
+  emxInit_uint8_T(&pStruct->data, 1);
+  emxInit_char_T(&pStruct->type, 2);
+}
+
+static void f_m2c_error(const emxArray_char_T *varargin_3)
 {
   emxArray_char_T *b_varargin_3;
   int i2;
@@ -517,25 +535,13 @@ static void e_m2c_error(const emxArray_char_T *varargin_3)
   emxFree_char_T(&b_varargin_3);
 }
 
-static void emxFreeStruct_struct1_T(struct1_T *pStruct)
-{
-  emxFree_uint8_T(&pStruct->data);
-  emxFree_char_T(&pStruct->type);
-}
-
-static void emxInitStruct_struct1_T(struct1_T *pStruct)
-{
-  emxInit_uint8_T(&pStruct->data, 1);
-  emxInit_char_T(&pStruct->type, 2);
-}
-
-static void f_m2c_error(void)
+static void g_m2c_error(void)
 {
   M2C_error("vecDot:WrongPointerMode",
             "The given cuBLAS handle has incorrect pointer mode.\n.");
 }
 
-static void g_m2c_error(const emxArray_char_T *varargin_3)
+static void h_m2c_error(const emxArray_char_T *varargin_3)
 {
   emxArray_char_T *b_varargin_3;
   int i3;
@@ -714,9 +720,9 @@ double vecDot_cublas(const struct0_T *u, const struct0_T *v, const struct0_T
                      *buf, const emxArray_char_T *mode, const struct1_T
                      *cublasHdl)
 {
+  int k;
   boolean_T p;
   boolean_T b_p;
-  int k;
   int exitg4;
   int i5;
   boolean_T exitg3;
@@ -747,6 +753,11 @@ double vecDot_cublas(const struct0_T *u, const struct0_T *v, const struct0_T
 
   if (u->type != 2) {
     c_m2c_error();
+  }
+
+  k = (M2C_CUDA);
+  if (!(k != 0)) {
+    d_m2c_error();
   }
 
   p = false;
@@ -798,7 +809,7 @@ double vecDot_cublas(const struct0_T *u, const struct0_T *v, const struct0_T
     }
 
     b_cublasHdl->data[b_cublasHdl->size[0] * cublasHdl->type->size[1]] = '\x00';
-    d_m2c_error(b_cublasHdl);
+    e_m2c_error(b_cublasHdl);
     emxFree_char_T(&b_cublasHdl);
   }
 
@@ -819,7 +830,7 @@ double vecDot_cublas(const struct0_T *u, const struct0_T *v, const struct0_T
     k = (M2C_DEBUG);
     if (k != 0) {
       cuBlasGetErrorCode(errCode, r0);
-      e_m2c_error(r0);
+      f_m2c_error(r0);
     }
   }
 
@@ -879,7 +890,7 @@ double vecDot_cublas(const struct0_T *u, const struct0_T *v, const struct0_T
 
         c_cublasHdl->data[c_cublasHdl->size[0] * cublasHdl->type->size[1]] =
           '\x00';
-        d_m2c_error(c_cublasHdl);
+        e_m2c_error(c_cublasHdl);
         emxFree_char_T(&c_cublasHdl);
       }
 
@@ -905,10 +916,10 @@ double vecDot_cublas(const struct0_T *u, const struct0_T *v, const struct0_T
   emxFree_uint8_T(&data);
   if (errCode != 0) {
     if (errCode < 0) {
-      f_m2c_error();
+      g_m2c_error();
     } else {
       cuBlasGetErrorCode(errCode, r0);
-      g_m2c_error(r0);
+      h_m2c_error(r0);
     }
   }
 
@@ -921,9 +932,9 @@ double vecDot_cublas_sync(const struct0_T *u, const struct0_T *v, const
   const emxArray_char_T *sync)
 {
   double prod;
+  int k;
   boolean_T p;
   boolean_T b_p;
-  int k;
   int exitg4;
   int i6;
   boolean_T exitg3;
@@ -955,6 +966,11 @@ double vecDot_cublas_sync(const struct0_T *u, const struct0_T *v, const
 
   if (u->type != 2) {
     c_m2c_error();
+  }
+
+  k = (M2C_CUDA);
+  if (!(k != 0)) {
+    d_m2c_error();
   }
 
   prod = 0.0;
@@ -1007,7 +1023,7 @@ double vecDot_cublas_sync(const struct0_T *u, const struct0_T *v, const
     }
 
     b_cublasHdl->data[b_cublasHdl->size[0] * cublasHdl->type->size[1]] = '\x00';
-    d_m2c_error(b_cublasHdl);
+    e_m2c_error(b_cublasHdl);
     emxFree_char_T(&b_cublasHdl);
   }
 
@@ -1028,7 +1044,7 @@ double vecDot_cublas_sync(const struct0_T *u, const struct0_T *v, const
     k = (M2C_DEBUG);
     if (k != 0) {
       cuBlasGetErrorCode(errCode, r1);
-      e_m2c_error(r1);
+      f_m2c_error(r1);
     }
   }
 
@@ -1088,7 +1104,7 @@ double vecDot_cublas_sync(const struct0_T *u, const struct0_T *v, const
 
         c_cublasHdl->data[c_cublasHdl->size[0] * cublasHdl->type->size[1]] =
           '\x00';
-        d_m2c_error(c_cublasHdl);
+        e_m2c_error(c_cublasHdl);
         emxFree_char_T(&c_cublasHdl);
       }
 
@@ -1112,10 +1128,10 @@ double vecDot_cublas_sync(const struct0_T *u, const struct0_T *v, const
   emxFree_uint8_T(&data);
   if (errCode != 0) {
     if (errCode < 0) {
-      f_m2c_error();
+      g_m2c_error();
     } else {
       cuBlasGetErrorCode(errCode, r1);
-      g_m2c_error(r1);
+      h_m2c_error(r1);
     }
   }
 

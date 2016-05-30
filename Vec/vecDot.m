@@ -90,6 +90,9 @@ if nargin>=5
     elseif toplevel && x.type ~= CU_DOUBLE
         m2c_error('vecDot:WrongInput', 'When using mex functions, vecDot only supports double.\n');
     end
+    if ~m2c_cuda && (toplevel || m2c_debug)
+        m2c_error('vecDot:WrongInput', 'CUDA was not enabled during compilation.\n');
+    end
     
     [prod, errCode] = vecDot_cuda_kernel(x, y, buf, varargin{2}, toplevel, varargin{3:end});
     
