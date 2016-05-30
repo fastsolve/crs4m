@@ -63,8 +63,7 @@ void cudaVecCreate_api(const mxArray ** prhs, const mxArray **plhs) {
     {const char *_fields[] = { "data", "type", "len",  ""};
     int32_T _one=1;
     plhs[0] = create_struct_mxArray(1, &_one, 3, _fields);}
-    {int32_T _size[] = {2};
-    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 0, copy_array_to_mxArray(vec.data, mxUINT32_CLASS, 1, _size)); }
+    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 0, copy_scalar_to_mxArray(&vec.data, mxUINT64_CLASS));
     mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 1, move_emxArray_to_mxArray((emxArray__common*)vec.type, mxINT32_CLASS));
     mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 2, copy_scalar_to_mxArray(&vec.len, mxINT32_CLASS));
     /* Nothing to do for plhs[1] */
@@ -109,8 +108,7 @@ void cudaVecCreate_1arg_api(const mxArray ** prhs, const mxArray **plhs) {
     {const char *_fields[] = { "data", "type", "len",  ""};
     int32_T _one=1;
     plhs[0] = create_struct_mxArray(1, &_one, 3, _fields);}
-    {int32_T _size[] = {2};
-    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 0, copy_array_to_mxArray(vec.data, mxUINT32_CLASS, 1, _size)); }
+    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 0, copy_scalar_to_mxArray(&vec.data, mxUINT64_CLASS));
     mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 1, copy_scalar_to_mxArray(&vec.type, mxINT32_CLASS));
     mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 2, copy_scalar_to_mxArray(&vec.len, mxINT32_CLASS));
     /* Nothing to do for plhs[1] */

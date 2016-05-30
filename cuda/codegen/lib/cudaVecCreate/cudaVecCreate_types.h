@@ -26,7 +26,7 @@ typedef struct emxArray_int32_T emxArray_int32_T;
 #define typedef_struct0_T
 
 typedef struct {
-  unsigned int data[2];
+  unsigned long data;
   emxArray_int32_T *type;
   int len;
 } struct0_T;
@@ -37,7 +37,7 @@ typedef struct {
 #define typedef_struct1_T
 
 typedef struct {
-  unsigned int data[2];
+  unsigned long data;
   int type;
   int len;
 } struct1_T;

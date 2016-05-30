@@ -43,13 +43,13 @@ void cudaVecDestroy_api(const mxArray ** prhs, const mxArray **plhs) {
     if (_sub_mx1==NULL)
         mexErrMsgIdAndTxt("cudaVecDestroy:WrongInputStruct",
             "Input argument vec does not have the field data.");
-    if (mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxUINT32_CLASS)
+    if (mxGetNumberOfElements(_sub_mx1) && mxGetClassID(_sub_mx1) != mxUINT64_CLASS)
         mexErrMsgIdAndTxt("cudaVecDestroy:WrongInputType",
-            "Input argument vec.data has incorrect data type. uint32 is expected.");
-    if (mxGetNumberOfElements(_sub_mx1) != 2)
+            "Input argument vec.data has incorrect data type. uint64 is expected.");
+    if (mxGetNumberOfElements(_sub_mx1) != 1)
         mexErrMsgIdAndTxt("cudaVecDestroy:WrongSizeOfInputArg",
-            "Argument vec.data must contain 2 numbers.");
-    copy_mxArray_to_array(_sub_mx1, vec.data, 2);
+            "Argument vec.data should be a scalar.");
+    vec.data = *(uint64_T*)mxGetData(_sub_mx1);
     _sub_mx1 = mxGetField(prhs[0], 0, "type");
     if (_sub_mx1==NULL)
         mexErrMsgIdAndTxt("cudaVecDestroy:WrongInputStruct",

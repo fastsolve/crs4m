@@ -150,98 +150,60 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
                    *toplevel)
 {
   void * t_vec;
-  int b_errCode;
-  uint32_T * ptr;
-  unsigned int vec_data[2];
-  int i;
+  unsigned long vec_data;
   int i0;
   static const signed char iv0[6] = { 100, 111, 117, 98, 108, 101 };
 
   emxArray_uint8_T *msg0;
-  const char * b_ptr;
+  const char * ptr;
   int len;
+  int loop_ub;
   emxArray_uint8_T *varargin_1;
   emxArray_char_T *b_varargin_1;
   *toplevel = true;
   if (type == 2) {
-    b_errCode = cudaMalloc(&t_vec, n << 3);
-    ptr = (uint32_T *)(&t_vec);
-    for (i = 0; i < 2; i++) {
-      vec_data[i] = *(ptr);
-      ptr = M2C_OFFSET_PTR(ptr, 1);
-    }
-
-    for (i = 0; i < 2; i++) {
-      vec->data[i] = vec_data[i];
-    }
-
+    *errCode = cudaMalloc(&t_vec, n << 3);
+    vec_data = *(uint64_T *)(&t_vec);
+    vec->data = vec_data;
     i0 = vec->type->size[0] * vec->type->size[1];
     vec->type->size[0] = 1;
     vec->type->size[1] = 1;
     emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
     vec->type->data[0] = 2;
     vec->len = n;
-    *errCode = b_errCode;
   } else if (type == 1) {
-    b_errCode = cudaMalloc(&t_vec, n << 2);
-    ptr = (uint32_T *)(&t_vec);
-    for (i = 0; i < 2; i++) {
-      vec_data[i] = *(ptr);
-      ptr = M2C_OFFSET_PTR(ptr, 1);
-    }
-
-    for (i = 0; i < 2; i++) {
-      vec->data[i] = vec_data[i];
-    }
-
+    *errCode = cudaMalloc(&t_vec, n << 2);
+    vec_data = *(uint64_T *)(&t_vec);
+    vec->data = vec_data;
     i0 = vec->type->size[0] * vec->type->size[1];
     vec->type->size[0] = 1;
     vec->type->size[1] = 1;
     emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
     vec->type->data[0] = 1;
     vec->len = n;
-    *errCode = b_errCode;
   } else if (type == 3) {
-    b_errCode = cudaMalloc(&t_vec, n << 3);
-    ptr = (uint32_T *)(&t_vec);
-    for (i = 0; i < 2; i++) {
-      vec_data[i] = *(ptr);
-      ptr = M2C_OFFSET_PTR(ptr, 1);
-    }
-
-    for (i = 0; i < 2; i++) {
-      vec->data[i] = vec_data[i];
-    }
-
+    *errCode = cudaMalloc(&t_vec, n << 3);
+    vec_data = *(uint64_T *)(&t_vec);
+    vec->data = vec_data;
     i0 = vec->type->size[0] * vec->type->size[1];
     vec->type->size[0] = 1;
     vec->type->size[1] = 1;
     emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
     vec->type->data[0] = 3;
     vec->len = n;
-    *errCode = b_errCode;
   } else if (type == 4) {
-    b_errCode = cudaMalloc(&t_vec, n << 4);
-    ptr = (uint32_T *)(&t_vec);
-    for (i = 0; i < 2; i++) {
-      vec_data[i] = *(ptr);
-      ptr = M2C_OFFSET_PTR(ptr, 1);
-    }
-
-    for (i = 0; i < 2; i++) {
-      vec->data[i] = vec_data[i];
-    }
-
+    *errCode = cudaMalloc(&t_vec, n << 4);
+    vec_data = *(uint64_T *)(&t_vec);
+    vec->data = vec_data;
     i0 = vec->type->size[0] * vec->type->size[1];
     vec->type->size[0] = 1;
     vec->type->size[1] = 1;
     emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
     vec->type->data[0] = 4;
     vec->len = n;
-    *errCode = b_errCode;
   } else {
     m2c_error(type);
-    b_errCode = cudaMalloc(&t_vec, n << 3);
+    *errCode = cudaMalloc(&t_vec, n << 3);
     i0 = vec->type->size[0] * vec->type->size[1];
     vec->type->size[0] = 1;
     vec->type->size[1] = 6;
@@ -251,19 +213,13 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
     }
 
     vec->len = n;
-    ptr = (uint32_T *)(&t_vec);
-    for (i = 0; i < 2; i++) {
-      vec->data[i] = *(ptr);
-      ptr = M2C_OFFSET_PTR(ptr, 1);
-    }
-
-    *errCode = b_errCode;
+    vec->data = *(uint64_T *)(&t_vec);
   }
 
   if (*errCode != 0) {
     emxInit_uint8_T(&msg0, 2);
-    b_ptr = cudaGetErrorString(*errCode);
-    len = strlen(b_ptr) + 1;
+    ptr = cudaGetErrorString(*errCode);
+    len = strlen(ptr) + 1;
     i0 = msg0->size[0] * msg0->size[1];
     msg0->size[0] = 1;
     msg0->size[1] = len;
@@ -272,20 +228,20 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
       msg0->data[i0] = 0;
     }
 
-    memcpy(&msg0->data[0], b_ptr, len);
+    memcpy(&msg0->data[0], ptr, len);
     if (1 > len) {
-      b_errCode = 0;
+      loop_ub = 0;
     } else {
-      b_errCode = len;
+      loop_ub = len;
     }
 
     emxInit_uint8_T(&varargin_1, 2);
     i0 = varargin_1->size[0] * varargin_1->size[1];
     varargin_1->size[0] = 1;
-    varargin_1->size[1] = b_errCode;
+    varargin_1->size[1] = loop_ub;
     emxEnsureCapacity((emxArray__common *)varargin_1, i0, (int)sizeof(unsigned
       char));
-    for (i0 = 0; i0 < b_errCode; i0++) {
+    for (i0 = 0; i0 < loop_ub; i0++) {
       varargin_1->data[varargin_1->size[0] * i0] = msg0->data[i0];
     }
 
@@ -293,9 +249,9 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
     emxInit_char_T(&b_varargin_1, 2);
     i0 = b_varargin_1->size[0] * b_varargin_1->size[1];
     b_varargin_1->size[0] = 1;
-    b_varargin_1->size[1] = b_errCode;
+    b_varargin_1->size[1] = loop_ub;
     emxEnsureCapacity((emxArray__common *)b_varargin_1, i0, (int)sizeof(char));
-    for (i0 = 0; i0 < b_errCode; i0++) {
+    for (i0 = 0; i0 < loop_ub; i0++) {
       b_varargin_1->data[i0] = (signed char)varargin_1->data[i0];
     }
 
@@ -308,10 +264,8 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
 void cudaVecCreate_1arg(int n, struct1_T *vec, int *errCode, boolean_T *toplevel)
 {
   void * t_vec;
-  uint32_T * ptr;
-  int i;
   emxArray_uint8_T *msg0;
-  const char * b_ptr;
+  const char * ptr;
   int len;
   int i2;
   int loop_ub;
@@ -320,16 +274,11 @@ void cudaVecCreate_1arg(int n, struct1_T *vec, int *errCode, boolean_T *toplevel
   *errCode = cudaMalloc(&t_vec, n << 3);
   vec->type = 2;
   vec->len = n;
-  ptr = (uint32_T *)(&t_vec);
-  for (i = 0; i < 2; i++) {
-    vec->data[i] = *(ptr);
-    ptr = M2C_OFFSET_PTR(ptr, 1);
-  }
-
+  vec->data = *(uint64_T *)(&t_vec);
   if (*errCode != 0) {
     emxInit_uint8_T(&msg0, 2);
-    b_ptr = cudaGetErrorString(*errCode);
-    len = strlen(b_ptr) + 1;
+    ptr = cudaGetErrorString(*errCode);
+    len = strlen(ptr) + 1;
     i2 = msg0->size[0] * msg0->size[1];
     msg0->size[0] = 1;
     msg0->size[1] = len;
@@ -338,7 +287,7 @@ void cudaVecCreate_1arg(int n, struct1_T *vec, int *errCode, boolean_T *toplevel
       msg0->data[i2] = 0;
     }
 
-    memcpy(&msg0->data[0], b_ptr, len);
+    memcpy(&msg0->data[0], ptr, len);
     if (1 > len) {
       loop_ub = 0;
     } else {

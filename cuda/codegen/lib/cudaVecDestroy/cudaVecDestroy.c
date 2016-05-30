@@ -131,21 +131,18 @@ static void m2c_error(const emxArray_char_T *varargin_3)
 
 void cudaVecDestroy(const struct0_T *vec, int *errCode, boolean_T *toplevel)
 {
-  unsigned int data[2];
-  int i;
+  unsigned long data;
   void * output;
   emxArray_uint8_T *msg0;
   const char * ptr;
   int len;
   int i0;
+  int loop_ub;
   emxArray_uint8_T *varargin_1;
   emxArray_char_T *b_varargin_1;
   *toplevel = true;
-  for (i = 0; i < 2; i++) {
-    data[i] = vec->data[i];
-  }
-
-  output = *(void **)(data);
+  data = vec->data;
+  output = *(void **)(&data);
   *errCode = cudaFree(output);
   if (*errCode != 0) {
     emxInit_uint8_T(&msg0, 2);
@@ -161,18 +158,18 @@ void cudaVecDestroy(const struct0_T *vec, int *errCode, boolean_T *toplevel)
 
     memcpy(&msg0->data[0], ptr, len);
     if (1 > len) {
-      i = 0;
+      loop_ub = 0;
     } else {
-      i = len;
+      loop_ub = len;
     }
 
     emxInit_uint8_T(&varargin_1, 2);
     i0 = varargin_1->size[0] * varargin_1->size[1];
     varargin_1->size[0] = 1;
-    varargin_1->size[1] = i;
+    varargin_1->size[1] = loop_ub;
     emxEnsureCapacity((emxArray__common *)varargin_1, i0, (int)sizeof(unsigned
       char));
-    for (i0 = 0; i0 < i; i0++) {
+    for (i0 = 0; i0 < loop_ub; i0++) {
       varargin_1->data[varargin_1->size[0] * i0] = msg0->data[i0];
     }
 
@@ -180,9 +177,9 @@ void cudaVecDestroy(const struct0_T *vec, int *errCode, boolean_T *toplevel)
     emxInit_char_T(&b_varargin_1, 2);
     i0 = b_varargin_1->size[0] * b_varargin_1->size[1];
     b_varargin_1->size[0] = 1;
-    b_varargin_1->size[1] = i;
+    b_varargin_1->size[1] = loop_ub;
     emxEnsureCapacity((emxArray__common *)b_varargin_1, i0, (int)sizeof(char));
-    for (i0 = 0; i0 < i; i0++) {
+    for (i0 = 0; i0 < loop_ub; i0++) {
       b_varargin_1->data[i0] = (signed char)varargin_1->data[i0];
     }
 

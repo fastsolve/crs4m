@@ -4,38 +4,34 @@ function output = CudaVec(varargin) %#codegen
 %  CudaVec() simply returns a definition of a structure,
 %  suitable in the argument specification for codegen.
 %
-%  CudaVec(obj, type) converts obj into a pointer of the given type, where
-%  type is a constant string containing a C pointer (such as 'double *').
-%
-%  CudaVec(obj, type, 'offset', i) returns a
-%          into a CudaVec object.
-
 %  CudaVec(obj, type, n, 'wrap') wraps the given opaque pointer
 %          into a CudaVec object.
+%
+%  CudaVec(obj, type) converts obj into a CUDA pointer of the given type,
+%  where type is a constant string, such as 'double *'.
+%
+%  CudaVec(obj, type, 'offset', k) returns a CUDA pointer but offset 
+%  by k elements.
+%
+% See also cudaVecCreate, CudaMat
 
 coder.inline('always');
-
 narginchk(0, 4);
 
 if nargin==0
-    output = coder.typeof(struct('data', coder.typeof(uint32(0),[2,1]), ...
+    % We assume 64-bit architecture for CUDA.
+    output = coder.typeof(struct('data', uint64(0), ...
         'type', int32(0), 'len', int32(0)));
     return;
 elseif nargin==4 && ischar(varargin{4})
-    output = struct('data', zeros(2,1,'uint32'), ...
-        'type', int32(0), 'len', int32(0));
+    output = struct('data', uint64(0), 'type', int32(0), 'len', int32(0));
     
     obj = varargin{1};
     output.type = int32(varargin{2});
     output.len = int32(varargin{3});
     
     if ~isempty(obj)
-        ptr = coder.opaque('uint32_T *', 'NULL');
-        ptr = coder.ceval('(uint32_T *)', coder.rref(obj));
-        for i=int32(1):2
-            output.data(i) = coder.ceval('*', ptr);
-            ptr = m2c_offset_ptr(ptr, int32(1));
-        end
+        output.data = coder.ceval('*(uint64_T *)', coder.rref(obj));
     end
 elseif nargin==2
     if isstruct(varargin{1})
