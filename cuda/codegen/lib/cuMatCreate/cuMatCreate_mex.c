@@ -54,7 +54,6 @@ void cuMatCreate_api(const mxArray ** prhs, const mxArray **plhs) {
     type = *(int32_T*)mxGetData(prhs[2]);
 
     /* Preallocate output variables */
-    *(void **)&mat.type = mxCalloc(1, sizeof(emxArray__common));    init_emxArray((emxArray__common*)mat.type, 2);
     {mwSize l_size[] = {1, 1};
     *(void **)&errCode = prealloc_mxArray((mxArray**)&plhs[1], mxINT32_CLASS, 2, l_size); }
     {mwSize l_size[] = {1, 1};
@@ -72,19 +71,16 @@ void cuMatCreate_api(const mxArray ** prhs, const mxArray **plhs) {
     int32_T _one=1;
     plhs[0] = create_struct_mxArray(1, &_one, 3, _fields);}
     mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 0, copy_scalar_to_mxArray(&mat.data, mxUINT64_CLASS));
-    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 1, move_emxArray_to_mxArray((emxArray__common*)mat.type, mxINT32_CLASS));
+    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 1, copy_scalar_to_mxArray(&mat.type, mxINT32_CLASS));
     {int32_T _size[] = {1, 2};
     mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 2, copy_array_to_mxArray(mat.dims, mxINT32_CLASS, 2, _size)); }
     /* Nothing to do for plhs[1] */
     /* Nothing to do for plhs[2] */
 
-    /* Free temporary variables */
-    free_emxArray((emxArray__common*)mat.type); mxFree(mat.type);
-
 }
 void cuMatCreate_2args_api(const mxArray ** prhs, const mxArray **plhs) {
 
-    struct1_T            vec;
+    struct0_T            vec;
     mxArray              *_sub_mx1;
 
     int32_T              m;

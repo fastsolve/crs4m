@@ -5,7 +5,7 @@
 static void b_m2c_error(void);
 static void c_m2c_error(void);
 static void cuBlasGetErrorString(int errCode, emxArray_char_T *cstr);
-static void d_m2c_error(void);
+static void d_m2c_error(int varargin_3);
 static void e_m2c_error(const emxArray_char_T *varargin_3);
 static void emxFreeStruct_struct1_T(struct1_T *pStruct);
 static void emxInitStruct_struct1_T(struct1_T *pStruct);
@@ -186,9 +186,10 @@ static void cuBlasGetErrorString(int errCode, emxArray_char_T *cstr)
   }
 }
 
-static void d_m2c_error(void)
+static void d_m2c_error(int varargin_3)
 {
-  M2C_error("cuMatCopyToGPU:TypeMismatch", "Expected real numbers.");
+  M2C_error("cuGetSizePerElement:WrongType", "Unknow data type %d.\n",
+            varargin_3);
 }
 
 static void e_m2c_error(const emxArray_char_T *varargin_3)
@@ -268,15 +269,19 @@ void cuMatCopySubFromGPU(int nrows, int ncols, const struct0_T *cuMat, const
     }
   }
 
-  if ((cuMat->type == 2) || (cuMat->type == 3)) {
+  if ((cuMat->type == 2) || (cuMat->type == -1) || (cuMat->type == 14)) {
     sizepe = 8;
-  } else if (cuMat->type == 1) {
+  } else if ((cuMat->type == 1) || (cuMat->type == 13) || (cuMat->type == 13)) {
     sizepe = 4;
-  } else if (cuMat->type == 4) {
+  } else if (cuMat->type == 12) {
+    sizepe = 2;
+  } else if (cuMat->type == 11) {
+    sizepe = 1;
+  } else if (cuMat->type == -2) {
     sizepe = 16;
   } else {
+    d_m2c_error(cuMat->type);
     sizepe = 0;
-    d_m2c_error();
   }
 
   data = cuMat->data;
@@ -323,15 +328,19 @@ void cuMatCopySubFromGPU_async(int nrows, int ncols, const struct0_T *cuMat,
     }
   }
 
-  if ((cuMat->type == 2) || (cuMat->type == 3)) {
+  if ((cuMat->type == 2) || (cuMat->type == -1) || (cuMat->type == 14)) {
     sizepe = 8;
-  } else if (cuMat->type == 1) {
+  } else if ((cuMat->type == 1) || (cuMat->type == 13) || (cuMat->type == 13)) {
     sizepe = 4;
-  } else if (cuMat->type == 4) {
+  } else if (cuMat->type == 12) {
+    sizepe = 2;
+  } else if (cuMat->type == 11) {
+    sizepe = 1;
+  } else if (cuMat->type == -2) {
     sizepe = 16;
   } else {
+    d_m2c_error(cuMat->type);
     sizepe = 0;
-    d_m2c_error();
   }
 
   data = cuMat->data;

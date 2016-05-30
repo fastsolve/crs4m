@@ -45,10 +45,8 @@ typedef struct emxArray_uint8_T emxArray_uint8_T;
 #endif
 
 static void b_m2c_error(const emxArray_char_T *varargin_3);
-static void emxFreeStruct_struct0_T(struct0_T *pStruct);
 static void emxFree_char_T(emxArray_char_T **pEmxArray);
 static void emxFree_uint8_T(emxArray_uint8_T **pEmxArray);
-static void emxInitStruct_struct0_T(struct0_T *pStruct);
 static void emxInit_char_T(emxArray_char_T **pEmxArray, int numDimensions);
 static void emxInit_uint8_T(emxArray_uint8_T **pEmxArray, int numDimensions);
 static void m2c_error(int varargin_3);
@@ -70,11 +68,6 @@ static void b_m2c_error(const emxArray_char_T *varargin_3)
   M2C_error("CUDA:RuntimeError", "cudaMalloc returned error code %s\n",
             &b_varargin_3->data[0]);
   emxFree_char_T(&b_varargin_3);
-}
-
-static void emxFreeStruct_struct0_T(struct0_T *pStruct)
-{
-  emxFree_int32_T(&pStruct->type);
 }
 
 static void emxFree_char_T(emxArray_char_T **pEmxArray)
@@ -102,11 +95,6 @@ static void emxFree_uint8_T(emxArray_uint8_T **pEmxArray)
     free((void *)*pEmxArray);
     *pEmxArray = (emxArray_uint8_T *)NULL;
   }
-}
-
-static void emxInitStruct_struct0_T(struct0_T *pStruct)
-{
-  emxInit_int32_T(&pStruct->type, 2);
 }
 
 static void emxInit_char_T(emxArray_char_T **pEmxArray, int numDimensions)
@@ -143,90 +131,42 @@ static void emxInit_uint8_T(emxArray_uint8_T **pEmxArray, int numDimensions)
 
 static void m2c_error(int varargin_3)
 {
-  M2C_error("cuVecCreate:WrongType", "Unknow data type %d.\n", varargin_3);
+  M2C_error("cuGetSizePerElement:WrongType", "Unknow data type %d.\n",
+            varargin_3);
 }
 
 void cuVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
                  *toplevel)
 {
+  int sizepe;
   void * t_vec;
-  int b_errCode;
-  unsigned long vec_data;
-  int i0;
-  signed char vec_type[6];
-  static const signed char iv0[6] = { 100, 111, 117, 98, 108, 101 };
-
   emxArray_uint8_T *msg0;
   const char * ptr;
   int len;
+  int i0;
+  int loop_ub;
   emxArray_uint8_T *varargin_1;
   emxArray_char_T *b_varargin_1;
   *toplevel = true;
-  if (type == 2) {
-    b_errCode = cudaMalloc(&t_vec, n << 3);
-    vec_data = *(uint64_T *)(&t_vec);
-    vec->data = vec_data;
-    i0 = vec->type->size[0] * vec->type->size[1];
-    vec->type->size[0] = 1;
-    vec->type->size[1] = 1;
-    emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
-    vec->type->data[0] = 2;
-    vec->len = n;
-    *errCode = b_errCode;
-  } else if (type == 1) {
-    b_errCode = cudaMalloc(&t_vec, n << 2);
-    vec_data = *(uint64_T *)(&t_vec);
-    vec->data = vec_data;
-    i0 = vec->type->size[0] * vec->type->size[1];
-    vec->type->size[0] = 1;
-    vec->type->size[1] = 1;
-    emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
-    vec->type->data[0] = 1;
-    vec->len = n;
-    *errCode = b_errCode;
-  } else if (type == 3) {
-    b_errCode = cudaMalloc(&t_vec, n << 3);
-    vec_data = *(uint64_T *)(&t_vec);
-    vec->data = vec_data;
-    i0 = vec->type->size[0] * vec->type->size[1];
-    vec->type->size[0] = 1;
-    vec->type->size[1] = 1;
-    emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
-    vec->type->data[0] = 3;
-    vec->len = n;
-    *errCode = b_errCode;
-  } else if (type == 4) {
-    b_errCode = cudaMalloc(&t_vec, n << 4);
-    vec_data = *(uint64_T *)(&t_vec);
-    vec->data = vec_data;
-    i0 = vec->type->size[0] * vec->type->size[1];
-    vec->type->size[0] = 1;
-    vec->type->size[1] = 1;
-    emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
-    vec->type->data[0] = 4;
-    vec->len = n;
-    *errCode = b_errCode;
+  if ((type == 2) || (type == -1) || (type == 14)) {
+    sizepe = 8;
+  } else if ((type == 1) || (type == 13) || (type == 13)) {
+    sizepe = 4;
+  } else if (type == 12) {
+    sizepe = 2;
+  } else if (type == 11) {
+    sizepe = 1;
+  } else if (type == -2) {
+    sizepe = 16;
   } else {
     m2c_error(type);
-    b_errCode = cudaMalloc(&t_vec, n << 3);
-    for (i0 = 0; i0 < 6; i0++) {
-      vec_type[i0] = iv0[i0];
-    }
-
-    vec_data = *(uint64_T *)(&t_vec);
-    vec->data = vec_data;
-    i0 = vec->type->size[0] * vec->type->size[1];
-    vec->type->size[0] = 1;
-    vec->type->size[1] = 6;
-    emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
-    for (i0 = 0; i0 < 6; i0++) {
-      vec->type->data[i0] = vec_type[i0];
-    }
-
-    vec->len = n;
-    *errCode = b_errCode;
+    sizepe = 0;
   }
 
+  *errCode = cudaMalloc(&t_vec, n * sizepe);
+  vec->type = type;
+  vec->len = n;
+  vec->data = *(uint64_T *)(&t_vec);
   if (*errCode != 0) {
     emxInit_uint8_T(&msg0, 2);
     ptr = cudaGetErrorString(*errCode);
@@ -241,18 +181,18 @@ void cuVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
 
     memcpy(&msg0->data[0], ptr, len);
     if (1 > len) {
-      b_errCode = 0;
+      loop_ub = 0;
     } else {
-      b_errCode = len;
+      loop_ub = len;
     }
 
     emxInit_uint8_T(&varargin_1, 2);
     i0 = varargin_1->size[0] * varargin_1->size[1];
     varargin_1->size[0] = 1;
-    varargin_1->size[1] = b_errCode;
+    varargin_1->size[1] = loop_ub;
     emxEnsureCapacity((emxArray__common *)varargin_1, i0, (int)sizeof(unsigned
       char));
-    for (i0 = 0; i0 < b_errCode; i0++) {
+    for (i0 = 0; i0 < loop_ub; i0++) {
       varargin_1->data[varargin_1->size[0] * i0] = msg0->data[i0];
     }
 
@@ -260,9 +200,9 @@ void cuVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
     emxInit_char_T(&b_varargin_1, 2);
     i0 = b_varargin_1->size[0] * b_varargin_1->size[1];
     b_varargin_1->size[0] = 1;
-    b_varargin_1->size[1] = b_errCode;
+    b_varargin_1->size[1] = loop_ub;
     emxEnsureCapacity((emxArray__common *)b_varargin_1, i0, (int)sizeof(char));
-    for (i0 = 0; i0 < b_errCode; i0++) {
+    for (i0 = 0; i0 < loop_ub; i0++) {
       b_varargin_1->data[i0] = (signed char)varargin_1->data[i0];
     }
 
@@ -272,7 +212,7 @@ void cuVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
   }
 }
 
-void cuVecCreate_1arg(int n, struct1_T *vec, int *errCode, boolean_T *toplevel)
+void cuVecCreate_1arg(int n, struct0_T *vec, int *errCode, boolean_T *toplevel)
 {
   void * t_vec;
   emxArray_uint8_T *msg0;
@@ -339,14 +279,4 @@ void cuVecCreate_initialize(void)
 
 void cuVecCreate_terminate(void)
 {
-}
-
-void emxDestroy_struct0_T(struct0_T emxArray)
-{
-  emxFreeStruct_struct0_T(&emxArray);
-}
-
-void emxInit_struct0_T(struct0_T *pStruct)
-{
-  emxInitStruct_struct0_T(pStruct);
 }

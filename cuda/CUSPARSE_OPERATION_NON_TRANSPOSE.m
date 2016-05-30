@@ -1,0 +1,2 @@
+function val = CUSPARSE_OPERATION_NON_TRANSPOSE %#codegen 
+val = cuSparseGetEnum('CUSPARSE_OPERATION_NON_TRANSPOSE');

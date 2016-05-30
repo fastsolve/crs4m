@@ -46,7 +46,6 @@ void cuVecCreate_api(const mxArray ** prhs, const mxArray **plhs) {
     type = *(int32_T*)mxGetData(prhs[1]);
 
     /* Preallocate output variables */
-    *(void **)&vec.type = mxCalloc(1, sizeof(emxArray__common));    init_emxArray((emxArray__common*)vec.type, 2);
     {mwSize l_size[] = {1, 1};
     *(void **)&errCode = prealloc_mxArray((mxArray**)&plhs[1], mxINT32_CLASS, 2, l_size); }
     {mwSize l_size[] = {1, 1};
@@ -64,18 +63,15 @@ void cuVecCreate_api(const mxArray ** prhs, const mxArray **plhs) {
     int32_T _one=1;
     plhs[0] = create_struct_mxArray(1, &_one, 3, _fields);}
     mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 0, copy_scalar_to_mxArray(&vec.data, mxUINT64_CLASS));
-    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 1, move_emxArray_to_mxArray((emxArray__common*)vec.type, mxINT32_CLASS));
+    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 1, copy_scalar_to_mxArray(&vec.type, mxINT32_CLASS));
     mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 2, copy_scalar_to_mxArray(&vec.len, mxINT32_CLASS));
     /* Nothing to do for plhs[1] */
     /* Nothing to do for plhs[2] */
 
-    /* Free temporary variables */
-    free_emxArray((emxArray__common*)vec.type); mxFree(vec.type);
-
 }
 void cuVecCreate_1arg_api(const mxArray ** prhs, const mxArray **plhs) {
 
-    struct1_T            vec;
+    struct0_T            vec;
     mxArray              *_sub_mx1;
 
     int32_T              n;

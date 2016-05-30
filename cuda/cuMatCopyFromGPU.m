@@ -3,7 +3,7 @@ function [mat, errCode, toplevel] = cuMatCopyFromGPU(cuMat, mat, varargin)
 %
 % mat = cuMatCopyFromGPU(cuMat) allocates mat in MATLAB
 % and then copies cuMat on CUDA device to it.  The size to be copied
-% is given by cuMat.dims. In code-generation mode, cuMat.type must be 
+% is given by cuMat.dims. In code-generation mode, cuMat.type must be
 % a constant at compile time.
 %
 % [mat, errCode] = cuMatCopyFromGPU(cuMat, mat) copies the whole matrix
@@ -24,21 +24,13 @@ if nargout<1
     % If no output argument, do nothing.
     if  isempty(coder.target) || m2c_debug
         m2c_error('cuMecCopyFromGPU:NoOutput', ...
-            'The output argument vec is required and must be the same as the second input.\n');
+            'The output argument mat is required and must be the same as the second input.\n');
     end
     return;
 end
 
 if nargin==1
-    if cuMat.type==CU_SINGLE
-        mat = zeros(cuMat.dims, 'single');
-    elseif cuMat.type==CU_DOUBLE_COMPLEX
-        mat = zeros(cuMat.dims, 'like', 1i);
-    elseif cuMat.type==CU_COMPLEX
-        mat = zeros(cuMat.dims, 'like', single(1i));
-    else
-        mat = zeros(cuMat.dims);
-    end
+    mat = zeros(cuMat.dims, 'like', cuZero(cuMat.type));
 end
 
 [mat, errCode] = cuMatCopySubFromGPU(cuMat.dims(1), cuMat.dims(2), ...

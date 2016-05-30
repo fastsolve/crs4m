@@ -15,6 +15,36 @@ switch str
         val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_POINTER_MODE_HOST'));
     case 'CUSPARSE_POINTER_MODE_DEVICE'
         val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_POINTER_MODE_DEVICE'));
+    case 'CUSPARSE_DIAG_TYPE_NON_UNIT'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_DIAG_TYPE_NON_UNIT'));
+    case 'CUSPARSE_DIAG_TYPE_UNIT'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_DIAG_TYPE_UNIT'));
+    case 'CUSPARSE_FILL_MODE_LOWER'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_FILL_MODE_LOWER'));
+    case 'CUSPARSE_FILL_MODE_UPPER'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_FILL_MODE_UPPER'));
+    case 'CUSPARSE_INDEX_BASE_ZERO'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_INDEX_BASE_ZERO'));
+    case 'CUSPARSE_INDEX_BASE_ONE'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_INDEX_BASE_ONE'));
+    case 'CUSPARSE_MATRIX_TYPE_GENERAL'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_MATRIX_TYPE_GENERAL'));
+    case 'CUSPARSE_MATRIX_TYPE_SYMMETRIC'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_MATRIX_TYPE_SYMMETRIC'));
+    case 'CUSPARSE_MATRIX_TYPE_HERMITIAN'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_MATRIX_TYPE_HERMITIAN'));
+    case 'CUSPARSE_MATRIX_TYPE_TRIANGULAR'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_MATRIX_TYPE_TRIANGULAR'));
+    case 'CUSPARSE_DIRECTION_ROW'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_DIRECTION_ROW'));
+    case 'CUSPARSE_DIRECTION_COLUMN'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_DIRECTION_COLUMN'));
+    case 'CUSPARSE_OPERATION_NON_TRANSPOSE'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_OPERATION_NON_TRANSPOSE'));
+    case 'CUSPARSE_OPERATION_TRANSPOSE'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_OPERATION_TRANSPOSE'));
+    case 'CUSPARSE_OPERATION_CONJUGATE_TRANSPOSE'
+        val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_OPERATION_CONJUGATE_TRANSPOSE'));
     case 'CUSPARSE_STATUS_SUCCESS'
         val = coder.ceval(' ', coder.opaque('int',  'CUSPARSE_STATUS_SUCCESS'));
     case 'CUSPARSE_STATUS_NOT_INITIALIZED'

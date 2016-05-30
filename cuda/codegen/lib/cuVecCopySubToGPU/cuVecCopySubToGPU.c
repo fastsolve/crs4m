@@ -3,7 +3,7 @@
 #include "m2c.h"
 
 static void b_m2c_error(void);
-static void c_m2c_error(void);
+static void c_m2c_error(int varargin_3);
 static void cuBlasGetErrorString(int errCode, emxArray_char_T *cstr);
 static void d_m2c_error(const emxArray_char_T *varargin_3);
 static void e_m2c_error(const emxArray_char_T *varargin_3);
@@ -15,9 +15,10 @@ static void b_m2c_error(void)
   M2C_error("cuVecCopyToGPU:SizeMismatch", "Target array is too small.");
 }
 
-static void c_m2c_error(void)
+static void c_m2c_error(int varargin_3)
 {
-  M2C_error("cuVecCopyToGPU:TypeMismatch", "Expected real numbers.");
+  M2C_error("cuGetSizePerElement:WrongType", "Unknow data type %d.\n",
+            varargin_3);
 }
 
 static void cuBlasGetErrorString(int errCode, emxArray_char_T *cstr)
@@ -262,15 +263,19 @@ void cuVecCopySubToGPU(int n, const emxArray_real_T *vec, int istart, int inc,
     }
   }
 
-  if ((cuVec->type == 2) || (cuVec->type == 3)) {
+  if ((cuVec->type == 2) || (cuVec->type == -1) || (cuVec->type == 14)) {
     sizepe = 8;
-  } else if (cuVec->type == 1) {
+  } else if ((cuVec->type == 1) || (cuVec->type == 13) || (cuVec->type == 13)) {
     sizepe = 4;
-  } else if (cuVec->type == 4) {
+  } else if (cuVec->type == 12) {
+    sizepe = 2;
+  } else if (cuVec->type == 11) {
+    sizepe = 1;
+  } else if (cuVec->type == -2) {
     sizepe = 16;
   } else {
+    c_m2c_error(cuVec->type);
     sizepe = 0;
-    c_m2c_error();
   }
 
   quotient = (istart - 1) * sizepe;
@@ -320,15 +325,19 @@ void cuVecCopySubToGPU_async(int n, const emxArray_real_T *vec, int istart, int
     }
   }
 
-  if ((cuVec->type == 2) || (cuVec->type == 3)) {
+  if ((cuVec->type == 2) || (cuVec->type == -1) || (cuVec->type == 14)) {
     sizepe = 8;
-  } else if (cuVec->type == 1) {
+  } else if ((cuVec->type == 1) || (cuVec->type == 13) || (cuVec->type == 13)) {
     sizepe = 4;
-  } else if (cuVec->type == 4) {
+  } else if (cuVec->type == 12) {
+    sizepe = 2;
+  } else if (cuVec->type == 11) {
+    sizepe = 1;
+  } else if (cuVec->type == -2) {
     sizepe = 16;
   } else {
+    c_m2c_error(cuVec->type);
     sizepe = 0;
-    c_m2c_error();
   }
 
   k = (istart - 1) * sizepe;

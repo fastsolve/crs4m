@@ -30,15 +30,7 @@ if nargout<1
 end
 
 if nargin==1
-    if cuVec.type==CU_SINGLE
-        vec = zeros(cuVec.len, 1, 'single');
-    elseif cuVec.type==CU_DOUBLE_COMPLEX
-        vec = zeros(cuVec.len, 1, 'like', 1i);
-    elseif cuVec.type==CU_COMPLEX
-        vec = zeros(cuVec.len, 1, 'like', single(1i));
-    else
-        vec = zeros(cuVec.len, 1);
-    end
+    vec = zeros(cuVec.len, 1, 'like', cuZero(cuVec.type));
 end
 
 [vec, errCode] = cuVecCopySubFromGPU(cuVec.len, cuVec, int32(1), ...

@@ -40,16 +40,7 @@ if (toplevel || m2c_debug)
     end
 end
 
-if cuMat.type == CU_DOUBLE || cuMat.type == CU_COMPLEX
-    sizepe = int32(8);
-elseif cuMat.type == CU_SINGLE
-    sizepe = int32(4);
-elseif cuMat.type == CU_DOUBLE_COMPLEX
-    sizepe = int32(16);
-else
-    sizepe = int32(0);
-    m2c_error('cuMatCopyToGPU:TypeMismatch', 'Expected real numbers.');
-end
+sizepe = cuGetSizePerElement(cuMat.type);
 
 errCode = int32(0); %#ok<NASGU>
 if isempty(varargin)

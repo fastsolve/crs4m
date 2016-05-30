@@ -8,7 +8,7 @@ function [mat, errCode, toplevel] = cuMatCopySubFromGPU ...
 %
 % [mat, errCode] = cuMatCopySubFromGPU(m, n, cuMat, mat, strm)
 % copies in asynchronous mode, where strm is a CuStreamHandle.
-% It is important for user not to access or deallocate vec
+% It is important for user not to access or deallocate mat
 % before calling cuSynchronize(strm) or another synchronous operation
 % on the stream.
 %
@@ -32,7 +32,7 @@ if nargout<1
     % If no output argument, do nothing.
     if  isempty(coder.target) || m2c_debug
         m2c_error('cuMatCopySubFromGPU:NoOutput', ...
-            'The output argument vec is required and must be the same as the 4th input.\n');
+            'The output argument mat is required and must be the same as the 4th input.\n');
     end
     return;
 end
@@ -50,16 +50,7 @@ if (toplevel || m2c_debug)
     end
 end
 
-if cuMat.type == CU_DOUBLE || cuMat.type == CU_COMPLEX
-    sizepe = int32(8);
-elseif cuMat.type == CU_SINGLE
-    sizepe = int32(4);
-elseif cuMat.type == CU_DOUBLE_COMPLEX
-    sizepe = int32(16);
-else
-    sizepe = int32(0);
-    m2c_error('cuMatCopyToGPU:TypeMismatch', 'Expected real numbers.');
-end
+sizepe = cuGetSizePerElement(cuMat.type);
 
 errCode = int32(0); %#ok<NASGU>
 if isempty(varargin)

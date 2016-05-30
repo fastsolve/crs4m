@@ -27,19 +27,8 @@ if size(vec,2)~=1 && (isempty(coder.target) || m2c_debug)
     m2c_warn('cuVecCopyToGPU:NotVector', 'First input should be a column vector.\n');
 end
 
-if isreal(vec)
-    if isa(vec, 'double')
-        type = CU_DOUBLE;
-    else
-        type = CU_SINGLE;
-    end
-elseif isa(vec, 'double')
-    type = CU_DOUBLE_COMPLEX;
-else
-    type = CU_COMPLEX;
-end
-
 if nargin==1
+    type = cuType(class(vec), isreal(vec));
     cuVec = cuVecCreate(int32(size(vec,1)), type);
 end
 

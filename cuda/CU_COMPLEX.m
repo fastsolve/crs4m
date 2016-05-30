@@ -1,2 +1,2 @@
 function type = CU_COMPLEX
-type = int32(3);
+type = int32(-1);

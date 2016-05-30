@@ -22,19 +22,8 @@ if nargout<1 && nargin<2
     return;
 end
 
-if isreal(mat)
-    if isa(mat, 'double')
-        type = CU_DOUBLE;
-    else
-        type = CU_SINGLE;
-    end
-elseif isa(mat, 'double')
-    type = CU_DOUBLE_COMPLEX;
-else
-    type = CU_COMPLEX;
-end
-
 if nargin==1
+    type = cuType(class(mat), isreal(mat));
     cuMat = cuMatCreate(int32(size(mat,1)), int32(size(mat,2)), type);
 end
 

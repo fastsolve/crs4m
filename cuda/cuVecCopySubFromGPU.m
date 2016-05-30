@@ -48,17 +48,7 @@ if toplevel || m2c_debug
     end
 end
 
-if cuVec.type == CU_DOUBLE || cuVec.type == CU_COMPLEX
-    sizepe = int32(8);
-elseif cuVec.type == CU_SINGLE
-    sizepe = int32(4);
-elseif cuVec.type == CU_DOUBLE_COMPLEX
-    sizepe = int32(16);
-else
-    sizepe = int32(0);
-    m2c_error('cuVecCopyToGPU:TypeMismatch', 'Expected real numbers.');
-end
-
+sizepe = cuGetSizePerElement(cuVec.type);
 errCode = int32(0); %#ok<NASGU>
 if isempty(varargin)
     errCode = coder.ceval('cublasGetVector', n, sizepe, ...
