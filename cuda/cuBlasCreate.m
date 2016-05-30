@@ -18,10 +18,10 @@ if ~isempty(coder.target)
     errCode = coder.ceval('cublasCreate', coder.wref(t_hdl));
     
     toplevel = nargout>2;
-    hdl = CublasHandle(t_hdl, toplevel);
+    hdl = CuBlasHandle(t_hdl, toplevel);
     
     if errCode && (toplevel || m2c_debug)
-        m2c_error('CUDA:RuntimeError', 'cublasCreate returned error code %s\n', cuBlasGetErrorCode(errCode));
+        m2c_error('CUDA:RuntimeError', 'cublasCreate returned error code %s\n', cuBlasGetErrorString(errCode));
     end
 end
 end

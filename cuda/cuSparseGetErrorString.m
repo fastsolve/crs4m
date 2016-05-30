@@ -1,4 +1,4 @@
-function cstr = cuSparseGetErrorCode(errCode) %#codegen
+function cstr = cuSparseGetErrorString(errCode) %#codegen
 
 switch errCode
     case CUSPARSE_STATUS_SUCCESS

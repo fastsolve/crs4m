@@ -12,7 +12,7 @@ static void b_vecDot_partial(const emxArray_real_T *x, const emxArray_real_T *y,
 static void c_m2c_error(void);
 static void c_vecDot_partial(const emxArray_real_T *x, const emxArray_real_T *y,
   emxArray_real_T *prod, int nthreads, int n);
-static void cuBlasGetErrorCode(int errCode, emxArray_char_T *cstr);
+static void cuBlasGetErrorString(int errCode, emxArray_char_T *cstr);
 static void d_m2c_error(void);
 static void e_m2c_error(const emxArray_char_T *varargin_3);
 static void emxFreeStruct_struct1_T(struct1_T *pStruct);
@@ -312,7 +312,7 @@ static void c_vecDot_partial(const emxArray_real_T *x, const emxArray_real_T *y,
   }
 }
 
-static void cuBlasGetErrorCode(int errCode, emxArray_char_T *cstr)
+static void cuBlasGetErrorString(int errCode, emxArray_char_T *cstr)
 {
   int varargin_1;
   int varargin_2;
@@ -829,7 +829,7 @@ double vecDot_cublas(const struct0_T *u, const struct0_T *v, const struct0_T
   if (errCode != 0) {
     k = (M2C_DEBUG);
     if (k != 0) {
-      cuBlasGetErrorCode(errCode, r0);
+      cuBlasGetErrorString(errCode, r0);
       f_m2c_error(r0);
     }
   }
@@ -918,7 +918,7 @@ double vecDot_cublas(const struct0_T *u, const struct0_T *v, const struct0_T
     if (errCode < 0) {
       g_m2c_error();
     } else {
-      cuBlasGetErrorCode(errCode, r0);
+      cuBlasGetErrorString(errCode, r0);
       h_m2c_error(r0);
     }
   }
@@ -1043,7 +1043,7 @@ double vecDot_cublas_sync(const struct0_T *u, const struct0_T *v, const
   if (errCode != 0) {
     k = (M2C_DEBUG);
     if (k != 0) {
-      cuBlasGetErrorCode(errCode, r1);
+      cuBlasGetErrorString(errCode, r1);
       f_m2c_error(r1);
     }
   }
@@ -1130,7 +1130,7 @@ double vecDot_cublas_sync(const struct0_T *u, const struct0_T *v, const
     if (errCode < 0) {
       g_m2c_error();
     } else {
-      cuBlasGetErrorCode(errCode, r1);
+      cuBlasGetErrorString(errCode, r1);
       h_m2c_error(r1);
     }
   }

@@ -18,10 +18,10 @@ if ~isempty(coder.target)
     errCode = coder.ceval('cusparseCreate', coder.wref(t_hdl));
     
     toplevel = nargout>2;
-    hdl = CusparseHandle(t_hdl, toplevel);
+    hdl = CuSparseHandle(t_hdl, toplevel);
     
     if errCode && (toplevel || m2c_debug)
-        m2c_error('CUDA:RuntimeError', 'cusparseCreate returned error code %s\n', cuSparseGetErrorCode(errCode));
+        m2c_error('CUDA:RuntimeError', 'cusparseCreate returned error code %s\n', cuSparseGetErrorString(errCode));
     end
 end
 end

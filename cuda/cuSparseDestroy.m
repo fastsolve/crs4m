@@ -1,5 +1,5 @@
 function [errCode, toplevel] = cuSparseDestroy(hdl)
-%Destroys the handle to the CUSPARSE library context.
+%Destroys the cuSPARSE context specified by the handle.
 %
 %  errCode = cuSparseDestroy(hdl)
 %
@@ -8,18 +8,18 @@ function [errCode, toplevel] = cuSparseDestroy(hdl)
 % cuSPARSE C interface:
 %   cusparseStatus_t cusparseDestroy(cusparseHandle_t handle)
 
-%#codegen -args {CusparseHandle}
+%#codegen -args {CuSparseHandle}
 
 coder.cinclude('mspack.h');
 
 errCode = int32(-1);
 
 if ~isempty(coder.target)
-    errCode = coder.ceval('cusparseDestroy', CusparseHandle(hdl));
+    errCode = coder.ceval('cusparseDestroy', CuSparseHandle(hdl));
     
     toplevel = nargout>1;
     if errCode && (toplevel || m2c_debug)
-        m2c_error('CUDA:RuntimeError', 'cusparseDestroy returned error code %s\n', cuSparseGetErrorCode(errCode));
+        m2c_error('CUDA:RuntimeError', 'cusparseDestroy returned error code %s\n', cuSparseGetErrorString(errCode));
     end
 end
 end

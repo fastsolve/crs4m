@@ -1,4 +1,4 @@
-function cstr = cuBlasGetErrorCode(errCode) %#codegen
+function cstr = cuBlasGetErrorString(errCode) %#codegen
 
 switch errCode
     case CUBLAS_STATUS_SUCCESS

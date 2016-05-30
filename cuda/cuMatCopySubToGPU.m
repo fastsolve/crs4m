@@ -1,25 +1,33 @@
 function [errCode, toplevel] = cuMatCopySubToGPU ...
-    (nrows, ncols, mat, cuMat)
+    (nrows, ncols, mat, cuMat, varargin)
 % Copies a leading sub-matrix from MATLAB to CUDA.
 %
-% errCode = cuMatCopySubFromGPU(m, n, mat, cuMat)
-% copies mat(1:nrows, 1:ncols) in MATLAB to cuMat(1:nrows, 1:ncols) on
-% CUDA. This may be more efficient than creating a submatrix for mat.
+% cuMatCopySubFromGPU(m, n, mat, cuMat) copies mat(1:nrows, 1:ncols) in
+% MATLAB to cuMat(1:nrows, 1:ncols) on CUDA. This may be more efficient
+% than creating a submatrix for mat.
 %
-% SEE ALSO cuMatCopyFromGPU
+% cuMatCopySubFromGPU(m, n, mat, cuMat, strm) copies in asynchronous mode,
+% where strm is a CuStreamHandle. It is important for user to ensure mat
+% is not changed or deallocated before calling cuSynchronize(strm) or
+% another synchronous operation on the stream.
+%
+% SEE ALSO cuMatCopyToGPU, cuMatCopyFromGPU
 
 % Corresponding low-level cuBLAS function:
 % cublasStatus_t cublasSetMatrix(int rows, int cols, int elemSize,
-%           const void *A, int lda, void *B, int ldb)
+%       const void *A, int lda, void *B, int ldb)
+% cublasStatus_t cublasSetMatrixAsync(int rows, int cols, int elemSize,
+%       const void *A, int lda, void *B, int ldb, cudaStream_t strm)
 % http://docs.nvidia.com/cuda/cublas/#cublassetmatrix
 
 %#codegen -args {m2c_int, m2c_int, m2c_mat, CuMat}
+%#codegen cuMatCopySubToGPU_async -args {m2c_int, m2c_int, m2c_mat, CuMat, CuStreamHandle}
 
 coder.cinclude('mspack.h');
 
 toplevel = nargout>1;
 
-if (toplevel || m2c_debug) 
+if (toplevel || m2c_debug)
     if ~isfloat(mat)
         m2c_error('cuMatCopyToGPU:TypeMismatch', 'Expected floating-point numbers.');
     elseif  isreal(mat) && cuMat.type ~= CU_DOUBLE && cuMat.type ~= CU_SINGLE || ...
@@ -44,12 +52,18 @@ else
 end
 
 errCode = int32(0); %#ok<NASGU>
-errCode = coder.ceval('cublasSetMatrix', nrows, ncols, sizepe, ...
-    m2c_opaque_ptr(mat, 'void *'), int32(size(mat,1)), ...
-    CuMat(cuMat, 'void *'), cuMat.dims(1));
+if isempty(varargin)
+    errCode = coder.ceval('cublasSetMatrix', nrows, ncols, sizepe, ...
+        m2c_opaque_ptr(mat, 'void *'), int32(size(mat,1)), ...
+        CuMat(cuMat, 'void *'), cuMat.dims(1));
+else
+    errCode = coder.ceval('cublasSetMatrixAsync', nrows, ncols, sizepe, ...
+        m2c_opaque_ptr(mat, 'void *'), int32(size(mat,1)), ...
+        CuMat(cuMat, 'void *'), cuMat.dims(1), CuStreamHandle(varargin{1}));
+end
 
 if errCode && (toplevel || m2c_debug)
     m2c_error('CUDA:RuntimeError', 'cublasSetMatrix returned error code %s\n', ...
-        cuBlasGetErrorCode(errCode));
+        cuBlasGetErrorString(errCode));
 end
 

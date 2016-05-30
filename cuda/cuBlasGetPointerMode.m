@@ -9,7 +9,7 @@ function [mode, errCode, toplevel] = cuBlasGetPointerMode(hdl)
 % cuBLAS C interface:
 %   cublasStatus_t cuBlasGetPointerMode(cublasHandle_t handle, cublasPointerMode_t *mode))
 
-%#codegen -args {CublasHandle}
+%#codegen -args {CuBlasHandle}
 
 coder.cinclude('mspack.h');
 
@@ -17,13 +17,13 @@ errCode = int32(-1);
 if ~isempty(coder.target)
     t_mode = coder.opaque('cublasPointerMode_t');
     errCode = coder.ceval('cublasGetPointerMode', ...
-        CublasHandle(hdl), coder.wref(t_mode));
+        CuBlasHandle(hdl), coder.wref(t_mode));
     mode = int32(0); %#ok<NASGU>
     mode = coder.ceval(' ', t_mode);
     toplevel = nargout>2;
     
     if errCode && (toplevel || m2c_debug)
-        m2c_error('CUDA:RuntimeError', 'cublasGetPointerMode returned error code %s\n', cuBlasGetErrorCode(errCode));
+        m2c_error('CUDA:RuntimeError', 'cublasGetPointerMode returned error code %s\n', cuBlasGetErrorString(errCode));
     end
 end
 end

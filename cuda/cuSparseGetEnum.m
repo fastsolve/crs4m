@@ -3,7 +3,7 @@ function val = cuSparseGetEnum(str) %#codegen
 %
 %  val = cuSparseGetEnum(str)
 %
-% SEE ALSO: cuSparseGetErrorCode
+% SEE ALSO: cuSparseGetErrorString
 
 %#codegen -args {m2c_string}
 

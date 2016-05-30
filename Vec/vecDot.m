@@ -64,9 +64,9 @@ function [prod, buf, toplevel] = vecDot(x, y, buf, varargin)
 %#codegen vecDot_ser -args {m2c_vec, m2c_vec}
 %#codegen vecDot_omp -args {m2c_vec, m2c_vec, m2c_mat, m2c_int}
 %#codegen vecDot_cublas -args {CuVec, CuVec, CuVec, ...
-%#codegen         m2c_string, CublasHandle}
+%#codegen         m2c_string, CuBlasHandle}
 %#codegen vecDot_cublas_sync -args {CuVec, CuVec, m2c_mat, ...
-%#codegen         m2c_string, CublasHandle, m2c_string}
+%#codegen         m2c_string, CuBlasHandle, m2c_string}
 
 if nargin==4;
     coder.inline('never'); % Never inline in OpenMP mode
@@ -101,7 +101,7 @@ if nargin>=5
             m2c_error('vecDot:WrongPointerMode', 'The given cuBLAS handle has incorrect pointer mode.\n.');
         else
             m2c_error('cuBLAS:RuntimeError', 'cuBLAS returned an error code %s\n.', ...
-                cuBlasGetErrorCode(errCode));
+                cuBlasGetErrorString(errCode));
         end
     end
     return;
@@ -216,7 +216,7 @@ output = mzero;
 n = x.len;
 errCode = int32(0); %#ok<NASGU>
 if toplevel || m2c_debug
-    [mode, errCode] = cuBlasGetPointerMode(CublasHandle(cublasHdl));
+    [mode, errCode] = cuBlasGetPointerMode(CuBlasHandle(cublasHdl));
     if errCode; return; end
     
     if ((isempty(hdl) || ~isempty(varargin)) && mode ~= CUBLAS_POINTER_MODE_HOST) || ...
@@ -228,12 +228,12 @@ end
 
 if isempty(hdl) || ~isempty(varargin)
     % Calls the synchronous version of cuBLAS
-    errCode = coder.ceval(func, CublasHandle(cublasHdl), n, ...
+    errCode = coder.ceval(func, CuBlasHandle(cublasHdl), n, ...
         CuVec(x, [type '*']), int32(1), ...
         CuVec(y, [type '*']), int32(1), coder.wref(output));
 else
     % Calls the asynchronous version of cuBLAS
-    errCode = coder.ceval(func, CublasHandle(cublasHdl), n, ...
+    errCode = coder.ceval(func, CuBlasHandle(cublasHdl), n, ...
         CuVec(x, [type '*']), int32(1), ...
         CuVec(y, [type '*']), int32(1), ...
         CuVec(hdl, [type '*']));

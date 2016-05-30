@@ -3,7 +3,7 @@ function val = cuBlasGetEnum(str) %#codegen
 %
 %  val = cuBlasGetEnum(str)
 %
-% SEE ALSO: cuBlasGetErrorCode
+% SEE ALSO: cuBlasGetErrorString
 
 %#codegen -args {m2c_string}
 
@@ -15,6 +15,10 @@ switch str
         val = coder.ceval(' ', coder.opaque('int',  'CUBLAS_POINTER_MODE_HOST'));
     case 'CUBLAS_POINTER_MODE_DEVICE'
         val = coder.ceval(' ', coder.opaque('int',  'CUBLAS_POINTER_MODE_DEVICE'));
+    case 'CUBLAS_ATOMICS_NOT_ALLOWED'
+        val = coder.ceval(' ', coder.opaque('int',  'CUBLAS_ATOMICS_NOT_ALLOWED'));        
+    case 'CUBLAS_ATOMICS_ALLOWED'
+        val = coder.ceval(' ', coder.opaque('int',  'CUBLAS_ATOMICS_ALLOWED'));
     case 'CUBLAS_STATUS_SUCCESS'
         val = coder.ceval(' ', coder.opaque('int',  'CUBLAS_STATUS_SUCCESS'));
     case 'CUBLAS_STATUS_NOT_INITIALIZED'
