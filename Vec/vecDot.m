@@ -87,7 +87,7 @@ end
 if nargin>=5
     if ischar(varargin{1}) && ~isequal(varargin{1}, 'cuda') && (toplevel || m2c_debug)
         m2c_warn('vecDot:WrongInput', 'Wrong mode name. cuda is assumed.\n');
-    elseif toplevel && x.type ~= CU_DOUBLE
+    elseif toplevel && x.type ~= MSP_DOUBLE
         m2c_error('vecDot:WrongInput', 'When using mex functions, vecDot only supports double.\n');
     end
     if ~m2c_cuda && (toplevel || m2c_debug)
@@ -198,13 +198,13 @@ prod = buf(1);
 function [output, errCode] = vecDot_cuda_kernel(x, y, hdl, cublasHdl, toplevel, varargin)
 coder.inline('always');
 
-if toplevel || x.type==CU_DOUBLE
+if toplevel || x.type==MSP_DOUBLE
     func = 'cublasDdot'; type = 'double'; mzero = 0;
-elseif x.type==CU_SINGLE
+elseif x.type==MSP_SINGLE
     func = 'cublasSdot'; type = 'single'; mzero = single(0);
-elseif x.type==CU_DOUBLE_COMPLEX
+elseif x.type==MSP_DOUBLE_COMPLEX
     func = 'cublasZdotc'; type = 'cuDoubleComplex'; mzero = complex(0);
-elseif  x.type==CU_COMPLEX
+elseif  x.type==MSP_COMPLEX
     func = 'cublasCdotc'; type = 'cuComplex'; mzero = complex(single(0));
 else
     % Undefined behavior. x.type must be a constant string.

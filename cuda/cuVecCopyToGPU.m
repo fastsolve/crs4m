@@ -28,7 +28,7 @@ if size(vec,2)~=1 && (isempty(coder.target) || m2c_debug)
 end
 
 if nargin==1
-    type = cuType(class(vec), isreal(vec));
+    type = mspType(class(vec), isreal(vec));
     cuVec = cuVecCreate(int32(size(vec,1)), type);
 end
 

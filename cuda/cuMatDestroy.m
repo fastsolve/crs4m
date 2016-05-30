@@ -1,5 +1,5 @@
 function [errCode, toplevel] = cuMatDestroy(mat)
-%Destroys a matrix on a CUDA device.
+%Destroys a dense matrix on a CUDA device.
 %
 %  errCode = cuMatDestroy(mat)
 %  mat - Handle to matrix

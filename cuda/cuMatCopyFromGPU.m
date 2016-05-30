@@ -30,7 +30,7 @@ if nargout<1
 end
 
 if nargin==1
-    mat = zeros(cuMat.dims, 'like', cuZero(cuMat.type));
+    mat = zeros(cuMat.dims, 'like', mspZero(cuMat.type));
 end
 
 [mat, errCode] = cuMatCopySubFromGPU(cuMat.dims(1), cuMat.dims(2), ...

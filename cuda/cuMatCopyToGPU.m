@@ -23,7 +23,7 @@ if nargout<1 && nargin<2
 end
 
 if nargin==1
-    type = cuType(class(mat), isreal(mat));
+    type = mspType(class(mat), isreal(mat));
     cuMat = cuMatCreate(int32(size(mat,1)), int32(size(mat,2)), type);
 end
 

@@ -40,15 +40,15 @@ end
 if toplevel || m2c_debug
     if ~isfloat(vec)
         m2c_error('cuVecCopyToGPU:TypeMismatch', 'Expected floating-point numbers.');
-    elseif  isreal(vec) && cuVec.type ~= CU_DOUBLE && cuVec.type ~= CU_SINGLE || ...
-            ~isreal(vec) && cuVec.type ~= CU_DOUBLE_COMPLEX && cuVec.type ~= CU_COMPLEX
+    elseif  isreal(vec) && cuVec.type ~= MSP_DOUBLE && cuVec.type ~= MSP_SINGLE || ...
+            ~isreal(vec) && cuVec.type ~= MSP_DOUBLE_COMPLEX && cuVec.type ~= MSP_COMPLEX
         m2c_error('cuVecCopyToGPU:TypeMismatch', 'Real and complex numbers mismatch.');
     elseif n>m2c_intdiv(int32(length(vec)),inc)
         m2c_error('cuVecCopyToGPU:SizeMismatch', 'Target array is too small.');
     end
 end
 
-sizepe = cuGetSizePerElement(cuVec.type);
+sizepe = mspGetSizePerElement(cuVec.type);
 errCode = int32(0); %#ok<NASGU>
 if isempty(varargin)
     errCode = coder.ceval('cublasGetVector', n, sizepe, ...

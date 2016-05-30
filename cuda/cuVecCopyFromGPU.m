@@ -30,7 +30,7 @@ if nargout<1
 end
 
 if nargin==1
-    vec = zeros(cuVec.len, 1, 'like', cuZero(cuVec.type));
+    vec = zeros(cuVec.len, 1, 'like', mspZero(cuVec.type));
 end
 
 [vec, errCode] = cuVecCopySubFromGPU(cuVec.len, cuVec, int32(1), ...

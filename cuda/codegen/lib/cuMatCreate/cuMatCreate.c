@@ -131,7 +131,7 @@ static void emxInit_uint8_T(emxArray_uint8_T **pEmxArray, int numDimensions)
 
 static void m2c_error(int varargin_3)
 {
-  M2C_error("cuGetSizePerElement:WrongType", "Unknow data type %d.\n",
+  M2C_error("mspGetSizePerElement:WrongType", "Unknow data type %d.\n",
             varargin_3);
 }
 
