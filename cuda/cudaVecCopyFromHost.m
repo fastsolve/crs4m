@@ -28,7 +28,7 @@ else
 end
 
 if nargin==1
-    cuVec = cudaVecCreate(int32(length(vec)), type);
+    cuVec = cudaVecCreate(int32(size(vec,1)), type);
 end
 
 errCode = cudaVecCopySubFromHost(int32(length(vec)), vec, ...

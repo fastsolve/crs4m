@@ -2,7 +2,7 @@ function [vec, errCode, toplevel] = cudaVecCopySubToHost(n, cuVec, ...
     incCuVec, vec, istart, inc)
 % Copies a sub-vector from CUDA to MATLAB.
 %
-% [vec, errCode] = cudaVecCopySubToHost(cuVec, incCuVec, len, vec, istart, inc)
+% [vec, errCode] = cudaVecCopySubToHost(n, cuVec, incCuVec, vec, istart, inc)
 % copies cuVec(1:incCurVec:incCurVec*len) to MATLAB vec(istart:inc:).
 % This is more efficient than creating a subvector for vec.
 %
@@ -19,14 +19,15 @@ coder.cinclude('mspack.h');
 
 toplevel = nargout>2;
 
-if ~isfloat(vec) && m2c_debug
-    m2c_error('cudaVecCopyFromHost:TypeMismatch', 'Expected floating-point numbers.');
-elseif  (isreal(vec) && cuVec.type ~= CUDA_DOUBLE && cuVec.type ~= CUDA_SINGLE || ...
-        ~isreal(vec) && cuVec.type ~= CUDA_DOUBLE_COMPLEX && cuVec.type ~= CUDA_COMPLEX) && ...
-        (toplevel || m2c_debug)
-    m2c_error('cudaVecCopyFromHost:TypeMismatch', 'Real and complex numbers mismatch.');
-elseif n>m2c_intdiv(int32(length(vec)),inc) && (toplevel || m2c_debug)
-    m2c_error('cudaVecCopyFromHost:SizeMismatch', 'Target array is too small.');
+if toplevel || m2c_debug
+    if ~isfloat(vec)
+        m2c_error('cudaVecCopyFromHost:TypeMismatch', 'Expected floating-point numbers.');
+    elseif  isreal(vec) && cuVec.type ~= CUDA_DOUBLE && cuVec.type ~= CUDA_SINGLE || ...
+            ~isreal(vec) && cuVec.type ~= CUDA_DOUBLE_COMPLEX && cuVec.type ~= CUDA_COMPLEX
+        m2c_error('cudaVecCopyFromHost:TypeMismatch', 'Real and complex numbers mismatch.');
+    elseif n>m2c_intdiv(int32(length(vec)),inc)
+        m2c_error('cudaVecCopyFromHost:SizeMismatch', 'Target array is too small.');
+    end
 end
 
 if cuVec.type == CUDA_DOUBLE || cuVec.type == CUDA_COMPLEX

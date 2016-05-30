@@ -24,12 +24,11 @@ if nargin==0
         'type', int32(0), 'len', int32(0)));
     return;
 elseif nargin==4 && ischar(varargin{4})
-    output = struct('data', uint64(0), 'type', int32(0), 'len', int32(0));
+    output = struct('data', uint64(0), ...
+        'type', int32(varargin{2}), ...
+        'len', int32(varargin{3}));
     
     obj = varargin{1};
-    output.type = int32(varargin{2});
-    output.len = int32(varargin{3});
-    
     if ~isempty(obj)
         output.data = coder.ceval('*(uint64_T *)', coder.rref(obj));
     end

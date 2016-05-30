@@ -1,8 +1,9 @@
 function [vec, errCode, toplevel] = cudaVecCreate(n, type)
 %Creates a vector on a CUDA device.
 %
-%  [vec, errCode] = cudaVecCreate(n)
-%  n - the vector length
+%  [vec, errCode] = cudaVecCreate(n, [type]) creates a vector of length n 
+%  on CUDA, where type is CUDA_DOUBLE, CUDA_SINGLE, CUDA_COMPLEX, or 
+%  CUDA_DOUBLE_COMPLEX. If not specified, then type is CUDA_DOUBLE.
 %
 %  SEE ALSO: cudaVecDestroy, cudaMatCreate, cudaVecCopyFromHost, cudaVecCopyToHost
 

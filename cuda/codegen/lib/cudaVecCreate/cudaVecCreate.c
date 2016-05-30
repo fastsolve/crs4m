@@ -150,19 +150,20 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
                    *toplevel)
 {
   void * t_vec;
+  int b_errCode;
   unsigned long vec_data;
   int i0;
+  signed char vec_type[6];
   static const signed char iv0[6] = { 100, 111, 117, 98, 108, 101 };
 
   emxArray_uint8_T *msg0;
   const char * ptr;
   int len;
-  int loop_ub;
   emxArray_uint8_T *varargin_1;
   emxArray_char_T *b_varargin_1;
   *toplevel = true;
   if (type == 2) {
-    *errCode = cudaMalloc(&t_vec, n << 3);
+    b_errCode = cudaMalloc(&t_vec, n << 3);
     vec_data = *(uint64_T *)(&t_vec);
     vec->data = vec_data;
     i0 = vec->type->size[0] * vec->type->size[1];
@@ -171,8 +172,9 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
     emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
     vec->type->data[0] = 2;
     vec->len = n;
+    *errCode = b_errCode;
   } else if (type == 1) {
-    *errCode = cudaMalloc(&t_vec, n << 2);
+    b_errCode = cudaMalloc(&t_vec, n << 2);
     vec_data = *(uint64_T *)(&t_vec);
     vec->data = vec_data;
     i0 = vec->type->size[0] * vec->type->size[1];
@@ -181,8 +183,9 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
     emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
     vec->type->data[0] = 1;
     vec->len = n;
+    *errCode = b_errCode;
   } else if (type == 3) {
-    *errCode = cudaMalloc(&t_vec, n << 3);
+    b_errCode = cudaMalloc(&t_vec, n << 3);
     vec_data = *(uint64_T *)(&t_vec);
     vec->data = vec_data;
     i0 = vec->type->size[0] * vec->type->size[1];
@@ -191,8 +194,9 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
     emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
     vec->type->data[0] = 3;
     vec->len = n;
+    *errCode = b_errCode;
   } else if (type == 4) {
-    *errCode = cudaMalloc(&t_vec, n << 4);
+    b_errCode = cudaMalloc(&t_vec, n << 4);
     vec_data = *(uint64_T *)(&t_vec);
     vec->data = vec_data;
     i0 = vec->type->size[0] * vec->type->size[1];
@@ -201,19 +205,26 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
     emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
     vec->type->data[0] = 4;
     vec->len = n;
+    *errCode = b_errCode;
   } else {
     m2c_error(type);
-    *errCode = cudaMalloc(&t_vec, n << 3);
+    b_errCode = cudaMalloc(&t_vec, n << 3);
+    for (i0 = 0; i0 < 6; i0++) {
+      vec_type[i0] = iv0[i0];
+    }
+
+    vec_data = *(uint64_T *)(&t_vec);
+    vec->data = vec_data;
     i0 = vec->type->size[0] * vec->type->size[1];
     vec->type->size[0] = 1;
     vec->type->size[1] = 6;
     emxEnsureCapacity((emxArray__common *)vec->type, i0, (int)sizeof(int));
     for (i0 = 0; i0 < 6; i0++) {
-      vec->type->data[i0] = iv0[i0];
+      vec->type->data[i0] = vec_type[i0];
     }
 
     vec->len = n;
-    vec->data = *(uint64_T *)(&t_vec);
+    *errCode = b_errCode;
   }
 
   if (*errCode != 0) {
@@ -230,18 +241,18 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
 
     memcpy(&msg0->data[0], ptr, len);
     if (1 > len) {
-      loop_ub = 0;
+      b_errCode = 0;
     } else {
-      loop_ub = len;
+      b_errCode = len;
     }
 
     emxInit_uint8_T(&varargin_1, 2);
     i0 = varargin_1->size[0] * varargin_1->size[1];
     varargin_1->size[0] = 1;
-    varargin_1->size[1] = loop_ub;
+    varargin_1->size[1] = b_errCode;
     emxEnsureCapacity((emxArray__common *)varargin_1, i0, (int)sizeof(unsigned
       char));
-    for (i0 = 0; i0 < loop_ub; i0++) {
+    for (i0 = 0; i0 < b_errCode; i0++) {
       varargin_1->data[varargin_1->size[0] * i0] = msg0->data[i0];
     }
 
@@ -249,9 +260,9 @@ void cudaVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
     emxInit_char_T(&b_varargin_1, 2);
     i0 = b_varargin_1->size[0] * b_varargin_1->size[1];
     b_varargin_1->size[0] = 1;
-    b_varargin_1->size[1] = loop_ub;
+    b_varargin_1->size[1] = b_errCode;
     emxEnsureCapacity((emxArray__common *)b_varargin_1, i0, (int)sizeof(char));
-    for (i0 = 0; i0 < loop_ub; i0++) {
+    for (i0 = 0; i0 < b_errCode; i0++) {
       b_varargin_1->data[i0] = (signed char)varargin_1->data[i0];
     }
 
