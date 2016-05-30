@@ -18,7 +18,7 @@ function [prod, buf, toplevel] = vecDot(x, y, buf, varargin)
 %      vecDot(x, y, hdl, 'cuda', cublasHandle)
 %      prod = vecDot(x, y, [], 'cuda', cublasHandle, ['sync'])
 %
-%      Both x and y must be CudaVec handles.
+%      Both x and y must be CuVec handles.
 %
 % Description:
 %
@@ -43,7 +43,7 @@ function [prod, buf, toplevel] = vecDot(x, y, buf, varargin)
 % with more than 1000 entries in the CPU mode.
 %
 % vecDot(x, y, prod, 'cuda', cublasHandle) uses CUDA BLAS for acceleration,
-% assuming x, y, and prod are all CudaVec handles. It uses the
+% assuming x, y, and prod are all CuVec handles. It uses the
 % asynchronous mode of CUDA BLAS. This should be the default mode on CUDA.
 % The output values are meaningless.
 %
@@ -63,9 +63,9 @@ function [prod, buf, toplevel] = vecDot(x, y, buf, varargin)
 %#codegen -args {m2c_vec, m2c_vec, m2c_vec}
 %#codegen vecDot_ser -args {m2c_vec, m2c_vec}
 %#codegen vecDot_omp -args {m2c_vec, m2c_vec, m2c_mat, m2c_int}
-%#codegen vecDot_cublas -args {CudaVec, CudaVec, CudaVec, ...
+%#codegen vecDot_cublas -args {CuVec, CuVec, CuVec, ...
 %#codegen         m2c_string, CublasHandle}
-%#codegen vecDot_cublas_sync -args {CudaVec, CudaVec, m2c_mat, ...
+%#codegen vecDot_cublas_sync -args {CuVec, CuVec, m2c_mat, ...
 %#codegen         m2c_string, CublasHandle, m2c_string}
 
 if nargin==4;
@@ -87,7 +87,7 @@ end
 if nargin>=5
     if ischar(varargin{1}) && ~isequal(varargin{1}, 'cuda') && (toplevel || m2c_debug)
         m2c_warn('vecDot:WrongInput', 'Wrong mode name. cuda is assumed.\n');
-    elseif toplevel && x.type ~= CUDA_DOUBLE
+    elseif toplevel && x.type ~= CU_DOUBLE
         m2c_error('vecDot:WrongInput', 'When using mex functions, vecDot only supports double.\n');
     end
     
@@ -195,16 +195,14 @@ prod = buf(1);
 function [output, errCode] = vecDot_cuda_kernel(x, y, hdl, cublasHdl, toplevel, varargin)
 coder.inline('always');
 
-if toplevel || x.type==CUDA_DOUBLE
+if toplevel || x.type==CU_DOUBLE
     func = 'cublasDdot'; type = 'double'; mzero = 0;
-elseif x.type==CUDA_SINGLE
+elseif x.type==CU_SINGLE
     func = 'cublasSdot'; type = 'single'; mzero = single(0);
-elseif x.type==CUDA_DOUBLE_COMPLEX
-    func = 'cublasZdotc'; type = 'cuDoubleComplex';
-    mzero = zeros(1, 1, 'like', 1i);
-elseif  x.type==CUDA_COMPLEX
-    func = 'cublasCdotc'; type = 'cuComplex';
-    mzero = zeros(1, 1, 'like', single(1i));
+elseif x.type==CU_DOUBLE_COMPLEX
+    func = 'cublasZdotc'; type = 'cuDoubleComplex'; mzero = complex(0);
+elseif  x.type==CU_COMPLEX
+    func = 'cublasCdotc'; type = 'cuComplex'; mzero = complex(single(0));
 else
     % Undefined behavior. x.type must be a constant string.
     % This causes a compilation error.
@@ -228,14 +226,14 @@ end
 if isempty(hdl) || ~isempty(varargin)
     % Calls the synchronous version of cuBLAS
     errCode = coder.ceval(func, CublasHandle(cublasHdl), n, ...
-        CudaVec(x, [type '*']), int32(1), ...
-        CudaVec(y, [type '*']), int32(1), coder.wref(output));
+        CuVec(x, [type '*']), int32(1), ...
+        CuVec(y, [type '*']), int32(1), coder.wref(output));
 else
     % Calls the asynchronous version of cuBLAS
     errCode = coder.ceval(func, CublasHandle(cublasHdl), n, ...
-        CudaVec(x, [type '*']), int32(1), ...
-        CudaVec(y, [type '*']), int32(1), ...
-        CudaVec(hdl, [type '*']));
+        CuVec(x, [type '*']), int32(1), ...
+        CuVec(y, [type '*']), int32(1), ...
+        CuVec(hdl, [type '*']));
 end
 
 function test %#ok<DEFNU>
@@ -268,12 +266,12 @@ function test %#ok<DEFNU>
 %!test
 %! fprintf(1, 'Running with cuda in synchronous mode:\n');
 %! cuda = cuBlasCreate;
-%! cuda_x = cudaVecCreate(m); cudaVecCopyFromHost(x, cuda_x);
-%! cuda_y = cudaVecCreate(m); cudaVecCopyFromHost(y, cuda_y);
+%! cuda_x = cuVecCopyToGPU(x);
+%! cuda_y = cuVecCopyToGPU(y);
 %! tic; prod = vecDot(cuda_x, cuda_y, [], 'cuda', cuda, 'sync');
 %! fprintf(1, 'Done in %g seconds\n ', toc);
-%! cudaVecDestroy(cuda_x);
-%! cudaVecDestroy(cuda_y);
+%! cuVecDestroy(cuda_x);
+%! cuVecDestroy(cuda_y);
 %! cuBlasDestroy(cuda);
 %! assert(norm(b0-prod)/norm(b0)<=1.e-6);
 
@@ -281,14 +279,14 @@ function test %#ok<DEFNU>
 %! fprintf(1, 'Running with cuda in asynchronous mode:\n');
 %! prod = 0;
 %! cuda = cuBlasCreate; cuBlasSetPointerMode(cuda, CUBLAS_POINTER_MODE_DEVICE);
-%! cuda_x = cudaVecCreate(m); cudaVecCopyFromHost(x, cuda_x);
-%! cuda_y = cudaVecCreate(m); cudaVecCopyFromHost(y, cuda_y);
-%! cuda_prod = cudaVecCreate(int32(1));
+%! cuda_x = cuVecCopyToGPU(x);
+%! cuda_y = cuVecCopyToGPU(y);
+%! cuda_prod = cuVecCreate(int32(1));
 %! tic; vecDot(cuda_x, cuda_y, cuda_prod, 'cuda', cuda);
-%! fprintf(1, 'Done in %g seconds\n ', toc);
-%! prod = cudaVecCopyToHost(cuda_prod, prod);
-%! cudaVecDestroy(cuda_x);
-%! cudaVecDestroy(cuda_y);
-%! cudaVecDestroy(cuda_prod);
+%! prod = cuVecCopyFromGPU(cuda_prod);
+%! fprintf(1, 'Done in %g seconds (including copying data from GPU)\n', toc);
+%! cuVecDestroy(cuda_x);
+%! cuVecDestroy(cuda_y);
+%! cuVecDestroy(cuda_prod);
 %! cuBlasDestroy(cuda);
 %! assert(norm(b0-prod)/abs(b0)<=1.e-6);

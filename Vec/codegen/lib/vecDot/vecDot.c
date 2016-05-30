@@ -733,7 +733,7 @@ double vecDot_cublas(const struct0_T *u, const struct0_T *v, const struct0_T
   int exitg2;
   boolean_T exitg1;
   emxArray_char_T *c_cublasHdl;
-  unsigned int b_data[2];
+  unsigned long b_data;
   double* output;
   double* b_output;
   double* c_output;
@@ -892,21 +892,12 @@ double vecDot_cublas(const struct0_T *u, const struct0_T *v, const struct0_T
       }
 
       hdl = *(cublasHandle_t*)(&data->data[0]);
-      for (k = 0; k < 2; k++) {
-        b_data[k] = u->data[k];
-      }
-
-      output = *(double**)(b_data);
-      for (k = 0; k < 2; k++) {
-        b_data[k] = v->data[k];
-      }
-
-      b_output = *(double**)(b_data);
-      for (k = 0; k < 2; k++) {
-        b_data[k] = buf->data[k];
-      }
-
-      c_output = *(double**)(b_data);
+      b_data = u->data;
+      output = *(double**)(&b_data);
+      b_data = v->data;
+      b_output = *(double**)(&b_data);
+      b_data = buf->data;
+      c_output = *(double**)(&b_data);
       errCode = cublasDdot(hdl, u->len, output, 1, b_output, 1, c_output);
     }
   }
@@ -949,7 +940,7 @@ double vecDot_cublas_sync(const struct0_T *u, const struct0_T *v, const
   int exitg2;
   boolean_T exitg1;
   emxArray_char_T *c_cublasHdl;
-  unsigned int b_data[2];
+  unsigned long b_data;
   double* output;
   double* b_output;
   (void)buf;
@@ -1110,16 +1101,10 @@ double vecDot_cublas_sync(const struct0_T *u, const struct0_T *v, const
       }
 
       hdl = *(cublasHandle_t*)(&data->data[0]);
-      for (k = 0; k < 2; k++) {
-        b_data[k] = u->data[k];
-      }
-
-      output = *(double**)(b_data);
-      for (k = 0; k < 2; k++) {
-        b_data[k] = v->data[k];
-      }
-
-      b_output = *(double**)(b_data);
+      b_data = u->data;
+      output = *(double**)(&b_data);
+      b_data = v->data;
+      b_output = *(double**)(&b_data);
       errCode = cublasDdot(hdl, u->len, output, 1, b_output, 1, &prod);
     }
   }

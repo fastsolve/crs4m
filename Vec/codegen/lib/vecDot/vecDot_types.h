@@ -68,7 +68,7 @@ typedef struct emxArray_uint8_T emxArray_uint8_T;
 #define typedef_struct0_T
 
 typedef struct {
-  unsigned int data[2];
+  unsigned long data;
   int type;
   int len;
 } struct0_T;
