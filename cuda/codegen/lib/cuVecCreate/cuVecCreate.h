@@ -6,10 +6,10 @@
 #include "rtwtypes.h"
 #include "cuVecCreate_types.h"
 
-extern void cuVecCreate(int n, int type, struct0_T *vec, int *errCode, boolean_T
-  *toplevel);
-extern void cuVecCreate_1arg(int n, struct0_T *vec, int *errCode, boolean_T
-  *toplevel);
+extern void cuVecCreate(int32_T n, int32_T type, struct0_T *vec, int32_T
+  *errCode, boolean_T *toplevel);
+extern void cuVecCreate_1arg(int32_T n, struct0_T *vec, int32_T *errCode,
+  boolean_T *toplevel);
 extern void cuVecCreate_initialize(void);
 extern void cuVecCreate_terminate(void);
 

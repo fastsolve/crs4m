@@ -6,7 +6,7 @@
 #include "rtwtypes.h"
 #include "cuVecDestroy_types.h"
 
-extern void cuVecDestroy(const struct0_T *vec, int *errCode, boolean_T *toplevel);
+extern void cuVecDestroy(struct0_T *vec, int32_T *errCode, boolean_T *toplevel);
 extern void cuVecDestroy_initialize(void);
 extern void cuVecDestroy_terminate(void);
 

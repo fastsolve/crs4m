@@ -6,10 +6,10 @@
 #include "rtwtypes.h"
 #include "cuMatCreate_types.h"
 
-extern void cuMatCreate(int m, int n, int type, struct0_T *mat, int *errCode,
-  boolean_T *toplevel);
-extern void cuMatCreate_2args(int m, int n, struct0_T *vec, int *errCode,
-  boolean_T *toplevel);
+extern void cuMatCreate(int32_T m, int32_T n, int32_T type, struct0_T *mat,
+  int32_T *errCode, boolean_T *toplevel);
+extern void cuMatCreate_2args(int32_T m, int32_T n, struct0_T *vec, int32_T
+  *errCode, boolean_T *toplevel);
 extern void cuMatCreate_initialize(void);
 extern void cuMatCreate_terminate(void);
 

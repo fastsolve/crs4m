@@ -6,10 +6,10 @@
 
 struct emxArray_char_T
 {
-  char *data;
-  int *size;
-  int allocatedSize;
-  int numDimensions;
+  char_T *data;
+  int32_T *size;
+  int32_T allocatedSize;
+  int32_T numDimensions;
   boolean_T canFreeData;
 };
 
@@ -27,10 +27,10 @@ typedef struct emxArray_char_T emxArray_char_T;
 
 struct emxArray_real_T
 {
-  double *data;
-  int *size;
-  int allocatedSize;
-  int numDimensions;
+  real_T *data;
+  int32_T *size;
+  int32_T allocatedSize;
+  int32_T numDimensions;
   boolean_T canFreeData;
 };
 
@@ -48,10 +48,10 @@ typedef struct emxArray_real_T emxArray_real_T;
 
 struct emxArray_uint8_T
 {
-  unsigned char *data;
-  int *size;
-  int allocatedSize;
-  int numDimensions;
+  uint8_T *data;
+  int32_T *size;
+  int32_T allocatedSize;
+  int32_T numDimensions;
   boolean_T canFreeData;
 };
 
@@ -68,9 +68,9 @@ typedef struct emxArray_uint8_T emxArray_uint8_T;
 #define typedef_struct0_T
 
 typedef struct {
-  unsigned long data;
-  int type;
-  int dims[2];
+  uint64_T data;
+  int32_T type;
+  int32_T dims[2];
 } struct0_T;
 
 #endif
@@ -81,7 +81,7 @@ typedef struct {
 typedef struct {
   emxArray_uint8_T *data;
   emxArray_char_T *type;
-  int nitems;
+  int32_T nitems;
 } struct1_T;
 
 #endif

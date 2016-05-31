@@ -6,10 +6,10 @@
 
 struct emxArray_char_T
 {
-  char *data;
-  int *size;
-  int allocatedSize;
-  int numDimensions;
+  char_T *data;
+  int32_T *size;
+  int32_T allocatedSize;
+  int32_T numDimensions;
   boolean_T canFreeData;
 };
 

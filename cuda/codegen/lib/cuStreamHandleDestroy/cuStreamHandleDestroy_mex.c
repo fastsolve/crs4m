@@ -25,7 +25,7 @@ void cuStreamHandleDestroy_api(const mxArray ** prhs, const mxArray **plhs) {
     mxArray              *_sub_mx1;
 
     int32_T              *errCode;
-    boolean_T            *   toplevel;
+    boolean_T            *toplevel;
 
     /* Marshall in function inputs */
 

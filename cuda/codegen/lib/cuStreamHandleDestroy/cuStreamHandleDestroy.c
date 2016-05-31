@@ -5,18 +5,18 @@
 static void b_m2c_error(const emxArray_char_T *varargin_3);
 static void emxFreeStruct_struct0_T(struct0_T *pStruct);
 static void emxInitStruct_struct0_T(struct0_T *pStruct);
-static void emxInit_uint8_T1(emxArray_uint8_T **pEmxArray, int numDimensions);
+static void emxInit_uint8_T1(emxArray_uint8_T **pEmxArray, int32_T numDimensions);
 static void m2c_error(const emxArray_char_T *varargin_3);
 static void b_m2c_error(const emxArray_char_T *varargin_3)
 {
   emxArray_char_T *b_varargin_3;
-  int i2;
-  int loop_ub;
+  int32_T i2;
+  int32_T loop_ub;
   emxInit_char_T(&b_varargin_3, 2);
   i2 = b_varargin_3->size[0] * b_varargin_3->size[1];
   b_varargin_3->size[0] = 1;
   b_varargin_3->size[1] = varargin_3->size[1];
-  emxEnsureCapacity((emxArray__common *)b_varargin_3, i2, (int)sizeof(char));
+  emxEnsureCapacity((emxArray__common *)b_varargin_3, i2, (int32_T)sizeof(char_T));
   loop_ub = varargin_3->size[0] * varargin_3->size[1];
   for (i2 = 0; i2 < loop_ub; i2++) {
     b_varargin_3->data[i2] = varargin_3->data[i2];
@@ -39,15 +39,15 @@ static void emxInitStruct_struct0_T(struct0_T *pStruct)
   emxInit_char_T(&pStruct->type, 2);
 }
 
-static void emxInit_uint8_T1(emxArray_uint8_T **pEmxArray, int numDimensions)
+static void emxInit_uint8_T1(emxArray_uint8_T **pEmxArray, int32_T numDimensions)
 {
   emxArray_uint8_T *emxArray;
-  int i;
+  int32_T i;
   *pEmxArray = (emxArray_uint8_T *)malloc(sizeof(emxArray_uint8_T));
   emxArray = *pEmxArray;
-  emxArray->data = (unsigned char *)NULL;
+  emxArray->data = (uint8_T *)NULL;
   emxArray->numDimensions = numDimensions;
-  emxArray->size = (int *)malloc((unsigned int)(sizeof(int) * numDimensions));
+  emxArray->size = (int32_T *)malloc((uint32_T)(sizeof(int32_T) * numDimensions));
   emxArray->allocatedSize = 0;
   emxArray->canFreeData = true;
   for (i = 0; i < numDimensions; i++) {
@@ -58,13 +58,13 @@ static void emxInit_uint8_T1(emxArray_uint8_T **pEmxArray, int numDimensions)
 static void m2c_error(const emxArray_char_T *varargin_3)
 {
   emxArray_char_T *b_varargin_3;
-  int i1;
-  int loop_ub;
+  int32_T i1;
+  int32_T loop_ub;
   emxInit_char_T(&b_varargin_3, 2);
   i1 = b_varargin_3->size[0] * b_varargin_3->size[1];
   b_varargin_3->size[0] = 1;
   b_varargin_3->size[1] = varargin_3->size[1];
-  emxEnsureCapacity((emxArray__common *)b_varargin_3, i1, (int)sizeof(char));
+  emxEnsureCapacity((emxArray__common *)b_varargin_3, i1, (int32_T)sizeof(char_T));
   loop_ub = varargin_3->size[0] * varargin_3->size[1];
   for (i1 = 0; i1 < loop_ub; i1++) {
     b_varargin_3->data[i1] = varargin_3->data[i1];
@@ -76,24 +76,24 @@ static void m2c_error(const emxArray_char_T *varargin_3)
   emxFree_char_T(&b_varargin_3);
 }
 
-void cuStreamHandleDestroy(const struct0_T *stm, int *errCode, boolean_T
+void cuStreamHandleDestroy(const struct0_T *stm, int32_T *errCode, boolean_T
   *toplevel)
 {
   boolean_T p;
   boolean_T b_p;
-  int k;
-  int exitg2;
-  int i0;
+  int32_T k;
+  int32_T exitg2;
+  int32_T i0;
   boolean_T exitg1;
   emxArray_char_T *b_stm;
-  static const char cv0[12] = { 'c', 'u', 'd', 'a', 'S', 't', 'r', 'e', 'a', 'm',
-    '_', 't' };
+  static const char_T cv0[12] = { 'c', 'u', 'd', 'a', 'S', 't', 'r', 'e', 'a',
+    'm', '_', 't' };
 
   emxArray_uint8_T *data;
   cudaStream_t hdl;
   emxArray_uint8_T *msg0;
   const char * ptr;
-  int len;
+  int32_T len;
   emxArray_uint8_T *varargin_1;
   emxArray_char_T *b_varargin_1;
   p = false;
@@ -137,7 +137,7 @@ void cuStreamHandleDestroy(const struct0_T *stm, int *errCode, boolean_T
     i0 = b_stm->size[0] * b_stm->size[1];
     b_stm->size[0] = 1;
     b_stm->size[1] = stm->type->size[1] + 1;
-    emxEnsureCapacity((emxArray__common *)b_stm, i0, (int)sizeof(char));
+    emxEnsureCapacity((emxArray__common *)b_stm, i0, (int32_T)sizeof(char_T));
     k = stm->type->size[1];
     for (i0 = 0; i0 < k; i0++) {
       b_stm->data[b_stm->size[0] * i0] = stm->type->data[stm->type->size[0] * i0];
@@ -151,7 +151,7 @@ void cuStreamHandleDestroy(const struct0_T *stm, int *errCode, boolean_T
   emxInit_uint8_T(&data, 1);
   i0 = data->size[0];
   data->size[0] = stm->data->size[0];
-  emxEnsureCapacity((emxArray__common *)data, i0, (int)sizeof(unsigned char));
+  emxEnsureCapacity((emxArray__common *)data, i0, (int32_T)sizeof(uint8_T));
   k = stm->data->size[0];
   for (i0 = 0; i0 < k; i0++) {
     data->data[i0] = stm->data->data[i0];
@@ -168,7 +168,7 @@ void cuStreamHandleDestroy(const struct0_T *stm, int *errCode, boolean_T
     i0 = msg0->size[0] * msg0->size[1];
     msg0->size[0] = 1;
     msg0->size[1] = len;
-    emxEnsureCapacity((emxArray__common *)msg0, i0, (int)sizeof(unsigned char));
+    emxEnsureCapacity((emxArray__common *)msg0, i0, (int32_T)sizeof(uint8_T));
     for (i0 = 0; i0 < len; i0++) {
       msg0->data[i0] = 0;
     }
@@ -184,8 +184,8 @@ void cuStreamHandleDestroy(const struct0_T *stm, int *errCode, boolean_T
     i0 = varargin_1->size[0] * varargin_1->size[1];
     varargin_1->size[0] = 1;
     varargin_1->size[1] = k;
-    emxEnsureCapacity((emxArray__common *)varargin_1, i0, (int)sizeof(unsigned
-      char));
+    emxEnsureCapacity((emxArray__common *)varargin_1, i0, (int32_T)sizeof
+                      (uint8_T));
     for (i0 = 0; i0 < k; i0++) {
       varargin_1->data[varargin_1->size[0] * i0] = msg0->data[i0];
     }
@@ -195,9 +195,10 @@ void cuStreamHandleDestroy(const struct0_T *stm, int *errCode, boolean_T
     i0 = b_varargin_1->size[0] * b_varargin_1->size[1];
     b_varargin_1->size[0] = 1;
     b_varargin_1->size[1] = k;
-    emxEnsureCapacity((emxArray__common *)b_varargin_1, i0, (int)sizeof(char));
+    emxEnsureCapacity((emxArray__common *)b_varargin_1, i0, (int32_T)sizeof
+                      (char_T));
     for (i0 = 0; i0 < k; i0++) {
-      b_varargin_1->data[i0] = (signed char)varargin_1->data[i0];
+      b_varargin_1->data[i0] = (int8_T)varargin_1->data[i0];
     }
 
     emxFree_uint8_T(&varargin_1);

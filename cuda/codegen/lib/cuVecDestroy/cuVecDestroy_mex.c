@@ -28,18 +28,19 @@ void cuVecDestroy_api(const mxArray ** prhs, const mxArray **plhs) {
     boolean_T            *toplevel;
 
     /* Marshall in function inputs */
+    plhs[0] = mxDuplicateArray(prhs[0]);
 
-    if (!mxIsStruct(prhs[0]))
+    if (!mxIsStruct(plhs[0]))
         mexErrMsgIdAndTxt("cuVecDestroy:WrongInputType",
             "Input argument vec has incorrect data type. struct is expected.");
-    if (mxGetNumberOfFields(prhs[0])!=3)
+    if (mxGetNumberOfFields(plhs[0])!=3)
         mexErrMsgIdAndTxt("cuVecDestroy:InputStructWrongFields",
             "Input argument vec has incorrect number of fields.");
-    if (mxGetNumberOfElements(prhs[0]) != 1)
+    if (mxGetNumberOfElements(plhs[0]) != 1)
         mexErrMsgIdAndTxt("cuVecDestroy:WrongSizeOfInputArg",
             "Argument vec must contain 1 items.");
 
-    _sub_mx1 = mxGetField(prhs[0], 0, "data");
+    _sub_mx1 = mxGetField(plhs[0], 0, "data");
     if (_sub_mx1==NULL)
         mexErrMsgIdAndTxt("cuVecDestroy:WrongInputStruct",
             "Input argument vec does not have the field data.");
@@ -50,7 +51,7 @@ void cuVecDestroy_api(const mxArray ** prhs, const mxArray **plhs) {
         mexErrMsgIdAndTxt("cuVecDestroy:WrongSizeOfInputArg",
             "Argument vec.data should be a scalar.");
     vec.data = *(uint64_T*)mxGetData(_sub_mx1);
-    _sub_mx1 = mxGetField(prhs[0], 0, "type");
+    _sub_mx1 = mxGetField(plhs[0], 0, "type");
     if (_sub_mx1==NULL)
         mexErrMsgIdAndTxt("cuVecDestroy:WrongInputStruct",
             "Input argument vec does not have the field type.");
@@ -61,7 +62,7 @@ void cuVecDestroy_api(const mxArray ** prhs, const mxArray **plhs) {
         mexErrMsgIdAndTxt("cuVecDestroy:WrongSizeOfInputArg",
             "Argument vec.type should be a scalar.");
     vec.type = *(int32_T*)mxGetData(_sub_mx1);
-    _sub_mx1 = mxGetField(prhs[0], 0, "len");
+    _sub_mx1 = mxGetField(plhs[0], 0, "len");
     if (_sub_mx1==NULL)
         mexErrMsgIdAndTxt("cuVecDestroy:WrongInputStruct",
             "Input argument vec does not have the field len.");
@@ -75,9 +76,9 @@ void cuVecDestroy_api(const mxArray ** prhs, const mxArray **plhs) {
 
     /* Preallocate output variables */
     {mwSize l_size[] = {1, 1};
-    *(void **)&errCode = prealloc_mxArray((mxArray**)&plhs[0], mxINT32_CLASS, 2, l_size); }
+    *(void **)&errCode = prealloc_mxArray((mxArray**)&plhs[1], mxINT32_CLASS, 2, l_size); }
     {mwSize l_size[] = {1, 1};
-    *(void **)&toplevel = prealloc_mxArray((mxArray**)&plhs[1], mxLOGICAL_CLASS, 2, l_size); }
+    *(void **)&toplevel = prealloc_mxArray((mxArray**)&plhs[2], mxLOGICAL_CLASS, 2, l_size); }
 
     /* Invoke the target function */
     cuVecDestroy_initialize();
@@ -87,19 +88,25 @@ void cuVecDestroy_api(const mxArray ** prhs, const mxArray **plhs) {
     cuVecDestroy_terminate();
 
     /* Marshall out function outputs */
-    /* Nothing to do for plhs[0] */
+    {const char *_fields[] = { "data", "type", "len",  ""};
+    int32_T _one=1;
+    plhs[0] = create_struct_mxArray(1, &_one, 3, _fields);}
+    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 0, copy_scalar_to_mxArray(&vec.data, mxUINT64_CLASS));
+    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 1, copy_scalar_to_mxArray(&vec.type, mxINT32_CLASS));
+    mxSetFieldByNumber((mxArray*)(plhs[0]), 0, 2, copy_scalar_to_mxArray(&vec.len, mxINT32_CLASS));
     /* Nothing to do for plhs[1] */
+    /* Nothing to do for plhs[2] */
 
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     /* Temporary copy for mex outputs. */
-    mxArray *outputs[2];
+    mxArray *outputs[3];
     int i;
     int nOutputs = (nlhs < 1 ? 1 : nlhs);
 
     if (nrhs == 1) {
-        if (nlhs > 2)
+        if (nlhs > 3)
             mexErrMsgIdAndTxt("cuVecDestroy:TooManyOutputArguments","Too many output arguments for entry-point cuVecDestroy.");
         /* Call the API function. */
         cuVecDestroy_api(prhs, (const mxArray**)outputs);

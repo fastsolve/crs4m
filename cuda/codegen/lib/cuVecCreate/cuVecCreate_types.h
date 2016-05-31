@@ -5,9 +5,9 @@
 #define typedef_struct0_T
 
 typedef struct {
-  unsigned long data;
-  int type;
-  int len;
+  uint64_T data;
+  int32_T type;
+  int32_T len;
 } struct0_T;
 
 #endif

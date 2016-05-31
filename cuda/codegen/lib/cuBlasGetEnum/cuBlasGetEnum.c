@@ -2,65 +2,65 @@
 #include "mspack.h"
 #include "m2c.h"
 
-int cuBlasGetEnum(const emxArray_char_T *str)
+int32_T cuBlasGetEnum(const emxArray_char_T *str)
 {
-  int val;
+  int32_T val;
   boolean_T b_bool;
-  int kstr;
-  int exitg12;
-  static const char cv0[24] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'P', 'O', 'I',
-    'N', 'T', 'E', 'R', '_', 'M', 'O', 'D', 'E', '_', 'H', 'O', 'S', 'T' };
+  int32_T kstr;
+  int32_T exitg12;
+  static const char_T cv0[24] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'P', 'O',
+    'I', 'N', 'T', 'E', 'R', '_', 'M', 'O', 'D', 'E', '_', 'H', 'O', 'S', 'T' };
 
-  int exitg11;
-  static const char cv1[26] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'P', 'O', 'I',
-    'N', 'T', 'E', 'R', '_', 'M', 'O', 'D', 'E', '_', 'D', 'E', 'V', 'I', 'C',
-    'E' };
+  int32_T exitg11;
+  static const char_T cv1[26] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'P', 'O',
+    'I', 'N', 'T', 'E', 'R', '_', 'M', 'O', 'D', 'E', '_', 'D', 'E', 'V', 'I',
+    'C', 'E' };
 
-  int exitg10;
-  static const char cv2[26] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'A', 'T', 'O',
-    'M', 'I', 'C', 'S', '_', 'N', 'O', 'T', '_', 'A', 'L', 'L', 'O', 'W', 'E',
-    'D' };
+  int32_T exitg10;
+  static const char_T cv2[26] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'A', 'T',
+    'O', 'M', 'I', 'C', 'S', '_', 'N', 'O', 'T', '_', 'A', 'L', 'L', 'O', 'W',
+    'E', 'D' };
 
-  int exitg9;
-  static const char cv3[22] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'A', 'T', 'O',
-    'M', 'I', 'C', 'S', '_', 'A', 'L', 'L', 'O', 'W', 'E', 'D' };
+  int32_T exitg9;
+  static const char_T cv3[22] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'A', 'T',
+    'O', 'M', 'I', 'C', 'S', '_', 'A', 'L', 'L', 'O', 'W', 'E', 'D' };
 
-  int exitg8;
-  static const char cv4[21] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'S', 'U', 'C', 'C', 'E', 'S', 'S' };
+  int32_T exitg8;
+  static const char_T cv4[21] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'S', 'U', 'C', 'C', 'E', 'S', 'S' };
 
-  int exitg7;
-  static const char cv5[29] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'N', 'O', 'T', '_', 'I', 'N', 'I', 'T', 'I', 'A', 'L',
-    'I', 'Z', 'E', 'D' };
+  int32_T exitg7;
+  static const char_T cv5[29] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'N', 'O', 'T', '_', 'I', 'N', 'I', 'T', 'I', 'A',
+    'L', 'I', 'Z', 'E', 'D' };
 
-  int exitg6;
-  static const char cv6[26] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'A', 'L', 'L', 'O', 'C', '_', 'F', 'A', 'I', 'L', 'E',
-    'D' };
+  int32_T exitg6;
+  static const char_T cv6[26] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'A', 'L', 'L', 'O', 'C', '_', 'F', 'A', 'I', 'L',
+    'E', 'D' };
 
-  int exitg5;
-  static const char cv7[27] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'I', 'N', 'V', 'A', 'L', 'I', 'D', '_', 'V', 'A', 'L',
-    'U', 'E' };
+  int32_T exitg5;
+  static const char_T cv7[27] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'I', 'N', 'V', 'A', 'L', 'I', 'D', '_', 'V', 'A',
+    'L', 'U', 'E' };
 
-  int exitg4;
-  static const char cv8[27] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'A', 'R', 'C', 'H', '_', 'M', 'I', 'S', 'M', 'A', 'T',
-    'C', 'H' };
+  int32_T exitg4;
+  static const char_T cv8[27] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'A', 'R', 'C', 'H', '_', 'M', 'I', 'S', 'M', 'A',
+    'T', 'C', 'H' };
 
-  int exitg3;
-  static const char cv9[27] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'M', 'A', 'P', 'P', 'I', 'N', 'G', '_', 'E', 'R', 'R',
-    'O', 'R' };
+  int32_T exitg3;
+  static const char_T cv9[27] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'M', 'A', 'P', 'P', 'I', 'N', 'G', '_', 'E', 'R',
+    'R', 'O', 'R' };
 
-  int exitg2;
-  static const char cv10[30] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+  int32_T exitg2;
+  static const char_T cv10[30] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
     'A', 'T', 'U', 'S', '_', 'E', 'X', 'E', 'C', 'U', 'T', 'I', 'O', 'N', '_',
     'F', 'A', 'I', 'L', 'E', 'D' };
 
-  int exitg1;
-  static const char cv11[28] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+  int32_T exitg1;
+  static const char_T cv11[28] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
     'A', 'T', 'U', 'S', '_', 'I', 'N', 'T', 'E', 'R', 'N', 'A', 'L', '_', 'E',
     'R', 'R', 'O', 'R' };
 
@@ -407,7 +407,7 @@ void cuBlasGetEnum_terminate(void)
 {
 }
 
-void emxInitArray_char_T(emxArray_char_T **pEmxArray, int numDimensions)
+void emxInitArray_char_T(emxArray_char_T **pEmxArray, int32_T numDimensions)
 {
   emxInit_char_T(pEmxArray, numDimensions);
 }

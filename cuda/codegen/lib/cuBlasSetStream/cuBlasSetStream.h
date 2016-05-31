@@ -6,21 +6,23 @@
 #include "rtwtypes.h"
 #include "cuBlasSetStream_types.h"
 
-extern void cuBlasSetStream(const struct0_T *hdl, const struct0_T *strm, int
+extern void cuBlasSetStream(const struct0_T *hdl, const struct0_T *strm, int32_T
   *errCode, boolean_T *toplevel);
 extern void cuBlasSetStream_initialize(void);
 extern void cuBlasSetStream_terminate(void);
-extern emxArray_char_T *emxCreateND_char_T(int numDimensions, int *size);
-extern emxArray_uint8_T *emxCreateND_uint8_T(int numDimensions, int *size);
-extern emxArray_char_T *emxCreateWrapperND_char_T(char *data, int numDimensions,
-  int *size);
-extern emxArray_uint8_T *emxCreateWrapperND_uint8_T(unsigned char *data, int
-  numDimensions, int *size);
-extern emxArray_char_T *emxCreateWrapper_char_T(char *data, int rows, int cols);
-extern emxArray_uint8_T *emxCreateWrapper_uint8_T(unsigned char *data, int rows,
-  int cols);
-extern emxArray_char_T *emxCreate_char_T(int rows, int cols);
-extern emxArray_uint8_T *emxCreate_uint8_T(int rows, int cols);
+extern emxArray_char_T *emxCreateND_char_T(int32_T numDimensions, int32_T *size);
+extern emxArray_uint8_T *emxCreateND_uint8_T(int32_T numDimensions, int32_T
+  *size);
+extern emxArray_char_T *emxCreateWrapperND_char_T(char_T *data, int32_T
+  numDimensions, int32_T *size);
+extern emxArray_uint8_T *emxCreateWrapperND_uint8_T(uint8_T *data, int32_T
+  numDimensions, int32_T *size);
+extern emxArray_char_T *emxCreateWrapper_char_T(char_T *data, int32_T rows,
+  int32_T cols);
+extern emxArray_uint8_T *emxCreateWrapper_uint8_T(uint8_T *data, int32_T rows,
+  int32_T cols);
+extern emxArray_char_T *emxCreate_char_T(int32_T rows, int32_T cols);
+extern emxArray_uint8_T *emxCreate_uint8_T(int32_T rows, int32_T cols);
 extern void emxDestroyArray_char_T(emxArray_char_T *emxArray);
 extern void emxDestroyArray_uint8_T(emxArray_uint8_T *emxArray);
 extern void emxDestroy_struct0_T(struct0_T emxArray);

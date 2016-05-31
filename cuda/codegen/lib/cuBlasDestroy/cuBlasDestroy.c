@@ -9,13 +9,13 @@ static void m2c_error(const emxArray_char_T *varargin_3);
 static void b_m2c_error(const emxArray_char_T *varargin_3)
 {
   emxArray_char_T *b_varargin_3;
-  int i1;
-  int loop_ub;
+  int32_T i1;
+  int32_T loop_ub;
   emxInit_char_T(&b_varargin_3, 2);
   i1 = b_varargin_3->size[0] * b_varargin_3->size[1];
   b_varargin_3->size[0] = 1;
   b_varargin_3->size[1] = varargin_3->size[1];
-  emxEnsureCapacity((emxArray__common *)b_varargin_3, i1, (int)sizeof(char));
+  emxEnsureCapacity((emxArray__common *)b_varargin_3, i1, (int32_T)sizeof(char_T));
   loop_ub = varargin_3->size[0] * varargin_3->size[1];
   for (i1 = 0; i1 < loop_ub; i1++) {
     b_varargin_3->data[i1] = varargin_3->data[i1];
@@ -41,13 +41,13 @@ static void emxInitStruct_struct0_T(struct0_T *pStruct)
 static void m2c_error(const emxArray_char_T *varargin_3)
 {
   emxArray_char_T *b_varargin_3;
-  int i0;
-  int loop_ub;
+  int32_T i0;
+  int32_T loop_ub;
   emxInit_char_T(&b_varargin_3, 2);
   i0 = b_varargin_3->size[0] * b_varargin_3->size[1];
   b_varargin_3->size[0] = 1;
   b_varargin_3->size[1] = varargin_3->size[1];
-  emxEnsureCapacity((emxArray__common *)b_varargin_3, i0, (int)sizeof(char));
+  emxEnsureCapacity((emxArray__common *)b_varargin_3, i0, (int32_T)sizeof(char_T));
   loop_ub = varargin_3->size[0] * varargin_3->size[1];
   for (i0 = 0; i0 < loop_ub; i0++) {
     b_varargin_3->data[i0] = varargin_3->data[i0];
@@ -59,60 +59,60 @@ static void m2c_error(const emxArray_char_T *varargin_3)
   emxFree_char_T(&b_varargin_3);
 }
 
-void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
+void cuBlasDestroy(const struct0_T *hdl, int32_T *errCode, boolean_T *toplevel)
 {
   boolean_T p;
   boolean_T b_p;
-  int k;
-  int exitg2;
-  int varargin_2;
+  int32_T k;
+  int32_T exitg2;
+  int32_T varargin_2;
   boolean_T exitg1;
   emxArray_char_T *b_hdl;
-  static const char cv0[14] = { 'c', 'u', 'b', 'l', 'a', 's', 'H', 'a', 'n', 'd',
-    'l', 'e', '_', 't' };
+  static const char_T cv0[14] = { 'c', 'u', 'b', 'l', 'a', 's', 'H', 'a', 'n',
+    'd', 'l', 'e', '_', 't' };
 
   emxArray_uint8_T *data;
   cublasHandle_t c_hdl;
-  int varargin_3;
-  int varargin_4;
-  int varargin_5;
-  int varargin_6;
-  int varargin_7;
-  int varargin_8;
+  int32_T varargin_3;
+  int32_T varargin_4;
+  int32_T varargin_5;
+  int32_T varargin_6;
+  int32_T varargin_7;
+  int32_T varargin_8;
   emxArray_char_T *cstr;
-  static const char cv1[14] = { 'U', 'n', 'k', 'n', 'o', 'w', 'n', ' ', 'e', 'r',
-    'r', 'o', 'r', '\x00' };
+  static const char_T cv1[14] = { 'U', 'n', 'k', 'n', 'o', 'w', 'n', ' ', 'e',
+    'r', 'r', 'o', 'r', '\x00' };
 
-  static const char cv2[22] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'S', 'U', 'C', 'C', 'E', 'S', 'S', '\x00' };
+  static const char_T cv2[22] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'S', 'U', 'C', 'C', 'E', 'S', 'S', '\x00' };
 
-  static const char cv3[30] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'N', 'O', 'T', '_', 'I', 'N', 'I', 'T', 'I', 'A', 'L',
-    'I', 'Z', 'E', 'D', '\x00' };
+  static const char_T cv3[30] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'N', 'O', 'T', '_', 'I', 'N', 'I', 'T', 'I', 'A',
+    'L', 'I', 'Z', 'E', 'D', '\x00' };
 
-  static const char cv4[27] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'A', 'L', 'L', 'O', 'C', '_', 'F', 'A', 'I', 'L', 'E',
-    'D', '\x00' };
+  static const char_T cv4[27] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'A', 'L', 'L', 'O', 'C', '_', 'F', 'A', 'I', 'L',
+    'E', 'D', '\x00' };
 
-  static const char cv5[28] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'I', 'N', 'V', 'A', 'L', 'I', 'D', '_', 'V', 'A', 'L',
-    'U', 'E', '\x00' };
+  static const char_T cv5[28] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'I', 'N', 'V', 'A', 'L', 'I', 'D', '_', 'V', 'A',
+    'L', 'U', 'E', '\x00' };
 
-  static const char cv6[28] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'A', 'R', 'C', 'H', '_', 'M', 'I', 'S', 'M', 'A', 'T',
-    'C', 'H', '\x00' };
+  static const char_T cv6[28] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'A', 'R', 'C', 'H', '_', 'M', 'I', 'S', 'M', 'A',
+    'T', 'C', 'H', '\x00' };
 
-  static const char cv7[28] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'M', 'A', 'P', 'P', 'I', 'N', 'G', '_', 'E', 'R', 'R',
-    'O', 'R', '\x00' };
-
-  static const char cv8[31] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'E', 'X', 'E', 'C', 'U', 'T', 'I', 'O', 'N', '_', 'F',
-    'A', 'I', 'L', 'E', 'D', '\x00' };
-
-  static const char cv9[29] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T', 'A',
-    'T', 'U', 'S', '_', 'I', 'N', 'T', 'E', 'R', 'N', 'A', 'L', '_', 'E', 'R',
+  static const char_T cv7[28] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'M', 'A', 'P', 'P', 'I', 'N', 'G', '_', 'E', 'R',
     'R', 'O', 'R', '\x00' };
+
+  static const char_T cv8[31] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'E', 'X', 'E', 'C', 'U', 'T', 'I', 'O', 'N', '_',
+    'F', 'A', 'I', 'L', 'E', 'D', '\x00' };
+
+  static const char_T cv9[29] = { 'C', 'U', 'B', 'L', 'A', 'S', '_', 'S', 'T',
+    'A', 'T', 'U', 'S', '_', 'I', 'N', 'T', 'E', 'R', 'N', 'A', 'L', '_', 'E',
+    'R', 'R', 'O', 'R', '\x00' };
 
   p = false;
   b_p = false;
@@ -155,7 +155,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
     varargin_2 = b_hdl->size[0] * b_hdl->size[1];
     b_hdl->size[0] = 1;
     b_hdl->size[1] = hdl->type->size[1] + 1;
-    emxEnsureCapacity((emxArray__common *)b_hdl, varargin_2, (int)sizeof(char));
+    emxEnsureCapacity((emxArray__common *)b_hdl, varargin_2, (int32_T)sizeof
+                      (char_T));
     k = hdl->type->size[1];
     for (varargin_2 = 0; varargin_2 < k; varargin_2++) {
       b_hdl->data[b_hdl->size[0] * varargin_2] = hdl->type->data[hdl->type->
@@ -170,8 +171,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
   emxInit_uint8_T(&data, 1);
   varargin_2 = data->size[0];
   data->size[0] = hdl->data->size[0];
-  emxEnsureCapacity((emxArray__common *)data, varargin_2, (int)sizeof(unsigned
-    char));
+  emxEnsureCapacity((emxArray__common *)data, varargin_2, (int32_T)sizeof
+                    (uint8_T));
   k = hdl->data->size[0];
   for (varargin_2 = 0; varargin_2 < k; varargin_2++) {
     data->data[varargin_2] = hdl->data->data[varargin_2];
@@ -216,7 +217,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
       varargin_2 = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 22;
-      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int)sizeof(char));
+      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int32_T)sizeof
+                        (char_T));
       for (varargin_2 = 0; varargin_2 < 22; varargin_2++) {
         cstr->data[varargin_2] = cv2[varargin_2];
       }
@@ -226,7 +228,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
       varargin_2 = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 30;
-      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int)sizeof(char));
+      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int32_T)sizeof
+                        (char_T));
       for (varargin_2 = 0; varargin_2 < 30; varargin_2++) {
         cstr->data[varargin_2] = cv3[varargin_2];
       }
@@ -236,7 +239,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
       varargin_2 = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 27;
-      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int)sizeof(char));
+      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int32_T)sizeof
+                        (char_T));
       for (varargin_2 = 0; varargin_2 < 27; varargin_2++) {
         cstr->data[varargin_2] = cv4[varargin_2];
       }
@@ -246,7 +250,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
       varargin_2 = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 28;
-      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int)sizeof(char));
+      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int32_T)sizeof
+                        (char_T));
       for (varargin_2 = 0; varargin_2 < 28; varargin_2++) {
         cstr->data[varargin_2] = cv5[varargin_2];
       }
@@ -256,7 +261,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
       varargin_2 = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 28;
-      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int)sizeof(char));
+      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int32_T)sizeof
+                        (char_T));
       for (varargin_2 = 0; varargin_2 < 28; varargin_2++) {
         cstr->data[varargin_2] = cv6[varargin_2];
       }
@@ -266,7 +272,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
       varargin_2 = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 28;
-      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int)sizeof(char));
+      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int32_T)sizeof
+                        (char_T));
       for (varargin_2 = 0; varargin_2 < 28; varargin_2++) {
         cstr->data[varargin_2] = cv7[varargin_2];
       }
@@ -276,7 +283,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
       varargin_2 = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 31;
-      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int)sizeof(char));
+      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int32_T)sizeof
+                        (char_T));
       for (varargin_2 = 0; varargin_2 < 31; varargin_2++) {
         cstr->data[varargin_2] = cv8[varargin_2];
       }
@@ -286,7 +294,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
       varargin_2 = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 29;
-      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int)sizeof(char));
+      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int32_T)sizeof
+                        (char_T));
       for (varargin_2 = 0; varargin_2 < 29; varargin_2++) {
         cstr->data[varargin_2] = cv9[varargin_2];
       }
@@ -296,7 +305,8 @@ void cuBlasDestroy(const struct0_T *hdl, int *errCode, boolean_T *toplevel)
       varargin_2 = cstr->size[0] * cstr->size[1];
       cstr->size[0] = 1;
       cstr->size[1] = 14;
-      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int)sizeof(char));
+      emxEnsureCapacity((emxArray__common *)cstr, varargin_2, (int32_T)sizeof
+                        (char_T));
       for (varargin_2 = 0; varargin_2 < 14; varargin_2++) {
         cstr->data[varargin_2] = cv1[varargin_2];
       }
