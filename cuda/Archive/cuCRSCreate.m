@@ -2,9 +2,9 @@ function [mat, errCode] = cuCRSCreate(m, n, nnz, varargin)
 %Creates a sparse matrix in CRS format on a CUDA device.
 %
 %  [mat, errCode] = cuCRSCreate(m, n, nnz, [type]) creates a sparse
-%  matrix of size m-by-n on CUDA, where type is MSP_DOUBLE, MSP_SINGLE,
-%  MSP_COMPLEX, MSP_DOUBLE_COMPLEX, MSP_INT*, or MSP_UINT*. If not
-%  specified, then type is MSP_DOUBLE.
+%  matrix of size m-by-n on CUDA, where type is MCU_DOUBLE, MCU_SINGLE,
+%  MCU_COMPLEX, MCU_DOUBLE_COMPLEX, MCU_INT*, or MCU_UINT*. If not
+%  specified, then type is MCU_DOUBLE.
 %
 %  SEE ALSO: cuCRSDestroy, cuCRSCopyToGPU, cuCRSCopyFromGPU
 
@@ -13,11 +13,11 @@ function [mat, errCode] = cuCRSCreate(m, n, nnz, varargin)
 
 coder.cinclude('mspack.h');
 
-if nargin<4; type = MSP_DOUBLE; end
+if nargin<4; type = MCU_DOUBLE; end
 
-[rowptr, errCode] = cuVecCreate(m+1, MSP_INT32);
+[rowptr, errCode] = cuVecCreate(m+1, MCU_INT32);
 if ~errCode;
-    [colind, errCode] = cuVecCreate(nnz, MSP_INT32);
+    [colind, errCode] = cuVecCreate(nnz, MCU_INT32);
 else
     colind = CuVec(0);
 end

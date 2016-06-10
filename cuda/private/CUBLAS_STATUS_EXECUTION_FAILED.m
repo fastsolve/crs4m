@@ -1,2 +1,0 @@
-function val = CUBLAS_STATUS_EXECUTION_FAILED %#codegen 
-val = cuBlasGetEnum('CUBLAS_STATUS_EXECUTION_FAILED');

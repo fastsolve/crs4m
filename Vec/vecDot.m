@@ -87,7 +87,7 @@ end
 if nargin>=5
     if ischar(varargin{1}) && ~isequal(varargin{1}, 'cuda') && (toplevel || m2c_debug)
         m2c_warn('vecDot:WrongInput', 'Wrong mode name. cuda is assumed.\n');
-    elseif toplevel && x.type ~= MSP_DOUBLE
+    elseif toplevel && x.type ~= MCU_DOUBLE
         m2c_error('vecDot:WrongInput', 'When using mex functions, vecDot only supports double.\n');
     end
     if ~m2c_cuda && (toplevel || m2c_debug)
@@ -108,35 +108,32 @@ if nargin>=5
 end
 
 if nargin>3;
-    nthreads = min(int32(varargin{1}), momp_get_max_threads);
+    nthreads = min(int32(varargin{1}), ompGetMaxThreads);
 end
 
-if nargin>3 && isempty(buf) && momp_get_num_threads>1
+if nargin>3 && isempty(buf) && ompGetNumThreads>1
     %% Compute prod_local = x'*y
     buf = vecDot_partial(x, y, buf, nthreads, int32(size(x,1)));
     
-    momp_barrier; momp_begin_master
+    OMP_barrier; OMP_begin_master
     [prod,buf] = accu_partsum(buf, nthreads);
-    momp_end_master; momp_barrier
+    OMP_end_master; OMP_barrier
 elseif nargin>3 && nthreads>1
     %% Declare parallel region
-    if ~momp_get_nested && momp_get_num_threads>1 && nthreads>1 && (toplevel || m2c_debug)
-        momp_begin_master
+    if ~ompGetNested && ompGetNumThreads>1 && nthreads>1 && (toplevel || m2c_debug)
+        OMP_begin_master
         m2c_warn('vecDot:NestedParallel', ...
             'You are trying to use nested parallel regions, but nested parallelism is not enabled.\n');
-        momp_end_master
+        OMP_end_master
     end
     
     buf = zeros(nthreads, 1);
     m = int32(size(x,1));
-    momp_begin_parallel; momp_clause_num_threads(nthreads);
-    momp_clause_shared(x, y, buf, nthreads, m);
     
     %% Compute prod_local=x'*y
+    m2c_rref(buf); OMP_begin_parallel(nthreads);
     buf = vecDot_partial(x, y, buf, nthreads, m);
-    
-    %% End parallel region
-    momp_end_parallel;
+    OMP_end_parallel;
     
     [prod,buf] = accu_partsum(buf, nthreads);
 else
@@ -150,11 +147,9 @@ function prod = vecDot_partial(x, y, prod, nthreads, n)
 coder.inline('never');
 
 if nthreads>1
-    threadId = momp_get_thread_num;
-    [istart, iend] = momp_get_local_chunk(n, nthreads, threadId);
+    [istart, iend, threadId] = OMP_local_chunk(n, nthreads);
 else
-    threadId = int32(0);
-    istart = int32(1); iend = n;
+    istart = int32(1); iend = n; threadId = int32(0);
 end
 
 LARGE = 1000;
@@ -198,13 +193,13 @@ prod = buf(1);
 function [output, errCode] = vecDot_cuda_kernel(x, y, hdl, cublasHdl, toplevel, varargin)
 coder.inline('always');
 
-if toplevel || x.type==MSP_DOUBLE
+if toplevel || x.type==MCU_DOUBLE
     func = 'cublasDdot'; type = 'double'; mzero = 0;
-elseif x.type==MSP_SINGLE
+elseif x.type==MCU_SINGLE
     func = 'cublasSdot'; type = 'single'; mzero = single(0);
-elseif x.type==MSP_DOUBLE_COMPLEX
+elseif x.type==MCU_DOUBLE_COMPLEX
     func = 'cublasZdotc'; type = 'cuDoubleComplex'; mzero = complex(0);
-elseif  x.type==MSP_COMPLEX
+elseif  x.type==MCU_COMPLEX
     func = 'cublasCdotc'; type = 'cuComplex'; mzero = complex(single(0));
 else
     % Undefined behavior. x.type must be a constant string.
@@ -258,7 +253,7 @@ function test %#ok<DEFNU>
 %!
 %! fprintf(1, 'Running  with blas mode (if blas is enabled):\n');
 %! for nthreads=int32([1 2 4 8])
-%!     if nthreads>momp_get_max_threads; break; end
+%!     if nthreads>ompGetMaxThreads; break; end
 %!     fprintf(1, '\tTesting %d thread(s): ', nthreads);
 %!     b2 = zeros(nthreads,1);
 %!     tic; [prod, b2] = vecDot(x, y, b2, nthreads);

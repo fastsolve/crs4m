@@ -1,2 +1,0 @@
-function val = CUSPARSE_STATUS_EXECUTION_FAILED %#codegen 
-val = cuSparseGetEnum('CUSPARSE_STATUS_EXECUTION_FAILED');
