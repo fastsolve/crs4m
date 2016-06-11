@@ -17,7 +17,7 @@ search_dir = res;
 
 num_its = int32(0);
 
-Amult_searchdir = nullcopy(res);
+Amult_searchdir = coder.nullcopy(res);
 
 while num_its<maxit
     
